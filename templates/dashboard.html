@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock title %}
+
+
+{% block css %}
+<style>
+  .bulletin-title {
+    font-size: larger;
+    cursor: pointer;
+  }
+  .bulletin-info {
+    font-size: small;
+  }
+  #map {
+    height: 400px;
+    /* The height is 400 pixels */
+    width: 100%;
+    /* The width is the width of the web page */
+  }
+</style>
+{% endblock css %}  
+
+{% block wrapper %}
+
+{% endblock wrapper %}
+  
+{% block page_title %}Dashboard{% endblock page_title %}    
+
+{% block main_content %}   
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <!-- Greeting section -->
+        <div class="row mb-2">
+          <div class="col-12">
+            <h5>{{ greeting }}</h5>
+          </div>
+        </div>
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+          <div class="col-lg-3 col-6">
+            <!-- small box -->
+            <div class="small-box bg-success">
+              <div class="inner">
+                <h3>{{ 0 }}</h3>
+
+                <p>Transactions Today</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-briefcase"></i>
+              </div>
+            </div>
+          </div>
+          <!-- ./col -->
+          <div class="col-lg-3 col-6">
+            <!-- small box -->
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h3>0</h3>
+
+                <p>New Clients Today</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+          </div>
+          <!-- ./col -->
+          <div class="col-lg-3 col-6">
+            <!-- small box -->
+            <div class="small-box bg-warning">
+              <div class="inner">
+                <h3>{{ 0 }}&nbsp;<sup style="font-size: 12px">tickets</sup></h3>
+
+                <p>Maturing Today</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-circle-exclamation"></i>
+              </div>
+            </div>
+          </div>
+          <!-- ./col -->
+          <div class="col-lg-3 col-6">
+            <!-- small box -->
+            <div class="small-box bg-danger">
+              <div class="inner">
+                <h3>{{ 0 }}&nbsp;<sup style="font-size: 12px">tickets</sup></h3>
+
+                <p>Expiring Today</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-triangle-exclamation"></i>
+              </div>
+            </div>
+          </div>
+          <!-- ./col -->
+        </div>
+        <!-- /.row -->
+        
+        <div class="row">
+          <!-- Left col -->
+          <section class="col-lg-12 connectedSortable">
+            <!-- Bulletin -->
+            <div class="card">
+              <div class="card-header border-0">
+                <h3 class="card-title">
+                  <i class="fas fa-thumbtack mr-1"></i>
+                  Bulletin
+                </h3>
+
+                <div class="card-tools">
+                  <button type="button" class="btn bg-info btn-sm" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn bg-info btn-sm" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body table-responsive">
+                <table class="table table-sm">
+                  
+                  {% if not bulletin_list %}
+                  <tr><td>The bulletin is clear. I think that's good news!</td></tr>
+                  {% else %}
+                  
+                  {% for bulletin in bulletin_list %}
+                  <tr><td>
+                    <div class="bulletin-title text-primary" data-details="{{ bulletin.message }}">{{ bulletin.title }}</div>
+                    <div class="bulletin-info text-muted">Posted at {{ bulletin.created_at }}</div>
+                  </td></tr>  
+                  {% endfor %}
+                           
+                  {% endif %}
+                </table>
+              </div>
+              <!-- /.card-footer -->
+            </div>
+            <!-- /.card -->
+            
+          </section>
+          <!-- /.Left col -->
+        </div>
+        <!-- /.row (main row) -->
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+    
+{% endblock main_content %}
+
+
+{% block js %}
+<!-- Tempusdominus Bootstrap 4 -->
+<script src="{% static 'plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js' %}"></script>
+<!-- bootboxjs -->
+<script src="{% static 'js/bootbox.all.min.js' %}"></script>
+
+<!-- Google Maps -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+
+<script>
+
+  $(document).ready(function() {
+      $("#menu_dashboard").addClass("active");
+
+      $(".bulletin-title").click(function() {
+        bootbox.dialog({
+            title: $(this).text(),
+            message: $(this).data('details')
+        });
+      });
+  })
+</script>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFV4PqAS7hCB8KXmcZ6oM8XC9pJ1cK9GU&callback=initMap&v=weekly"></script>
+
+{% endblock js %}
+  

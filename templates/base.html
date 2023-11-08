@@ -1,0 +1,139 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %} | VB Queen's</title>
+  <link rel="icon" href="{% static 'img/logo.jpg' %}">
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <script src="https://kit.fontawesome.com/94b023f88f.js" crossorigin="anonymous"></script>
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Tempusdominus Bootstrap 4 -->
+  <link rel="stylesheet" href="{% static 'plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
+  <!-- Daterange picker -->
+  <link rel="stylesheet" href="{% static 'plugins/daterangepicker/daterangepicker.css' %}">
+  <!-- Toastr -->
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+  <!-- DataTable buttons -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css">
+  {% block css %}{% endblock css %}
+  
+  <!-- jQuery -->
+  <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+  <!-- jQuery UI 1.11.4 -->
+  <script src="{% static 'plugins/jquery-ui/jquery-ui.min.js' %}"></script>
+  
+  {% block extra_header %}{% endblock extra_header %}  
+    
+</head>
+<body class="hold-transition layout-top-nav">
+<div class="wrapper">
+  
+  {% block wrapper %}
+  {% endblock wrapper %}
+    
+
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand-lg navbar-dark navbar-danger elevation-2 fixed-top primary">
+    <!-- Brand Logo -->
+    <a href="{% url 'dashboard' %}" class="brand-link">
+        <img src="{% static 'img/logo.jpg' %}" alt="Logo" class="brand-image my-auto">
+        <span class="h3 text-light">Queen's Jewelry and Pawnshop</span>
+    </a>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto">
+        <!-- top navigation menu -->
+        {% include 'includes/topmenu.html' %}
+        <!-- full screen -->
+        <li class="nav-item"> 
+          <a class="nav-link" data-widget="fullscreen" href="#" role="button"> <i class="fas fa-expand-arrows-alt"></i> </a> 
+        </li>
+      </ul> 
+    </nav>
+  </div>
+  <!-- /.navbar -->
+  
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper" style="margin-top: 80px;">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0">{% block page_title %}{% endblock page_title %}</h1>
+          </div><!-- /.col -->
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              {% block breadcrumb %}
+              {% endblock breadcrumb %}                  
+            </ol>
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    {% block main_content %}
+    {% endblock main_content %}
+        
+  </div>
+  <!-- /.content-wrapper -->
+  <footer class="main-footer no-print pb-2">
+    <div class="float-left">
+      <strong>Copyright &copy; 2023 <a href="#">Queen's Jewelry and Pawnshop</a>.</strong><br>
+      <strong>All rights reserved.</strong> 
+      <br>&nbsp;
+    </div>
+  </footer>
+</div>
+<div style="display: none;">
+  {% if messages %}
+    {% for message in messages %}
+      <input type="hidden" class="message_notif" value="{{ message.tags }}:{{ message }}" />
+    {% endfor %}
+  {% endif %}
+</div>
+<!-- ./wrapper -->
+
+<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+<script>
+  $.widget.bridge('uibutton', $.ui.button)
+</script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'dist/js/adminlte.js' %}"></script>
+<!-- Toastr -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+
+<script type="text/javascript" src="https://momentjs.com/downloads/moment.min.js"></script>
+
+<!-- DataTables -->
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/formatted-numbers.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+
+<!-- <script src="{% static 'js/menu-selector.js' %}"></script> -->
+<!-- <script src="{% static 'js/component-selector.js' %}"></script> -->
+<!-- <script src="{% static 'js/notif-loader.js' %}"></script> -->
+<script src="{% static 'js/toastr-loader.js' %}"></script>
+
+<script>
+  $(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+
+{% block js %}
+{% endblock js %}
+
+</body>
+</html>
