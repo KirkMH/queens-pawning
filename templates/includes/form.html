@@ -2,7 +2,7 @@
 
 {% comment %}
 Forms have a special type of error, which is called non-field errors. 
-It’s a collection of errors that are not related to a specific field.
+It's a collection of errors that are not related to a specific field.
 {% endcomment %}
 
 {% if form.non_field_errors %}
@@ -13,9 +13,9 @@ It’s a collection of errors that are not related to a specific field.
     </div>
 {% endif %}
     
-
+<div class="row">
 {% for field in form %}
-<div class="form-group">
+<div class="col-sm-6 form-group">
     {{ field.label_tag }}
 
     {% render_field field class=field|input_class %}
@@ -32,3 +32,4 @@ It’s a collection of errors that are not related to a specific field.
     {% endif %}
 </div>
 {% endfor %}
+</div>

@@ -72,10 +72,11 @@ class Client(models.Model):
     # NOTE: should the branch where the client was registered matter?
 
     def __str__(self):
-        return f'{self.last_name}, {self.first_name} {self.middle_name}'
+        return f'{self.title} {self.last_name}, {self.first_name} {self.middle_name}'
 
     class Meta:
         ordering = ['last_name', 'first_name', 'middle_name']
+        unique_together = ['last_name', 'first_name', 'middle_name']
 
 
 class InterestRate(models.Model):
@@ -169,6 +170,7 @@ class ExpenseCategory(models.Model):
     category = models.CharField(
         _('Category'),
         max_length=20,
+        unique=True,
         null=False, blank=False
     )
     status = models.CharField(
@@ -189,6 +191,7 @@ class Branch(models.Model):
     name = models.CharField(
         _('Branch Name'),
         max_length=30,
+        unique=True,
         null=False, blank=False
     )
     address = models.CharField(

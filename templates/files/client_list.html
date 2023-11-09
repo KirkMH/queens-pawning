@@ -1,0 +1,92 @@
+{% extends '../base.html' %}
+
+{% block extra_header %}
+{% include '../includes/datatable.html' %}    
+{% endblock extra_header %}
+
+{% block title %}Clients{% endblock title %}
+{% block page_title %}Client list{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item active">Client</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+<div class="card m-4">
+    <form method="get">
+        <div class="card-header">
+            <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                <a href="{% url 'new_client' %}" class="btn btn-primary">New</a>
+            </div>
+            </div>
+        </div>
+    </form>
+    <div class="card-body table-responsive">
+        <table id="table" class="table table-hover table-head-fixed table-sm">
+            <thead>
+                <tr>
+                    <th class="text-center" width="10%">Action</th>
+                    <th class="text-center">Name</th>
+                    <th class="text-center">Address</th>
+                    <th class="text-center">Identification</th>
+                    <th class="text-center">Contact Number</th>
+                    <th class="text-center">Date Registered</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+{% endblock main_content %}
+
+
+{% block js %}
+    <script>
+        $(document).ready(function() {
+            $("#table").DataTable({
+                serverSide: true,
+                sAjaxSource: "{% url 'client_dtlist' %}", 
+                columns: [
+                    {   
+                        data: 0,
+                        render: function (data) {
+                            let links = '<a href="client/' + data + '/detail" title="Detail"><i class="far fa-eye"></i></a> | '+
+                                        '<a href="client/' + data + '/edit" title="Edit"><i class="far fa-edit"></i></a>';
+
+                            return links;
+                        },
+                        className: 'text-center'
+                    },
+                    {   
+                        name: 'name',
+                        data: null,
+                        render: function (data) {
+                            let name = data[1] + ' ' + data[2] + ', ' + data[3]
+                            if (data[4])
+                                name += ' ' + data[4]
+                            
+                            return name;
+                        }
+                    },
+                    {name: "address", data: 5},
+                    {   
+                        name: 'identification',
+                        data: null,
+                        render: function (data) {
+                            return data[6] + "-" + data[7];
+                        }
+                    },
+                    {name: "contact", data: 8},
+                    {name: "registered", data: 9},
+                    {name: "status", data: 10},
+                ],
+                order: [[1, 'asc']],
+            });
+            
+            $("#menu-records").addClass("active")
+        })
+    </script>
+{% endblock js %}
