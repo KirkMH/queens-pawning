@@ -100,3 +100,47 @@ class ExpenseCategoryUpdateView(SuccessMessageMixin, UpdateView):
     pk_url_kwarg = 'pk'
     success_url = reverse_lazy('expense_category_list')
     success_message = "The expense category was updated successfully."
+
+
+###############################################################################################
+#                Branch Maintenance
+###############################################################################################
+
+def branch_list(request):
+    return render(request, 'files/branch_list.html')
+
+
+class BranchDTListView(ServerSideDatatableView):
+    queryset = Branch.objects.all()
+    columns = ['pk', 'name', 'address', 'vat_info',
+               'contact_num', 'days_open', 'status']
+
+
+class BranchCreateView(CreateView):
+    model = Branch
+    form_class = BranchForm
+    template_name = 'files/branch_form.html'
+
+    def post(self, request, *args, **kwargs):
+        form = BranchForm(request.POST)
+        if form.is_valid():
+            saved = form.save()
+            saved.save()
+            messages.success(request, f"{saved} was created successfully.")
+            if "another" in request.POST:
+                return redirect('new_branch')
+            else:
+                return redirect('branch_list')
+
+        else:
+            return render(request, 'files/branch_form.html', {'form': form})
+
+
+class BranchUpdateView(SuccessMessageMixin, UpdateView):
+    model = Branch
+    context_object_name = 'branch'
+    form_class = BranchForm
+    template_name = "files/branch_form.html"
+    pk_url_kwarg = 'pk'
+    success_url = reverse_lazy('branch_list')
+    success_message = "The branch information was updated successfully."

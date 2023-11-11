@@ -23,3 +23,14 @@ class ExpenseCategoryForm(forms.ModelForm):
     class Meta:
         model = ExpenseCategory
         fields = '__all__'
+
+
+############################
+#       Branches
+############################
+class BranchForm(forms.ModelForm):
+    required_css_class = 'required'
+
+    class Meta:
+        model = Branch
+        fields = '__all__'

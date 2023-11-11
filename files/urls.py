@@ -11,7 +11,6 @@ urlpatterns = [
     path('clients/<int:pk>/detail',
          views.ClientDetailView.as_view(), name='client_detail'),
 
-
     path('expenses/categories', views.expense_category_list,
          name='expense_category_list'),
     path('expenses/categories/dt', views.ExpenseCategoryDTListView.as_view(),
@@ -20,4 +19,13 @@ urlpatterns = [
          name='new_expense_category'),
     path('expenses/categories/<int:pk>/edit',
          views.ExpenseCategoryUpdateView.as_view(), name='edit_expense_category'),
+
+    path('branches', views.branch_list,
+         name='branch_list'),
+    path('branches/dt', views.BranchDTListView.as_view(),
+         name='branch_dtlist'),
+    path('branches/new', views.BranchCreateView.as_view(),
+         name='new_branch'),
+    path('branches/<int:pk>/edit',
+         views.BranchUpdateView.as_view(), name='edit_branch'),
 ]

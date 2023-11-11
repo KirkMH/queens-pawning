@@ -219,7 +219,7 @@ class Branch(models.Model):
     )
     days_open = models.CharField(
         _('Days Open'),
-        max_length=20
+        max_length=50
     )
     status = models.CharField(
         _("Status"),
