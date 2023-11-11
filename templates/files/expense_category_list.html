@@ -1,0 +1,68 @@
+{% extends '../base.html' %}
+
+{% block extra_header %}
+{% include '../includes/datatable.html' %}    
+{% endblock extra_header %}
+
+{% block title %}Expense Categories{% endblock title %}
+{% block page_title %}Expense Category list{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item active">Expense Category</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+<div class="card m-4">
+    <form method="get">
+        <div class="card-header">
+            <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                <a href="{% url 'new_expense_category' %}" class="btn btn-primary">New</a>
+            </div>
+            </div>
+        </div>
+    </form>
+    <div class="card-body table-responsive">
+        <table id="table" class="table table-hover table-head-fixed table-sm">
+            <thead>
+                <tr>
+                    <th class="text-center" width="10%">Action</th>
+                    <th class="text-center">Category</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+{% endblock main_content %}
+
+
+{% block js %}
+    <script>
+        $(document).ready(function() {
+            $("#table").DataTable({
+                serverSide: true,
+                sAjaxSource: "{% url 'expense_category_dtlist' %}", 
+                columns: [
+                    {   
+                        data: 0,
+                        render: function (data) {
+                            let links = '<a href="category/' + data + '/detail" title="Detail"><i class="far fa-eye"></i></a> | '+
+                                        '<a href="category/' + data + '/edit" title="Edit"><i class="far fa-edit"></i></a>';
+
+                            return links;
+                        },
+                        className: 'text-center'
+                    },
+                    {name: "category", data: 1},
+                    {name: "status", data: 2},
+                ],
+                order: [[1, 'asc']],
+            });
+            
+            $("#menu-records").addClass("active")
+        })
+    </script>
+{% endblock js %}

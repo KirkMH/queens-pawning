@@ -12,3 +12,14 @@ class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
         fields = '__all__'
+
+
+############################
+#       EXPENSE CATEGORY
+############################
+class ExpenseCategoryForm(forms.ModelForm):
+    required_css_class = 'required'
+
+    class Meta:
+        model = ExpenseCategory
+        fields = '__all__'
