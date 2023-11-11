@@ -9,7 +9,7 @@
 
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
-    <li class="breadcrumb-item active">Client</li>
+    <li class="breadcrumb-item active">Clients</li>
 {% endblock breadcrumb %}
 
 {% block main_content %}
@@ -53,8 +53,8 @@
                     {   
                         data: 0,
                         render: function (data) {
-                            let links = '<a href="client/' + data + '/detail" title="Detail"><i class="far fa-eye"></i></a> | '+
-                                        '<a href="client/' + data + '/edit" title="Edit"><i class="far fa-edit"></i></a>';
+                            let links = '<a href="clients/' + data + '/detail" title="Detail"><i class="far fa-eye"></i></a> | '+
+                                        '<a href="clients/' + data + '/edit" title="Edit"><i class="far fa-edit"></i></a>';
 
                             return links;
                         },
