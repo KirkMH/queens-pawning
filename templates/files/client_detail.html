@@ -29,7 +29,7 @@
             </div>
             <div class="row mb-2">
                 <div class="col-lg-6 col-md-6 col-sm-6">
-                    <p class="card-text"><span class="text-muted">Date Registered: </span>{{ client.date_registered|naturalday|default:'-' }}</p>
+                    <p class="card-text"><span class="text-muted">Date Registered: </span>{{ client.date_registered|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
                 </div>
                 <div class="col-lg-6 col-md-6 col-sm-6">
                     <p class="card-text"><span class="text-muted">Status: </span>{{ client.status }}</p>
