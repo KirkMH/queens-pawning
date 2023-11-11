@@ -72,7 +72,15 @@ class Client(models.Model):
     # NOTE: should the branch where the client was registered matter?
 
     def __str__(self):
+        return self.full_name()
+
+    @property
+    def full_name(self):
         return f'{self.title} {self.last_name}, {self.first_name} {self.middle_name}'
+
+    @property
+    def id_info(self):
+        return f'{self.id_presented}-{self.id_number}'
 
     class Meta:
         ordering = ['last_name', 'first_name', 'middle_name']

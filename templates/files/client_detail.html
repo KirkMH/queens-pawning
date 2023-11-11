@@ -1,0 +1,73 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load humanize %}
+{% load form_tags %}
+
+{% block title %}Clients{% endblock title %}
+{% block page_title %}Client details{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'client_list' %}">Clients</a></li>
+    <li class="breadcrumb-item active">Details</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+    <div class="card m-4">
+        <div class="card-header">
+            <h3>{{ client.full_name }}</h3>
+            <h5 class="card-subtitle mb-2 text-muted">{{ client.address }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-lg-6 col-sm-12">
+                    <p class="card-text"><span class="text-muted">ID: </span>{{ client.id_info }}</p>
+                </div>
+                <div class="col-lg-6 col-sm-12">
+                    <p class="card-text"><span class="text-muted">Contact Info: </span>{{ client.contact_num }}</p>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-lg-6 col-md-6 col-sm-6">
+                    <p class="card-text"><span class="text-muted">Date Registered: </span>{{ client.date_registered|naturalday|default:'-' }}</p>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6">
+                    <p class="card-text"><span class="text-muted">Status: </span>{{ client.status }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <a href="{% url 'edit_client' client.pk %}" class="btn btn-warning card-link">Edit</a>
+                <a href="{% url 'client_list' %}" class="btn btn-default card-link">Back to list</a>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="card m-4">
+        <div class="card-header">
+            <h4>Client Ledger</h3>
+        </div>
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-12">
+                    <p class="card-text"><span class="text-muted">This feature is yet to be implemented.</span>
+                       <div class="ml-4 mr-4">
+                       </div>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock main_content %}
+
+
+{% block js %}
+    <script>
+        $(document).ready(function() {
+            $("#menu_records").addClass("active")
+        })
+    </script>
+{% endblock js %}

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django_serverside_datatable.views import ServerSideDatatableView
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, DetailView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 
@@ -51,6 +51,12 @@ class ClientUpdateView(SuccessMessageMixin, UpdateView):
     pk_url_kwarg = 'pk'
     success_url = reverse_lazy('client_list')
     success_message = "The client's record was updated successfully."
+
+
+class ClientDetailView(DetailView):
+    model = Client
+    template_name = "files/client_detail.html"
+    context_object_name = 'client'
 
 
 ###############################################################################################
