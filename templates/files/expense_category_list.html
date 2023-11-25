@@ -56,7 +56,13 @@
                         className: 'text-center'
                     },
                     {name: "category", data: 1},
-                    {name: "status", data: 2},
+                    {
+                        name: "status", 
+                        data: 2,
+                        render: function (data) {
+                            return (data && data[0].toUpperCase() + data.slice(1).toLowerCase()) || "";
+                        },
+                    },
                 ],
                 order: [[1, 'asc']],
             });

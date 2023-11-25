@@ -81,7 +81,13 @@
                     },
                     {name: "contact", data: 8},
                     {name: "registered", data: 9},
-                    {name: "status", data: 10},
+                    {
+                        name: "status", 
+                        data: 10,
+                        render: function (data) {
+                            return (data && data[0].toUpperCase() + data.slice(1).toLowerCase()) || "";
+                        },
+                    },
                 ],
                 order: [[1, 'asc']],
             });

@@ -64,7 +64,13 @@
                     {name: "vat", data: 3},
                     {name: "contact", data: 4},
                     {name: "days-open", data: 5},
-                    {name: "status", data: 6},
+                    {
+                        name: "status", 
+                        data: 6,
+                        render: function (data) {
+                            return (data && data[0].toUpperCase() + data.slice(1).toLowerCase()) || "";
+                        },
+                    },
                 ],
                 order: [[1, 'asc']],
             });
