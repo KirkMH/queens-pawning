@@ -1,0 +1,107 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load humanize %}
+{% load form_tags %}
+
+{% block title %}Other Fees{% endblock title %}
+{% block page_title %}Other Fees{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item active">Other Fees</li>
+{% endblock breadcrumb %}
+
+{% block wrapper %}
+<!-- Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <form action="{% url 'other_fees' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" id="fee_type" name="fee_type" />
+            <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            <p class="container">
+                <div class="row">
+                    <div class="col-12" id="fee_label">Other Fee</div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="input-group mb-3">
+                            <input type="number" class="form-control" id="fee_value" name="fee_value" style="text-align: right;" />
+                            <div class="input-group-append">
+                            <span class="input-group-text" id="value_symbol">%</span>
+                            </div>
+                        </div>
+
+                        
+                    </div>
+                </div>
+            </p>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock wrapper %}
+
+{% block main_content %}
+    <div class="card m-4">
+        <div class="card-header">
+            <p class="card-text text-muted">Click on the value to update.</p>
+        </div>
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-md-2 col-sm-4">
+                    <p class="card-text">Service Fee:</p>
+                </div>
+                <div class="col-md-10 col-sm-8">
+                    <p class="card-text"><button id="service_fee_val" class="btn btn-link btn-lg" onclick="openModal('service_fee')" >{{ service_fee|peso }}</button></p>
+                </div>
+            </div>
+
+            <div class="row mb-2">
+                <div class="col-md-2 col-sm-4">
+                    <p class="card-text">Advance Interest:</p>
+                </div>
+                <div class="col-md-10 col-sm-8">
+                    <p class="card-text"><button id="advance_interest_val" class="btn btn-link btn-lg"  onclick="openModal('advance_interest')" >{{ advance_interest|percentage }}</button></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock main_content %}
+
+
+{% block js %}
+    <script>
+
+        function openModal(feeType) {
+            const fee = $("#" + feeType + "_val").text()
+            let feeValue = parseFloat(fee.replace('₱ ', '').replace(' %', ''))
+            $("#modalTitle").text("Update " + feeType.replace("_", " "))
+            $("#fee_type").val(feeType)
+            $("#value_symbol").text((feeType == 'service_fee') ? ' ₱ ' : ' % ')
+            // convert feeType to capitalize first letter of each word
+            feeType = feeType.replace("_", " ")
+            feeType = feeType.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+            $("#fee_label").text(feeType)
+            $("#fee_value").val(feeValue)
+            $("#updateModal").modal("show")
+        }
+
+        $(document).ready(function() {
+            $("#menu_records").addClass("active")
+        })
+    </script>
+{% endblock js %}

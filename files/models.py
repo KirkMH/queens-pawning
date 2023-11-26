@@ -112,36 +112,26 @@ class InterestRate(models.Model):
         ordering = ['min_day']
 
 
-class ServiceFee(models.Model):
-    fee = models.DecimalField(
+class OtherFees(models.Model):
+    service_fee = models.DecimalField(
         _('Service Fee'),
         max_digits=6,
-        decimal_places=2
+        decimal_places=2,
+        default=0
     )
-    effectivity = models.DateField(
-        _('Effectivity Date')
+    advance_interest_rate = models.PositiveSmallIntegerField(
+        _('Advance Interest Rate (in percent)'),
+        default=0
     )
+
+    @classmethod
+    def get_instance(self):
+        # Assuming only one instance exists
+        instance, _ = self.objects.get_or_create(pk=1)
+        return instance
 
     def __str__(self):
-        return str(self.fee)
-
-    class Meta:
-        ordering = ['-effectivity']
-
-
-class AdvanceInterestRate(models.Model):
-    rate = models.PositiveSmallIntegerField(
-        _('Advance Interest Rate')
-    )
-    effectivity = models.DateField(
-        _('Effectivity Date')
-    )
-
-    def __str__(self):
-        return str(self.rate)
-
-    class Meta:
-        ordering = ['-effectivity']
+        return f'Service Fee: {self.service_fee} | Advance Interest Rate: {self.advance_interest_rate}%'
 
 
 class Maturity(models.Model):

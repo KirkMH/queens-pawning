@@ -28,4 +28,7 @@ urlpatterns = [
          name='new_branch'),
     path('branches/<int:pk>/edit',
          views.BranchUpdateView.as_view(), name='edit_branch'),
+
+    path('other-fees', views.other_fees,
+         name='other_fees'),
 ]

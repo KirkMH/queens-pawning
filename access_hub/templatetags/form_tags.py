@@ -3,9 +3,11 @@ from django.contrib.humanize.templatetags.humanize import intcomma
 
 register = template.Library()
 
+
 @register.filter
 def field_type(bound_field):
     return bound_field.field.widget.__class__.__name__
+
 
 @register.filter
 def input_class(bound_field):
@@ -17,6 +19,7 @@ def input_class(bound_field):
             css_class = 'is-valid'
     return 'form-control {}'.format(css_class)
 
+
 @register.filter
 def peso(amount):
     return '₱ ' + currency(amount)
@@ -26,6 +29,7 @@ def peso(amount):
     # else:
     #     return '₱ 0.00'
 
+
 @register.filter
 def seq_num(number):
     if number:
@@ -33,12 +37,14 @@ def seq_num(number):
     else:
         return ""
 
+
 @register.filter
 def percentage(value):
     if value:
-        return '{:.0%}'.format(value)
+        return f'{value} %'
     else:
-        return "0%"
+        return "0 %"
+
 
 @register.filter
 def currency(amount):

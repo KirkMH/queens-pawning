@@ -5,6 +5,8 @@ from django.views.generic import CreateView, UpdateView, DetailView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 
+from decimal import Decimal
+
 from .models import *
 from .forms import *
 
@@ -144,3 +146,34 @@ class BranchUpdateView(SuccessMessageMixin, UpdateView):
     pk_url_kwarg = 'pk'
     success_url = reverse_lazy('branch_list')
     success_message = "The branch information was updated successfully."
+
+
+###############################################################################################
+#                Other Fees
+###############################################################################################
+
+def other_fees(request):
+    other_fees = OtherFees.get_instance()
+    # check if post
+    if request.method == 'POST':
+        # get the form data
+        fee_type = request.POST.get('fee_type')
+        value = request.POST.get('fee_value')
+
+        # check if the values are valid
+        if value:
+            # update the values
+            if fee_type == 'service_fee':
+                other_fees.service_fee = Decimal(value)
+            else:
+                other_fees.advance_interest_rate = int(value)
+            other_fees.save()
+
+            # return to other fees page with success message
+            messages.success(request, "Other fees were updated successfully.")
+
+    context = {
+        'service_fee': other_fees.service_fee,
+        'advance_interest': other_fees.advance_interest_rate
+    }
+    return render(request, 'files/other_fees.html', context)
