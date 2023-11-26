@@ -134,34 +134,24 @@ class OtherFees(models.Model):
         return f'Service Fee: {self.service_fee} | Advance Interest Rate: {self.advance_interest_rate}%'
 
 
-class Maturity(models.Model):
-    days = models.PositiveSmallIntegerField(
-        _('Days to Maturity')
+class TermDuration(models.Model):
+    maturity = models.PositiveSmallIntegerField(
+        _('Days before Maturity'),
+        default=0
     )
-    effectivity = models.DateField(
-        _('Effectivity Date')
+    expiration = models.PositiveSmallIntegerField(
+        _('Days before Expiration'),
+        default=0
     )
+
+    @classmethod
+    def get_instance(self):
+        # Assuming only one instance exists
+        instance, _ = self.objects.get_or_create(pk=1)
+        return instance
 
     def __str__(self):
-        return str(self.days)
-
-    class Meta:
-        ordering = ['-effectivity']
-
-
-class Expiration(models.Model):
-    days = models.PositiveSmallIntegerField(
-        _('Days to Expiration')
-    )
-    effectivity = models.DateField(
-        _('Effectivity Date')
-    )
-
-    def __str__(self):
-        return str(self.days)
-
-    class Meta:
-        ordering = ['-effectivity']
+        return f'Maturity: {self.maturity} days | Expiration: {self.expiration} days'
 
 
 class ExpenseCategory(models.Model):

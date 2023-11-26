@@ -31,4 +31,6 @@ urlpatterns = [
 
     path('other-fees', views.other_fees,
          name='other_fees'),
+    path('term-duration', views.term_duration,
+         name='term_duration'),
 ]

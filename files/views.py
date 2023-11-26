@@ -177,3 +177,35 @@ def other_fees(request):
         'advance_interest': other_fees.advance_interest_rate
     }
     return render(request, 'files/other_fees.html', context)
+
+
+###############################################################################################
+#                Term Duration
+###############################################################################################
+
+def term_duration(request):
+    term_duration = TermDuration.get_instance()
+    # check if post
+    if request.method == 'POST':
+        # get the form data
+        type = request.POST.get('type')
+        value = request.POST.get('value')
+
+        # check if the values are valid
+        if value:
+            # update the values
+            if type == 'maturity':
+                term_duration.maturity = int(value)
+            else:
+                term_duration.expiration = int(value)
+            term_duration.save()
+
+            # return to other fees page with success message
+            messages.success(
+                request, "Term duration was updated successfully.")
+
+    context = {
+        'maturity': term_duration.maturity,
+        'expiration': term_duration.expiration
+    }
+    return render(request, 'files/term_duration.html', context)
