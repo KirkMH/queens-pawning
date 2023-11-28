@@ -200,7 +200,6 @@ def term_duration(request):
                 term_duration.expiration = int(value)
             term_duration.save()
 
-            # return to other fees page with success message
             messages.success(
                 request, "Term duration was updated successfully.")
 
@@ -209,3 +208,38 @@ def term_duration(request):
         'expiration': term_duration.expiration
     }
     return render(request, 'files/term_duration.html', context)
+
+
+###############################################################################################
+#                Interest Rates
+###############################################################################################
+
+def interest_rate(request):
+    # check if post
+    if request.method == 'POST':
+        # get the form data
+        min_days = request.POST.getlist('min_days[]')
+        rate = request.POST.getlist('rate[]')
+        approval_required = request.POST.getlist('approval_required[]')
+
+        if len(min_days) > 0 and (len(min_days) == len(rate) == len(approval_required)):
+            print(min_days, rate, approval_required)
+            # clear contents of InterestRate model
+            InterestRate.objects.all().delete()
+
+            # insert each element
+            for i in range(len(min_days)):
+                InterestRate.objects.create(
+                    min_day=int(min_days[i]),
+                    interest_rate=int(rate[i]),
+                    approval_required=(approval_required[i] == '1')
+                )
+
+            messages.success(
+                request, "Interest rates was updated successfully.")
+
+    rates = InterestRate.objects.all()
+    context = {
+        'interest_rates': rates
+    }
+    return render(request, 'files/interest_rate.html', context)

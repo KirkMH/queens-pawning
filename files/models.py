@@ -96,20 +96,16 @@ class InterestRate(models.Model):
         _('Minimum Days'),
         null=False, blank=False
     )
-    max_day = models.PositiveSmallIntegerField(
-        _('Maximum Days'),
-        null=False, blank=False
-    )
     approval_required = models.BooleanField(
         _('Approval required?'),
         default=False
     )
 
     def __str__(self):
-        return f'{self.min_day} - {self.max_day} days: {self.interest_rate}%'
+        return f'From {self.min_day} days: {self.interest_rate}%'
 
     class Meta:
-        ordering = ['min_day']
+        ordering = ['approval_required', 'min_day']
 
 
 class OtherFees(models.Model):

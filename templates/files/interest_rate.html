@@ -1,0 +1,83 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load humanize %}
+{% load form_tags %}
+
+{% block title %}Interest Rates{% endblock title %}
+{% block page_title %}Interest Rates{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item active">Interest Rates</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+<form action="{% url 'interest_rates' %}" method="POST">
+    {% csrf_token %}
+    <div class="card m-4">
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Min Days</th>
+                                <th>Interest Rate (%)</th>
+                                <th>Approval Required</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ir in interest_rates %}
+                                <tr>
+                                    <td><button type="button" class="btn btn-outline btn-sm btn-danger" onclick="remove(this)">&times;</button></td>
+                                    <td><input type="number" class="form-control" name="min_days[]" value="{{ ir.min_day }}" /></td>
+                                    <td><input type="number" class="form-control" name="rate[]" value="{{ ir.interest_rate }}" /></td>
+                                    <td>
+                                        <select class="form-control" name="approval_required[]">
+                                            <option value="0" {% if not ir.approval_required %}selected{% endif %}>No</option>
+                                            <option value="1" {% if ir.approval_required %}selected{% endif %}>Yes</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                    </table>
+                    <button type="button" class="btn btn-outline btn-sm btn-success" onclick="add()">Add</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+    </div>
+</form>
+
+{% endblock main_content %}
+
+
+{% block js %}
+    <script>
+
+        function add() {
+            let table = document.querySelector("table");
+            let row = table.insertRow(-1);
+            let cell1 = row.insertCell(0);
+            let cell2 = row.insertCell(1);
+            let cell3 = row.insertCell(2);
+            let cell4 = row.insertCell(-1);
+            cell1.innerHTML = '<button type="button" class="btn btn-outline btn-sm btn-danger" onclick="remove(this)">&times;</button>';
+            cell2.innerHTML = '<input type="number" class="form-control" name="min_days[]" />';
+            cell3.innerHTML = '<input type="number" class="form-control" name="rate[]" />';
+            cell4.innerHTML = '<select class="form-control" name="approval_required[]"><option value="0" selected >No</option><option value="1" >Yes</option></select>';
+        }
+
+        function remove(btn) {
+            let row = btn.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+
+        $(document).ready(function() {
+            $("#menu_records").addClass("active")
+        })
+    </script>
+{% endblock js %}
