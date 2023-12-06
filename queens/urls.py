@@ -20,4 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('files/', include('files.urls')),
     path('', include('access_hub.urls')),
+    path('pawn/', include('pawn.urls')),
 ]
