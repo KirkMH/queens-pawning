@@ -32,9 +32,8 @@ class Pawn(models.Model):
         on_delete=models.CASCADE,
         null=False, blank=False
     )
-    description = models.CharField(
+    description = models.TextField(
         _('Description'),
-        max_length=255,
         null=False, blank=False
     )
     principal = models.DecimalField(
@@ -68,7 +67,8 @@ class Pawn(models.Model):
         default=ACTIVE,
         null=False, blank=False
     )
-    status_updated_on = models.DateTimeField(auto_now=True)
+    status_updated_on = models.DateTimeField()
 
+    objects = models.Manager()
     history = HistoricalRecords()
     Inventory = Inventory()

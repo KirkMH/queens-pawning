@@ -3,5 +3,8 @@ from . import views
 
 
 urlpatterns = [
-    # path('', views., name=''),
+    path('', views.pawn_list, name='pawn_list'),
+    path('dt_list/', views.PawnDTListView.as_view(), name='pawn_dtlist'),
+    path('new/', views.PawnCreateView.as_view(), name='new_pawn'),
+
 ]

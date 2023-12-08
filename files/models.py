@@ -72,7 +72,7 @@ class Client(models.Model):
     # NOTE: should the branch where the client was registered matter?
 
     def __str__(self):
-        return self.full_name()
+        return self.full_name
 
     @property
     def full_name(self):

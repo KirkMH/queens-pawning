@@ -1,0 +1,112 @@
+{% extends '../base.html' %}
+
+{% block extra_header %}
+{% include '../includes/datatable.html' %}    
+{% endblock extra_header %}
+
+{% block title %}Pawns{% endblock title %}
+{% block page_title %}Pawns{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item active">Pawns</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+<div class="card m-4">
+    <form method="get">
+        <div class="card-header">
+            <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                <a href="{% url 'new_pawn' %}" class="btn btn-primary">New</a>
+            </div>
+            </div>
+        </div>
+    </form>
+    <div class="card-body table-responsive">
+        <table id="table" class="table table-hover table-head-fixed table-sm">
+            <thead>
+                <tr>
+                    <th class="text-center" width="10%">Action</th>
+                    <th class="text-center">Date</th>
+                    <th class="text-center">Client</th>
+                    <th class="text-center">Description</th>
+                    <th class="text-center">Principal</th>
+                    <th class="text-center">Service Charge</th>
+                    <th class="text-center">Advance Interest</th>
+                    <th class="text-center">Net Proceeds</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+{% endblock main_content %}
+
+
+{% block js %}
+    <script>
+        $(document).ready(function() {
+            $("#table").DataTable({
+                serverSide: true,
+                sAjaxSource: "{% url 'pawn_dtlist' %}", 
+                columns: [
+                    {   
+                        name: 'action',
+                        data: 0,
+                        render: function (data) {
+                            let links = '<a href="#" title="Detail"><i class="far fa-eye"></i></a> | '+
+                                        '<a href="#" title="History"><i class="far fa-history"></i></a> | '+
+                                        '<a href="#" title="Edit"><i class="far fa-edit"></i></a>';
+
+                            return links;
+                        },
+                        className: 'text-center'
+                    },
+                    {name: "date", data: 1},
+                    {name: "client", data: 2},
+                    {name: "description", data: 3},
+                    {
+                        name: "principal", 
+                        data: 4,
+                        render: function (data) {
+                            return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
+                        }
+                    },
+                    {
+                        name: "serviceCharge", 
+                        data: 5,
+                        render: function (data) {
+                            return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
+                        }
+                    },
+                    {
+                        name: "advanceInterest", 
+                        data: 6,
+                        render: function (data) {
+                            return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
+                        }
+                    },
+                    {
+                        name: "net", 
+                        data: 7,
+                        render: function (data) {
+                            return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
+                        },
+                    },
+                    {
+                        name: "status", 
+                        data: 8,
+                        render: function (data) {
+                            return (data && data[0].toUpperCase() + data.slice(1).toLowerCase()) || "";
+                        },
+                    },
+                ],
+                order: [[1, 'asc']],
+            });
+            
+            $("#menu-transactions").addClass("active")
+        })
+    </script>
+{% endblock js %}
