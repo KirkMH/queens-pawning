@@ -7,6 +7,7 @@ from django.contrib import messages
 
 from decimal import Decimal
 
+from files.models import OtherFees
 from .models import *
 from .forms import *
 
@@ -31,11 +32,17 @@ class PawnCreateView(CreateView):
     form_class = PawnForm
     template_name = 'pawn/pawn_form.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['otherFees'] = OtherFees.get_instance()
+        return context
+
     def post(self, request, *args, **kwargs):
         form = PawnForm(request.POST)
         if form.is_valid():
-            form.save(commit=True)
-            messages.success(request, f"Pawn Ticket was created successfully.")
+            saved = form.save(commit=True)
+            messages.success(
+                request, f"New pawn ticket for {saved.client} was created successfully.")
             if "another" in request.POST:
                 return redirect('new_pawn')
             else:

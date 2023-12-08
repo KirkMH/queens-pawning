@@ -67,7 +67,7 @@ class Pawn(models.Model):
         default=ACTIVE,
         null=False, blank=False
     )
-    status_updated_on = models.DateTimeField()
+    status_updated_on = models.DateTimeField(null=True, blank=True)
 
     objects = models.Manager()
     history = HistoricalRecords()

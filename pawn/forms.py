@@ -6,6 +6,7 @@ from django.db.models.base import Model
 from django.forms.utils import ErrorList
 from django.utils.translation import gettext_lazy as _
 from .models import *
+from files.models import OtherFees
 
 
 ############################
@@ -13,12 +14,17 @@ from .models import *
 ############################
 class PawnForm(forms.ModelForm):
     required_css_class = 'required'
-    clients = forms.ModelChoiceField(queryset=Client.objects.all())
 
     class Meta:
         model = Pawn
-        fields = '__all__'
+        exclude = ('status', 'date', 'status_updated_on', )
 
     def __init__(self, *args, **kwards):
         super().__init__(*args, **kwards)
         self.fields['client'].queryset = Client.objects.filter(status='ACTIVE')
+        # self.fields['service_charge'].widget.attrs['disabled'] = True
+        # self.fields['advance_interest'].widget.attrs['disabled'] = True
+        # self.fields['net_proceeds'].widget.attrs['disabled'] = True
+        # self.fields['service_charge'].widget.attrs['required'] = False
+        # self.fields['advance_interest'].widget.attrs['required'] = False
+        # self.fields['net_proceeds'].widget.attrs['required'] = False

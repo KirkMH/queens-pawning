@@ -57,14 +57,20 @@
                         data: 0,
                         render: function (data) {
                             let links = '<a href="#" title="Detail"><i class="far fa-eye"></i></a> | '+
-                                        '<a href="#" title="History"><i class="far fa-history"></i></a> | '+
+                                        '<a href="#" title="History"><i class="fa fa-history"></i></a> | '+
                                         '<a href="#" title="Edit"><i class="far fa-edit"></i></a>';
 
                             return links;
                         },
                         className: 'text-center'
                     },
-                    {name: "date", data: 1},
+                    {
+                        name: "date", 
+                        data: 1,
+                        render: function (data) {
+                            return moment(data).format("MMM DD, YYYY");
+                        }
+                    },
                     {name: "client", data: 2},
                     {name: "description", data: 3},
                     {
@@ -72,21 +78,24 @@
                         data: 4,
                         render: function (data) {
                             return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
-                        }
+                        },
+                        "className": "text-right"
                     },
                     {
                         name: "serviceCharge", 
                         data: 5,
                         render: function (data) {
                             return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
-                        }
+                        },
+                        "className": "text-right"
                     },
                     {
                         name: "advanceInterest", 
                         data: 6,
                         render: function (data) {
                             return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
-                        }
+                        },
+                        "className": "text-right"
                     },
                     {
                         name: "net", 
@@ -94,13 +103,14 @@
                         render: function (data) {
                             return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
                         },
+                        "className": "text-right"
                     },
                     {
                         name: "status", 
                         data: 8,
                         render: function (data) {
                             return (data && data[0].toUpperCase() + data.slice(1).toLowerCase()) || "";
-                        },
+                        }
                     },
                 ],
                 order: [[1, 'asc']],

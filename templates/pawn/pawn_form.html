@@ -41,7 +41,7 @@ New Pawn
 
             <div class="card-body">
                 <div class="col-12">
-                    {% include '../includes/form.html' %}
+                    {% include '../includes/form_one_col.html' %}
                 </div>
             </div>
             
@@ -63,6 +63,22 @@ New Pawn
     <script>
         $(document).ready(function() {
             const id = "{{ client.id }}" || null;
+            const serviceCharge = parseFloat("{{ otherFees.service_fee }}") || 0;
+            const advanceInterest = (parseFloat("{{ otherFees.advance_interest_rate }}") || 0) / 100;
+
+            // set the service charge and advance interest
+            $("#id_service_charge").val(serviceCharge.toFixed(2));
+
+            function computeNetProceeds() {
+                const principal = parseFloat($("#id_principal").val()) || 0;
+                const advInt = principal * advanceInterest;
+                const netProceeds = principal - serviceCharge - advInt;
+                $("#id_advance_interest").val(advInt.toFixed(2));
+                $("#id_net_proceeds").val(netProceeds.toFixed(2));
+            }
+            // call computeNetProceeds() when principal is changed
+            $("#id_principal").on("keyup", computeNetProceeds);
+
             // if id is not null, then assign client to the dropdown list
 
             $("#menu-transactions").addClass("active")
