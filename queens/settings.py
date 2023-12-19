@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 import dj_database_url
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,7 @@ SECRET_KEY = 'django-insecure-byymhw3qn*@+1!&yv47hzoz5_$nfe@&kf%l)0vgqbw4$$av%+i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.vercel.app']
+ALLOWED_HOSTS = ['*', '.vercel.app']
 
 
 # Application definition
@@ -87,25 +88,38 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'queens.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
+# https://medium.com/@carzam87/how-to-deploy-a-django-app-using-mysql-to-vercel-88850b8abfbe
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django_queens',
-        'USER': 'root',
-        'PASSWORD': 'p@$$w0rD',
-        'HOST': 'localhost'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+# DATABASES['default'] = dj_database_url.config(
+#     conn_max_age=600, ssl_require=True)
+# DATABASES['default']['OPTIONS']['charset'] = 'utf8mb4'
+# del DATABASES['default']['OPTIONS']['sslmode']
+# DATABASES['default']['OPTIONS']['ssl'] = {
+#     'ca': os.environ.get('MYSQL_ATTR_SSL_CA')}
 
-# as per instructions from https://www.codementor.io/@jamesezechukwu/how-to-deploy-django-app-on-heroku-dtsee04d4
-# ----------------------------------------------------------------------------
-prod_db = dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(prod_db)
-# ----------------------------------------------------------------------------
+# # Database
+# # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'django_queens',
+#         'USER': 'root',
+#         'PASSWORD': 'p@$$w0rD',
+#         'HOST': 'localhost'
+#     }
+# }
+
+# # as per instructions from https://www.codementor.io/@jamesezechukwu/how-to-deploy-django-app-on-heroku-dtsee04d4
+# # ----------------------------------------------------------------------------
+# prod_db = dj_database_url.config(conn_max_age=500)
+# DATABASES['default'].update(prod_db)
+# # ----------------------------------------------------------------------------
 
 
 # Password validation
