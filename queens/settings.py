@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-byymhw3qn*@+1!&yv47hzoz5_$nfe@&kf%l)0vgqbw4$$av%+i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.vercel.app']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -90,10 +90,10 @@ WSGI_APPLICATION = 'queens.wsgi.application'
 
 # https://medium.com/@carzam87/how-to-deploy-a-django-app-using-mysql-to-vercel-88850b8abfbe
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 # DATABASES['default'] = dj_database_url.config(
 #     conn_max_age=600, ssl_require=True)
