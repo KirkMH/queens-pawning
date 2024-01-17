@@ -43,13 +43,13 @@ class Pawn(models.Model):
         null=False, blank=False
     )
     service_charge = models.DecimalField(
-        _('Service Charge'),
+        _('LESS: Service Charge'),
         max_digits=10,
         decimal_places=2,
         null=False, blank=False
     )
     advance_interest = models.DecimalField(
-        _('Advance Interest'),
+        _('LESS: Advance Interest'),
         max_digits=10,
         decimal_places=2,
         null=False, blank=False

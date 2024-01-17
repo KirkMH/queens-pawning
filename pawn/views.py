@@ -52,14 +52,19 @@ class PawnCreateView(CreateView):
             return render(request, 'pawn/pawn_form.html', {'form': form})
 
 
-# class PawnUpdateView(SuccessMessageMixin, UpdateView):
-#     model = Pawn
-#     context_object_name = 'Pawn'
-#     form_class = PawnForm
-#     template_name = "pawn/pawn_form.html"
-#     pk_url_kwarg = 'pk'
-#     success_url = reverse_lazy('pawn_list')
-#     success_message = "The Pawn's record was updated successfully."
+class PawnUpdateView(SuccessMessageMixin, UpdateView):
+    model = Pawn
+    context_object_name = 'pawn'
+    form_class = PawnForm
+    template_name = "pawn/pawn_form.html"
+    pk_url_kwarg = 'pk'
+    success_url = reverse_lazy('pawn_list')
+    success_message = "The Pawn's record was updated successfully."
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['otherFees'] = OtherFees.get_instance()
+        return context
 
 
 # class PawnDetailView(DetailView):

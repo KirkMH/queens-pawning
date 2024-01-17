@@ -18,7 +18,7 @@ New Pawn
 
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'client_list' %}">Pawns</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'pawn_list' %}">Pawns</a></li>
     <li class="breadcrumb-item active">
         
         {% if pawn %}
@@ -40,11 +40,13 @@ New Pawn
             </div>
 
             <div class="card-body">
+                {% if not pawn %}
                 <div class="row">
                     <div class="col-6">
                         <a href="{% url 'new_client' %}" class="btn btn-outline-warning" style="float: right;">New Client</a>
                     </div>
                 </div>
+                {% endif %}
                 <div class="row">
                     <div class="col-12">
                         {% include '../includes/form_one_col.html' %}

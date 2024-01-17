@@ -58,7 +58,7 @@
                         render: function (data) {
                             let links = '<a href="#" title="Detail"><i class="far fa-eye"></i></a> | '+
                                         '<a href="#" title="History"><i class="fa fa-history"></i></a> | '+
-                                        '<a href="#" title="Edit"><i class="far fa-edit"></i></a>';
+                                        `<a href="/pawn/${data}/edit" title="Edit"><i class="far fa-edit"></i></a>`;
 
                             return links;
                         },
@@ -77,7 +77,7 @@
                         name: "principal", 
                         data: 4,
                         render: function (data) {
-                            return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
+                            return data.toLocaleString('en-US', {style: 'currency', useGrouping: true});
                         },
                         "className": "text-right"
                     },
