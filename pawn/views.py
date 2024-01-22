@@ -67,7 +67,7 @@ class PawnUpdateView(SuccessMessageMixin, UpdateView):
         return context
 
 
-# class PawnDetailView(DetailView):
-#     model = Pawn
-#     template_name = "files/pawn_detail.html"
-#     context_object_name = 'Pawn'
+class PawnDetailView(DetailView):
+    model = Pawn
+    template_name = "pawn/pawn_detail.html"
+    context_object_name = 'pawn'

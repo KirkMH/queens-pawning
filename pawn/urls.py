@@ -8,5 +8,6 @@ urlpatterns = [
     path('new/', views.PawnCreateView.as_view(), name='new_pawn'),
     path('<int:pk>/edit',
          views.PawnUpdateView.as_view(), name='edit_pawn'),
-
+    path('<int:pk>/detail',
+         views.PawnDetailView.as_view(), name='pawn_detail'),
 ]

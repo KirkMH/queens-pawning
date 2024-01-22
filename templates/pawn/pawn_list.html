@@ -28,6 +28,7 @@
             <thead>
                 <tr>
                     <th class="text-center" width="10%">Action</th>
+                    <th class="text-center">PTN</th>
                     <th class="text-center">Date</th>
                     <th class="text-center">Client</th>
                     <th class="text-center">Description</th>
@@ -56,13 +57,20 @@
                         name: 'action',
                         data: 0,
                         render: function (data) {
-                            let links = '<a href="#" title="Detail"><i class="far fa-eye"></i></a> | '+
+                            let links = `<a href="/pawn/${data}/detail" title="Detail"><i class="far fa-eye"></i></a> | ` +
                                         '<a href="#" title="History"><i class="fa fa-history"></i></a> | '+
                                         `<a href="/pawn/${data}/edit" title="Edit"><i class="far fa-edit"></i></a>`;
 
                             return links;
                         },
                         className: 'text-center'
+                    },
+                    {
+                        name: 'ptn',
+                        data: 0,
+                        render: function (data) {
+                            return String(data).padStart(8, '0');
+                        }
                     },
                     {
                         name: "date", 

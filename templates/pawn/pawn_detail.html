@@ -1,0 +1,71 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load humanize %}
+{% load form_tags %}
+
+{% block title %}Pawns{% endblock title %}
+{% block page_title %}Pawn details{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'pawn_list' %}">Pawns</a></li>
+    <li class="breadcrumb-item active">Details</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+    <div class="card m-4">
+        <div class="card-header">
+            <h3>Pawn Ticket # {{ pawn.id|stringformat:"08d" }}</h3>
+            <hr />
+            <h4>{{ pawn.description }}</h4>
+            <h5 class="card-subtitle mb-2 text-muted">Under {{ pawn.client }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-lg-6 col-sm-12">
+                    <p class="card-text"><span class="text-muted">Principal: </span>{{ pawn.principal|peso }}</p>
+                    <p class="card-text"><span class="text-muted">LESS Service Charge: </span>{{ pawn.service_charge|peso }}</p>
+                    <p class="card-text"><span class="text-muted">LESS Advance Interest: </span>{{ pawn.advance_interest|peso }}</p>
+                    <p class="card-text"><span class="text-muted">NET PROCEEDS: </span><span class="h4">{{ pawn.net_proceeds|peso }}</span></p>
+                </div>
+                <div class="col-lg-6 col-sm-12">
+                    <p class="card-text"><span class="text-muted">Date Created: </span>{{ pawn.date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
+                    <p class="card-text"><span class="text-muted">Status: </span>{{ pawn.status }}</p>
+                    {% if pawn.staus == 'RENEWED' %}
+                    <p class="card-text"><a href="#">Renewed ticket link</a></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <a href="{% url 'edit_pawn' pawn.pk %}" class="btn btn-warning card-link">Edit</a>
+                <a href="{% url 'pawn_list' %}" class="btn btn-default card-link">Back to list</a>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="card m-4">
+        <div class="card-header">
+            <h3>Repayment Records</h3>
+        </div>
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col">
+                    No records found.
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock main_content %}
+
+
+{% block js %}
+    <script>
+        $(document).ready(function() {
+            $("#menu_transactions").addClass("active")
+        })
+    </script>
+{% endblock js %}
