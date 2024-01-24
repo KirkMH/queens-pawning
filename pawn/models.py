@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
@@ -72,3 +73,34 @@ class Pawn(models.Model):
     objects = models.Manager()
     history = HistoricalRecords()
     Inventory = Inventory()
+
+    def getPayments(self):
+        return Payment.objects.filter(pawn=self)
+
+    def getTotalPaid(self):
+        return self.getPayments().aggregate(total=Sum('amount'))['total']
+
+    def getBalance(self):
+        return self.principal - self.getTotalPaid()
+
+
+class Payment(models.Model):
+    date = models.DateTimeField(auto_now_add=True)
+    pawn = models.ForeignKey(
+        Pawn,
+        on_delete=models.CASCADE,
+        null=False, blank=False
+    )
+    amount_paid = models.DecimalField(
+        _('Amount Paid'),
+        max_digits=10,
+        decimal_places=2,
+        null=False, blank=False
+    )
+    balance = models.DecimalField(
+        _('Balance'),
+        max_digits=10,
+        decimal_places=2,
+        null=False, blank=False
+    )
+    # TODO: add cashier
