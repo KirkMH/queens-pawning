@@ -8,3 +8,7 @@ function formatDate(date) {
     var strTime = hours + ':' + minutes + ' ' + ampm;
     return (date.getMonth()+1) + "/" + date.getDate() + "/" + date.getFullYear() + "  " + strTime;
 }
+
+function formatDateMMMddYYYY(date) {
+    return moment(date).format("MMM DD, YYYY");
+}

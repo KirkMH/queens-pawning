@@ -23,8 +23,8 @@ def pawn_list(request):
 class PawnDTListView(ServerSideDatatableView):
     queryset = Pawn.objects.all()
     columns = ['pk', 'date', 'client', 'description', 'principal',
-               'service_charge', 'advance_interest', 'net_proceeds', 'status']
-    foreign_fields = {'client': 'client__first_name'}
+               'service_charge', 'advance_interest', 'net_proceeds', 'status',
+               'client__title', 'client__last_name', 'client__first_name', 'client__middle_name']
 
 
 class PawnCreateView(CreateView):
@@ -46,7 +46,7 @@ class PawnCreateView(CreateView):
             if "another" in request.POST:
                 return redirect('new_pawn')
             else:
-                return redirect('pawn_list')
+                return redirect('pawn_detail', pk=saved.pk)
 
         else:
             return render(request, 'pawn/pawn_form.html', {'form': form})

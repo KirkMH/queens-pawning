@@ -1,4 +1,5 @@
 {% extends '../base.html' %}
+{% load static %}
 
 {% block extra_header %}
 {% include '../includes/datatable.html' %}    
@@ -47,6 +48,8 @@
 
 
 {% block js %}
+<script src="{% static 'js/currency-format.js' %}"></script>
+<script src="{% static 'js/date-format.js' %}"></script>
     <script>
         $(document).ready(function() {
             $("#table").DataTable({
@@ -58,7 +61,6 @@
                         data: 0,
                         render: function (data) {
                             let links = `<a href="/pawn/${data}/detail" title="Detail"><i class="far fa-eye"></i></a> | ` +
-                                        '<a href="#" title="History"><i class="fa fa-history"></i></a> | '+
                                         `<a href="/pawn/${data}/edit" title="Edit"><i class="far fa-edit"></i></a>`;
 
                             return links;
@@ -76,16 +78,22 @@
                         name: "date", 
                         data: 1,
                         render: function (data) {
-                            return moment(data).format("MMM DD, YYYY");
+                            return formatDateMMMddYYYY(data);
                         }
                     },
-                    {name: "client", data: 2},
+                    {
+                        name: "client", 
+                        data: null,
+                        render: function (data) {
+                            return `${data[9]} ${data[10]}, ${data[11]} ${data[12]}`.toUpperCase();
+                        }
+                    },
                     {name: "description", data: 3},
                     {
                         name: "principal", 
                         data: 4,
                         render: function (data) {
-                            return data.toLocaleString('en-US', {style: 'currency', useGrouping: true});
+                            return peso.format(data);
                         },
                         "className": "text-right"
                     },
@@ -93,7 +101,7 @@
                         name: "serviceCharge", 
                         data: 5,
                         render: function (data) {
-                            return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
+                            return peso.format(data);
                         },
                         "className": "text-right"
                     },
@@ -101,7 +109,7 @@
                         name: "advanceInterest", 
                         data: 6,
                         render: function (data) {
-                            return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
+                            return peso.format(data);
                         },
                         "className": "text-right"
                     },
@@ -109,7 +117,7 @@
                         name: "net", 
                         data: 7,
                         render: function (data) {
-                            return data.toLocaleString('en-PH', {style: 'currency', currency: 'PHP'});
+                            return peso.format(data);
                         },
                         "className": "text-right"
                     },
