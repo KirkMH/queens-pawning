@@ -8,6 +8,9 @@
   <title>{% block title %}{% endblock %} | VB Queen's</title>
   <link rel="icon" href="{% static 'img/logo.jpg' %}">
 
+  
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Bootstrap 4 -->
@@ -23,10 +26,6 @@
   <!-- DataTable buttons -->
   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css">
   {% block css %}{% endblock css %}
-  
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    
   {% block extra_header %}{% endblock extra_header %}  
     
 </head>
@@ -110,6 +109,7 @@
 <script type="text/javascript" src="https://momentjs.com/downloads/moment.min.js"></script>
 
 <!-- DataTables -->
+<script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.11.5/sorting/formatted-numbers.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
 
