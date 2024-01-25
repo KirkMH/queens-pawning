@@ -173,13 +173,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# the login route/URL
-LOGIN_URL = 'login'
-# which route to take after logging in
-LOGIN_REDIRECT_URL = 'login_check'
-# which route to take after logging out
-LOGOUT_REDIRECT_URL = 'login'
-
 # other settings required by check --deploy
 # SECURE_SSL_REDIRECT = True
 CSRF_COOKIE_SECURE = True
