@@ -36,7 +36,8 @@
         <!-- Greeting section -->
         <div class="row mb-2">
           <div class="col-12">
-            <h5>{{ greeting }}</h5>
+            <h5>Welcome back, {{ request.user.username|title }}!</h5>
+            <a href="{% url 'logout' %}" class="btn btn-sm btn-danger">Logout</a>
           </div>
         </div>
         <!-- Small boxes (Stat box) -->
