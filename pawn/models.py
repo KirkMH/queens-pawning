@@ -81,6 +81,9 @@ class Pawn(models.Model):
     history = HistoricalRecords()
     Inventory = Inventory()
 
+    def __str__(self):
+        return f"{self.description} by {self.client}"
+
     def getPayments(self):
         return Payment.objects.filter(pawn=self)
 
@@ -116,3 +119,6 @@ class Payment(models.Model):
         on_delete=models.CASCADE,
         null=False, blank=False
     )
+
+    def __str__(self):
+        return f"{self.pawn} - {self.amount_paid} by {self.cashier} on {self.date}"
