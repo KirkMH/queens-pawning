@@ -9,6 +9,7 @@ from decimal import Decimal
 
 from .models import *
 from .forms import *
+from access_hub.models import Employee
 
 
 ###############################################################################################
@@ -24,6 +25,10 @@ class ClientDTListView(ServerSideDatatableView):
     columns = ['pk', 'title', 'last_name', 'first_name', 'middle_name', 'address',
                'id_presented', 'id_number', 'contact_num', 'date_registered', 'status']
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(branch=Employee.objects.get(user=self.request.user).branch)
+
 
 class ClientCreateView(CreateView):
     model = Client
@@ -34,6 +39,7 @@ class ClientCreateView(CreateView):
         form = ClientForm(request.POST)
         if form.is_valid():
             saved = form.save()
+            saved.branch = Employee.objects.get(user=request.user).branch
             saved.save()
             messages.success(request, f"{saved} was created successfully.")
             if "another" in request.POST:

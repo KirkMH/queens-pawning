@@ -69,7 +69,12 @@ class Client(models.Model):
         choices=STATUS,
         default=ACTIVE
     )
-    # NOTE: should the branch where the client was registered matter?
+    branch = models.ForeignKey(
+        "Branch",
+        on_delete=models.CASCADE,
+        related_name='clients',
+        null=True, blank=True
+    )
 
     def __str__(self):
         return self.full_name
@@ -169,6 +174,7 @@ class ExpenseCategory(models.Model):
 
     class Meta:
         ordering = ['category']
+        verbose_name_plural = 'Expense categories'
 
 
 class Branch(models.Model):
@@ -209,3 +215,4 @@ class Branch(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name_plural = 'Branches'
