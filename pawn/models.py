@@ -3,7 +3,8 @@ from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
-from files.models import Client
+from files.models import Client, Branch
+from access_hub.models import Employee
 
 
 class Inventory(models.Manager):
@@ -69,6 +70,12 @@ class Pawn(models.Model):
         null=False, blank=False
     )
     status_updated_on = models.DateTimeField(null=True, blank=True)
+    branch = models.ForeignKey(
+        Branch,
+        related_name='pawn_branch',
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
 
     objects = models.Manager()
     history = HistoricalRecords()
@@ -97,10 +104,15 @@ class Payment(models.Model):
         decimal_places=2,
         null=False, blank=False
     )
-    balance = models.DecimalField(
-        _('Balance'),
+    paid_for_principal = models.DecimalField(
+        _('Paid for Principal'),
         max_digits=10,
         decimal_places=2,
         null=False, blank=False
     )
-    # TODO: add cashier
+    cashier = models.ForeignKey(
+        Employee,
+        related_name='payment_cashier',
+        on_delete=models.CASCADE,
+        null=False, blank=False
+    )

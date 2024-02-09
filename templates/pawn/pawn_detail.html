@@ -29,6 +29,7 @@
                     <p class="card-text"><span class="text-muted">NET PROCEEDS: </span><span class="h4">{{ pawn.net_proceeds|peso }}</span></p>
                 </div>
                 <div class="col-lg-6 col-sm-12">
+                    <p class="card-text"><span class="text-muted">Branch: </span>{{ pawn.branch }}</p>
                     <p class="card-text"><span class="text-muted">Date Created: </span>{{ pawn.date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
                     <p class="card-text"><span class="text-muted">Status: </span>{{ pawn.status }}</p>
                     {% if pawn.staus == 'RENEWED' %}

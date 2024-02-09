@@ -7,8 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
-from decimal import Decimal
-
+from access_hub.models import Employee
 from files.models import OtherFees
 from .models import *
 from .forms import *
@@ -30,6 +29,9 @@ class PawnDTListView(ServerSideDatatableView):
                'service_charge', 'advance_interest', 'net_proceeds', 'status',
                'client__title', 'client__last_name', 'client__first_name', 'client__middle_name']
 
+    def get_queryset(self):
+        return super().get_queryset().filter(branch=Employee.objects.get(user=self.request.user).branch)
+
 
 @method_decorator(login_required, name='dispatch')
 class PawnCreateView(CreateView):
@@ -45,7 +47,9 @@ class PawnCreateView(CreateView):
     def post(self, request, *args, **kwargs):
         form = PawnForm(request.POST)
         if form.is_valid():
-            saved = form.save(commit=True)
+            saved = form.save(commit=False)
+            saved.branch = Employee.objects.get(user=request.user).branch
+            saved.save()
             messages.success(
                 request, f"New pawn ticket for {saved.client} was created successfully.")
             if "another" in request.POST:

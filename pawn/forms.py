@@ -17,7 +17,7 @@ class PawnForm(forms.ModelForm):
 
     class Meta:
         model = Pawn
-        exclude = ('status', 'date', 'status_updated_on', )
+        exclude = ('status', 'date', 'status_updated_on', 'branch', )
 
     def __init__(self, *args, **kwards):
         super().__init__(*args, **kwards)
