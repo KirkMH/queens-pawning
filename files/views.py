@@ -243,10 +243,9 @@ def interest_rate(request):
         # get the form data
         min_days = request.POST.getlist('min_days[]')
         rate = request.POST.getlist('rate[]')
-        approval_required = request.POST.getlist('approval_required[]')
 
-        if len(min_days) > 0 and (len(min_days) == len(rate) == len(approval_required)):
-            print(min_days, rate, approval_required)
+        if len(min_days) > 0 and (len(min_days) == len(rate)):
+            print(min_days, rate)
             # clear contents of InterestRate model
             InterestRate.objects.all().delete()
 
@@ -254,8 +253,7 @@ def interest_rate(request):
             for i in range(len(min_days)):
                 InterestRate.objects.create(
                     min_day=int(min_days[i]),
-                    interest_rate=int(rate[i]),
-                    approval_required=(approval_required[i] == '1')
+                    interest_rate=int(rate[i])
                 )
 
             messages.success(

@@ -24,7 +24,6 @@
                                 <th></th>
                                 <th>Min Days</th>
                                 <th>Interest Rate (%)</th>
-                                <th>Approval Required</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -33,12 +32,6 @@
                                     <td><button type="button" class="btn btn-outline btn-sm btn-danger" onclick="remove(this)">&times;</button></td>
                                     <td><input type="number" class="form-control" name="min_days[]" value="{{ ir.min_day }}" /></td>
                                     <td><input type="number" class="form-control" name="rate[]" value="{{ ir.interest_rate }}" /></td>
-                                    <td>
-                                        <select class="form-control" name="approval_required[]">
-                                            <option value="0" {% if not ir.approval_required %}selected{% endif %}>No</option>
-                                            <option value="1" {% if ir.approval_required %}selected{% endif %}>Yes</option>
-                                        </select>
-                                    </td>
                                 </tr>
                             {% endfor %}
                     </table>
@@ -68,7 +61,6 @@
             cell1.innerHTML = '<button type="button" class="btn btn-outline btn-sm btn-danger" onclick="remove(this)">&times;</button>';
             cell2.innerHTML = '<input type="number" class="form-control" name="min_days[]" />';
             cell3.innerHTML = '<input type="number" class="form-control" name="rate[]" />';
-            cell4.innerHTML = '<select class="form-control" name="approval_required[]"><option value="0" selected >No</option><option value="1" >Yes</option></select>';
         }
 
         function remove(btn) {
