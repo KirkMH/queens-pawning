@@ -4,6 +4,8 @@ from django_serverside_datatable.views import ServerSideDatatableView
 from django.views.generic import CreateView, UpdateView, DetailView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from decimal import Decimal
 
@@ -16,10 +18,12 @@ from .forms import *
 #                Pawn Transactions
 ###############################################################################################
 
+@login_required
 def pawn_list(request):
     return render(request, 'pawn/pawn_list.html')
 
 
+@method_decorator(login_required, name='dispatch')
 class PawnDTListView(ServerSideDatatableView):
     queryset = Pawn.objects.all()
     columns = ['pk', 'date', 'client', 'description', 'principal',
@@ -27,6 +31,7 @@ class PawnDTListView(ServerSideDatatableView):
                'client__title', 'client__last_name', 'client__first_name', 'client__middle_name']
 
 
+@method_decorator(login_required, name='dispatch')
 class PawnCreateView(CreateView):
     model = Pawn
     form_class = PawnForm
@@ -52,6 +57,7 @@ class PawnCreateView(CreateView):
             return render(request, 'pawn/pawn_form.html', {'form': form})
 
 
+@method_decorator(login_required, name='dispatch')
 class PawnUpdateView(SuccessMessageMixin, UpdateView):
     model = Pawn
     context_object_name = 'pawn'
@@ -67,6 +73,7 @@ class PawnUpdateView(SuccessMessageMixin, UpdateView):
         return context
 
 
+@method_decorator(login_required, name='dispatch')
 class PawnDetailView(DetailView):
     model = Pawn
     template_name = "pawn/pawn_detail.html"

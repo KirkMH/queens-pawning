@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from django_serverside_datatable.views import ServerSideDatatableView
 from django.views.generic import CreateView, UpdateView, DetailView
 from django.contrib.messages.views import SuccessMessageMixin
@@ -15,11 +17,12 @@ from access_hub.models import Employee
 ###############################################################################################
 #                Client Maintenance
 ###############################################################################################
-
+@login_required
 def client_list(request):
     return render(request, 'files/client_list.html')
 
 
+@method_decorator(login_required, name='dispatch')
 class ClientDTListView(ServerSideDatatableView):
     queryset = Client.objects.all()
     columns = ['pk', 'title', 'last_name', 'first_name', 'middle_name', 'address',
@@ -30,6 +33,7 @@ class ClientDTListView(ServerSideDatatableView):
         return qs.filter(branch=Employee.objects.get(user=self.request.user).branch)
 
 
+@method_decorator(login_required, name='dispatch')
 class ClientCreateView(CreateView):
     model = Client
     form_class = ClientForm
@@ -51,6 +55,7 @@ class ClientCreateView(CreateView):
             return render(request, 'files/client_form.html', {'form': form})
 
 
+@method_decorator(login_required, name='dispatch')
 class ClientUpdateView(SuccessMessageMixin, UpdateView):
     model = Client
     context_object_name = 'client'
@@ -61,6 +66,7 @@ class ClientUpdateView(SuccessMessageMixin, UpdateView):
     success_message = "The client's record was updated successfully."
 
 
+@method_decorator(login_required, name='dispatch')
 class ClientDetailView(DetailView):
     model = Client
     template_name = "files/client_detail.html"
@@ -71,15 +77,18 @@ class ClientDetailView(DetailView):
 #                Expense Category Maintenance
 ###############################################################################################
 
+@login_required
 def expense_category_list(request):
     return render(request, 'files/expense_category_list.html')
 
 
+@method_decorator(login_required, name='dispatch')
 class ExpenseCategoryDTListView(ServerSideDatatableView):
     queryset = ExpenseCategory.objects.all()
     columns = ['pk', 'category', 'status']
 
 
+@method_decorator(login_required, name='dispatch')
 class ExpenseCategoryCreateView(CreateView):
     model = ExpenseCategory
     form_class = ExpenseCategoryForm
@@ -100,6 +109,7 @@ class ExpenseCategoryCreateView(CreateView):
             return render(request, 'files/expense_category_form.html', {'form': form})
 
 
+@method_decorator(login_required, name='dispatch')
 class ExpenseCategoryUpdateView(SuccessMessageMixin, UpdateView):
     model = ExpenseCategory
     context_object_name = 'category'
@@ -114,16 +124,19 @@ class ExpenseCategoryUpdateView(SuccessMessageMixin, UpdateView):
 #                Branch Maintenance
 ###############################################################################################
 
+@login_required
 def branch_list(request):
     return render(request, 'files/branch_list.html')
 
 
+@method_decorator(login_required, name='dispatch')
 class BranchDTListView(ServerSideDatatableView):
     queryset = Branch.objects.all()
     columns = ['pk', 'name', 'address', 'vat_info',
                'contact_num', 'days_open', 'status']
 
 
+@method_decorator(login_required, name='dispatch')
 class BranchCreateView(CreateView):
     model = Branch
     form_class = BranchForm
@@ -144,6 +157,7 @@ class BranchCreateView(CreateView):
             return render(request, 'files/branch_form.html', {'form': form})
 
 
+@method_decorator(login_required, name='dispatch')
 class BranchUpdateView(SuccessMessageMixin, UpdateView):
     model = Branch
     context_object_name = 'branch'
@@ -158,6 +172,7 @@ class BranchUpdateView(SuccessMessageMixin, UpdateView):
 #                Other Fees
 ###############################################################################################
 
+@login_required
 def other_fees(request):
     other_fees = OtherFees.get_instance()
     # check if post
@@ -189,6 +204,7 @@ def other_fees(request):
 #                Term Duration
 ###############################################################################################
 
+@login_required
 def term_duration(request):
     term_duration = TermDuration.get_instance()
     # check if post
@@ -220,6 +236,7 @@ def term_duration(request):
 #                Interest Rates
 ###############################################################################################
 
+@login_required
 def interest_rate(request):
     # check if post
     if request.method == 'POST':
