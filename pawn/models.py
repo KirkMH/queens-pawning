@@ -3,7 +3,10 @@ from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
-from files.models import Client, Branch
+from datetime import datetime
+from decimal import Decimal
+
+from files.models import Client, Branch, InterestRate, TermDuration
 from access_hub.models import Employee
 
 
@@ -84,14 +87,31 @@ class Pawn(models.Model):
     def __str__(self):
         return f"{self.description} by {self.client}"
 
-    def getPayments(self):
-        return Payment.objects.filter(pawn=self)
+    def getElapseDays(self):
+        return (datetime.now().date() - self.date.date()).days
 
-    def getTotalPaid(self):
-        return self.getPayments().aggregate(total=Sum('amount'))['total']
+    def getInterestRate(self):
+        elapsed = self.getElapseDays()
+        rate = InterestRate.rates.get_rate(elapsed)
+        return rate if rate else 0
 
-    def getBalance(self):
-        return self.principal - self.getTotalPaid()
+    def getInterest(self):
+        return self.principal * Decimal(str((self.getInterestRate() / 100)))
+
+    def hasPenalty(self):
+        return self.getElapseDays() > TermDuration.get_instance().maturity
+
+    def getPenalty(self):
+        if self.hasPenalty():
+            daysPenalty = self.getElapseDays() - TermDuration.get_instance().maturity
+            return self.principal * (InterestRate.rates.get_max_rate() / 100) * (daysPenalty / 30)
+        return 0
+
+    def getTotalDue(self):
+        return self.principal + self.getInterest() + self.getPenalty()
+
+    def getMinimumPayment(self):
+        return self.getInterest() + self.getPenalty()
 
 
 class Payment(models.Model):

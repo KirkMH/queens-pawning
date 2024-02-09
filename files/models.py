@@ -92,6 +92,25 @@ class Client(models.Model):
         unique_together = ['last_name', 'first_name', 'middle_name']
 
 
+class InterestRateManager(models.Manager):
+    def get_rate(self, elapsed_days):
+        # Get the interest rate for the given number of elapsed days
+        try:
+            rate = self.filter(min_day__lte=elapsed_days).order_by(
+                '-interest_rate').first()
+            return rate.interest_rate if rate else None
+        except InterestRate.DoesNotExist:
+            return None
+
+    def get_max_rate(self):
+        # Get the maximum interest rate
+        try:
+            rate = self.order_by('-interest_rate').first()
+            return rate.interest_rate if rate else None
+        except InterestRate.DoesNotExist:
+            return None
+
+
 class InterestRate(models.Model):
     interest_rate = models.PositiveSmallIntegerField(
         _('Interest Rate'),
@@ -101,6 +120,9 @@ class InterestRate(models.Model):
         _('Minimum Days'),
         null=False, blank=False
     )
+
+    objects = models.Manager()
+    rates = InterestRateManager()
 
     def __str__(self):
         return f'From {self.min_day} days: {self.interest_rate}%'

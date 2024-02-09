@@ -23,14 +23,14 @@
         <div class="card-body">
             <div class="row mb-2">
                 <div class="col-lg-6 col-sm-12">
-                    <p class="card-text"><span class="text-muted">Principal: </span>{{ pawn.principal|peso }}</p>
+                    <p class="card-text"><span class="text-muted h4">Principal: </span><span class="h4">{{ pawn.principal|peso }}</span></p>
                     <p class="card-text"><span class="text-muted">LESS Service Charge: </span>{{ pawn.service_charge|peso }}</p>
                     <p class="card-text"><span class="text-muted">LESS Advance Interest: </span>{{ pawn.advance_interest|peso }}</p>
-                    <p class="card-text"><span class="text-muted">NET PROCEEDS: </span><span class="h4">{{ pawn.net_proceeds|peso }}</span></p>
+                    <p class="card-text"><span class="text-muted">NET PROCEEDS: </span><span class="h5">{{ pawn.net_proceeds|peso }}</span></p>
                 </div>
                 <div class="col-lg-6 col-sm-12">
                     <p class="card-text"><span class="text-muted">Branch: </span>{{ pawn.branch }}</p>
-                    <p class="card-text"><span class="text-muted">Date Created: </span>{{ pawn.date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
+                    <p class="card-text"><span class="text-muted">Date Pawned: </span>{{ pawn.date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
                     <p class="card-text"><span class="text-muted">Status: </span>{{ pawn.status }}</p>
                     {% if pawn.staus == 'RENEWED' %}
                     <p class="card-text"><a href="#">Renewed ticket link</a></p>
@@ -47,16 +47,73 @@
         </div>
     </div>
 
-    
-    <div class="card m-4">
-        <div class="card-header">
-            <h3>Repayment Records</h3>
-        </div>
-        <div class="card-body">
-            <div class="row mb-2">
-                <div class="col">
-                    No records found.
+    <div class="row">
+        <div class="col-6">
+            
+            <div class="card ml-4">
+                <div class="card-header">
+                    <h3>Payment</h3>
                 </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-6">Days Elapsed:</div>
+                        <div class="col-4 text-right">{{ pawn.getElapseDays }} day{{daysElapsed|pluralize}}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6">Interest Rate:</div>
+                        <div class="col-4 text-right">{{ pawn.getInterestRate }}%</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6">Interest Due:</div>
+                        <div class="col-4 text-right">{{ pawn.getInterest|peso }}</div>
+                    </div>
+                    {% if pawn.hasPenalty %}
+                    <div class="row mb-2">
+                        <div class="col-6">Penalty:</div>
+                        <div class="col-4 text-right">{{ pawn.getPenalty|peso }}</div>
+                    </div>
+                    {% endif %}
+                    <div class="row mb-2">
+                        <div class="col-6 h4">Total Due:</div>
+                        <div class="col-4 h4 text-right">{{ pawn.getTotalDue|peso }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6 h4">Minimun Payment for Renewal:</div>
+                        <div class="col-4 h4 text-right">{{ pawn.getMinimumPayment|peso }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-2"></div>
+
+        <div class="col-4">
+            <div class="card card-success mr-4">
+                <h4 class="card-header">Payment Details</h4>
+                <form action="#" method="POST">
+                    <div class="card-body">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="amount">Amount to Pay<span style="color: red;">*</span></label>
+                            <input type="number" class="form-control text-right" id="amount" name="amount" value="{{ pawn.getTotalDue|floatformat:2 }}" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount Tendered<span style="color: red;">*</span></label>
+                            <input type="number" class="form-control text-right" id="tendered" name="tendered" value="0.00" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="amount"><button type="button" class="btn btn-outline-dark" id="request-discount">Discount</button></label>
+                            <input type="number" class="form-control text-right" id="discount" name="discount" value="0.00" disabled />
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">CHANGE</label>
+                            <input type="number" class="form-control text-right" id="change" name="change" value="0.00" disabled />
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <submit class="btn btn-primary">Pay</submit>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
