@@ -30,20 +30,9 @@
         <li class="nav-item dropdown my-auto" id="menu-transactions">
             <a id="dropdownTransactions" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">Transactions</a>
             <ul aria-labelledby="dropdownTransactions" class="dropdown-menu border-0 shadow">
-                <li id="menu-repayment">
-                    <a class="dropdown-item" href="#">Repayment</a>
-                </li>
-                <li><div class="dropdown-divider"></div></li>
                 <li id="menu-new">
-                    <a class="dropdown-item" href="{% url 'new_pawn' %}">New Pawn</a>
+                    <a class="dropdown-item" href="{% url 'pawn_list' %}">Pawn</a>
                 </li>
-                <li id="menu-renew">
-                    <a class="dropdown-item" href="#">Renew Pawn</a>
-                </li>
-                <li id="menu-redeem">
-                    <a class="dropdown-item" href="#">Redeem Pawn</a>
-                </li>
-                <li><div class="dropdown-divider"></div></li>
                 <li id="menu-cash-flow">
                     <a class="dropdown-item" href="#">Cash Flow</a>
                 </li>
@@ -56,7 +45,7 @@
             <a id="dropdownReports" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">Reports</a>
             <ul aria-labelledby="dropdownReports" class="dropdown-menu border-0 shadow">
                 <li id="menu-logs">
-                    <a class="dropdown-item" href="{% url 'pawn_list' %}">Ticket Logs</a>
+                    <a class="dropdown-item" href="#">Ticket Logs</a>
                 </li>
                 <li id="menu-cash-count">
                     <a class="dropdown-item" href="#">Cash Count</a>
@@ -75,6 +64,24 @@
                 </li>
                 <li id="menu-non-renewal">
                     <a class="dropdown-item" href="#">Non-renewal Items</a>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item dropdown my-auto" id="menu-account">
+            <a id="dropdownAccount" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">
+                <i class="fas fa-user"></i>&nbsp;
+                {% if user.get_full_name != "" %}
+                    {{ user.get_full_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+            </a>
+            <ul aria-labelledby="dropdownAccount" class="dropdown-menu border-0 shadow">
+                <li id="menu-logs">
+                    <a class="dropdown-item" href="#">Update Password</a>
+                </li>
+                <li id="menu-cash-count">
+                    <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                 </li>
             </ul>
         </li>

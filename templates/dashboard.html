@@ -36,8 +36,13 @@
         <!-- Greeting section -->
         <div class="row mb-2">
           <div class="col-12">
-            <h5>Welcome back, {{ request.user.username|title }}!</h5>
-            <a href="{% url 'logout' %}" class="btn btn-sm btn-danger">Logout</a>
+            <h5>Welcome back, 
+              {% if user.get_full_name != "" %}
+                {{ user.get_full_name }}
+              {% else %}
+                {{ user.username }}
+              {% endif %}
+              !</h5>
           </div>
         </div>
         <!-- Small boxes (Stat box) -->
