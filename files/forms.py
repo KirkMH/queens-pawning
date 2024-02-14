@@ -9,9 +9,23 @@ from .models import *
 class ClientForm(forms.ModelForm):
     required_css_class = 'required'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['id_link'].required = True
+
     class Meta:
         model = Client
         exclude = ('status', )
+
+
+class AdminClientForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['id_link'].required = True
+
+    class Meta:
+        model = Client
+        fields = '__all__'
 
 
 ############################

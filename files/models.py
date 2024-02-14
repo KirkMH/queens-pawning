@@ -10,6 +10,24 @@ STATUS = [
     (CANCELLED, _('Cancelled'))
 ]
 
+# list of valid
+
+
+class ValidId(models.Model):
+    type = models.CharField(
+        _('ID Type'),
+        max_length=50,
+        null=False, blank=False
+    )
+
+    def __str__(self) -> str:
+        return self.type
+
+    class Meta:
+        ordering = ['type']
+        verbose_name = 'Valid ID'
+        verbose_name_plural = 'Valid IDs'
+
 
 class Client(models.Model):
     MR = 'MR'
@@ -44,10 +62,12 @@ class Client(models.Model):
         max_length=50,
         null=False, blank=False
     )
-    id_presented = models.CharField(
-        _('ID Presented'),
-        max_length=20,
-        null=False, blank=False
+    id_link = models.ForeignKey(
+        ValidId,
+        verbose_name=_('Presented ID'),
+        on_delete=models.CASCADE,
+        related_name='presenters',
+        null=True, blank=True
     )
     id_number = models.CharField(
         _('ID Number'),
