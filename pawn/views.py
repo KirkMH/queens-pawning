@@ -32,7 +32,10 @@ class PawnDTListView(ServerSideDatatableView):
                'client__title', 'client__last_name', 'client__first_name', 'client__middle_name']
 
     def get_queryset(self):
-        return super().get_queryset().filter(branch=Employee.objects.get(user=self.request.user).branch)
+        if Employee.objects.filter(user=self.request.user).count() > 0 and Employee.objects.get(user=self.request.user).branch:
+            return super().get_queryset().filter(branch=Employee.objects.get(user=self.request.user).branch)
+        else:
+            return super().get_queryset()
 
 
 @method_decorator(login_required, name='dispatch')

@@ -107,7 +107,7 @@
                         </div>
                         <div class="form-group">
                             <label for="amount">CHANGE</label>
-                            <input type="number" class="form-control text-right" id="change" name="change" value="0.00" disabled />
+                            <input type="number" class="form-control text-right" style="font-size: large;" id="change" name="change" value="0.00" disabled />
                         </div>
                     </div>
                     <div class="card-footer">
@@ -122,9 +122,10 @@
 
 
 {% block js %}
+    <script src="{% static 'js/pawn.js' %}"></script>
     <script>
         $(document).ready(function() {
-            $("#menu_transactions").addClass("active")
+            $("#menu-transactions").addClass("active")
         })
     </script>
 {% endblock js %}
