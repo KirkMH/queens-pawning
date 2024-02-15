@@ -21,6 +21,16 @@ class EmployeeInline(admin.StackedInline):
 # Define a new User admin
 class UserAdmin(BaseUserAdmin):
     inlines = [EmployeeInline]
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        (('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
+        (('Permissions'), {
+         'fields': ('is_active', 'is_staff', 'is_superuser')}),
+        (('Important dates'), {'fields': ('last_login', 'date_joined')}),
+    )
+
+    class Media:
+        js = ('js/employee-admin.js',)
 
 
 # Re-register UserAdmin
