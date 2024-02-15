@@ -178,3 +178,42 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.pawn} - {self.amount_paid} by {self.cashier} on {self.date}"
+
+
+class DiscountRequests(models.Model):
+    STATUS = [
+        ('PENDING', _('Pending')),
+        ('APPROVED', _('Approved')),
+        ('REJECTED', _('Rejected'))
+    ]
+
+    date = models.DateTimeField(auto_now_add=True)
+    pawn = models.OneToOneField(
+        Pawn,
+        on_delete=models.CASCADE,
+        related_name='discount_requested',
+        null=False, blank=False
+    )
+    amount = models.DecimalField(
+        _('Amount'),
+        max_digits=10,
+        decimal_places=2,
+        null=False, blank=False
+    )
+    status = models.CharField(
+        _('Status'),
+        max_length=20,
+        choices=STATUS,
+        default='PENDING',
+        null=False, blank=False
+    )
+    approved_by = models.ForeignKey(
+        Employee,
+        related_name='discount_approved_by',
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
+    approved_on = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.pawn} - {self.amount} on {self.date}"
