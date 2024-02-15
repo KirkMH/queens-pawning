@@ -21,7 +21,7 @@
 <div class="login-box">
   <!-- /.login-logo -->
   {% block card %}
-  <div class="card card-danger">
+  <div class="card card-outline card-danger">
   {% endblock card %}
     <div class="card-header">
       <div class="container">
@@ -38,12 +38,22 @@
         </div>
       </div>
     </div>
+    
+    <form method="post" novalidate>
+    {% csrf_token %}
     <div class="card-body">
         
         {% block content %}
         {% endblock content %}
             
     </div>
+    <div class="card-footer">
+        
+        {% block footer %}
+        {% endblock footer %}
+            
+    </div>
+    </form>
     <!-- /.card-body -->
   </div>
   <!-- /.card -->

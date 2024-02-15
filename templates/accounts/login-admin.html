@@ -3,27 +3,26 @@
 
 {% block title %}Log in{% endblock title %}
 
+{% block card %}
+<div class="card card-danger">
+{% endblock %}
+
 {% block content %}
   
   <div class="login-box-msg">
-    <h3>Employee's Login</h3>
+    <h3>Administrator's Login</h3>
     Sign in to start your session
   </div>
 
     <input type="hidden" name="next" value="{{ next }}">
     {% include '../includes/form_one_col_full.html' %}
-
-    <div class="row"><div class="col">
-      <p class="mb-1">
-        <a href="#">I forgot my password</a>
-      </p>
-    </div></div>
 {% endblock %}
 
 {% block footer %}
     <div class="row">
       <div class="col text-right">
-        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        <a href="{% url 'login' %}" class="btn btn-default">Back to Employee's Login</a>&nbsp;&nbsp;
+        <button type="submit" class="btn btn-primary">Sign In</button>
       </div>
       <!-- /.col -->
     </div>
