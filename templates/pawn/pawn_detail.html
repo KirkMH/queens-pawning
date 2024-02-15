@@ -32,8 +32,8 @@
                     <p class="card-text"><span class="text-muted">Branch: </span>{{ pawn.branch }}</p>
                     <p class="card-text"><span class="text-muted">Date Pawned: </span>{{ pawn.date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
                     <p class="card-text"><span class="text-muted">Status: </span>{{ pawn.status }}</p>
-                    {% if pawn.staus == 'RENEWED' %}
-                    <p class="card-text"><a href="#">Renewed ticket link</a></p>
+                    {% if pawn.status == 'RENEWED' and pawn.renewed_to %}
+                    <p class="card-text"><a href="{% url 'pawn_detail' pawn.renewed_to.pk  %}">Pawn Ticket # {{ pawn.renewed_to.pk|stringformat:"08d" }}</a></p>
                     {% endif %}
                 </div>
             </div>
@@ -41,14 +41,16 @@
         <div class="card-footer">
             <div class="row">
                 <a href="#" class="btn btn-primary card-link">Print</a>
+                {% if not pawn.payment_pawn %}
                 <a href="{% url 'edit_pawn' pawn.pk %}" class="btn btn-warning card-link">Edit</a>
+                {% endif %}
                 <a href="{% url 'pawn_list' %}" class="btn btn-default card-link">Back to list</a>
             </div>
         </div>
     </div>
 
     <div class="row">
-        <div class="col-6">
+        <div class="{{ pawn.payment_pawn|yesno:'col-8 mx-auto, col-6' }}">
             
             <div class="card ml-4">
                 <div class="card-header">
@@ -57,7 +59,7 @@
                 <div class="card-body">
                     <div class="row mb-2">
                         <div class="col-6">Days Elapsed:</div>
-                        <div class="col-4 text-right">{{ pawn.getElapseDays }} day{{daysElapsed|pluralize}}</div>
+                        <div class="col-4 text-right">{{ pawn.getElapseDays }} day{{pawn.getElapseDays|pluralize}}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-6">Interest Rate:</div>
@@ -67,32 +69,47 @@
                         <div class="col-6">Interest Due:</div>
                         <div class="col-4 text-right">{{ pawn.getInterest|peso }}</div>
                     </div>
+                    <div class="row mb-2">
+                        <div class="col-6 h4">Total Due:</div>
+                        <div class="col-4 h4 text-right">{{ pawn.getTotalDue|peso }}</div>
+                    </div>
                     {% if pawn.hasPenalty %}
                     <div class="row mb-2">
                         <div class="col-6">Penalty:</div>
                         <div class="col-4 text-right">{{ pawn.getPenalty|peso }}</div>
                     </div>
                     {% endif %}
+                    {%if pawn.payment_pawn %}
                     <div class="row mb-2">
-                        <div class="col-6 h4">Total Due:</div>
-                        <div class="col-4 h4 text-right">{{ pawn.getTotalDue|peso }}</div>
+                        <div class="col-6 h4">Amount Paid:</div>
+                        <div class="col-4 h4 text-right">{{ pawn.payment_pawn.amount_paid|peso }}</div>
                     </div>
+                    <div class="row mb-2">
+                        <div class="col-6 h4">Payment Date:</div>
+                        <div class="col-4 h4 text-right">{{ pawn.date|date:"F d, Y (D)"|naturalday }}</div>
+                    </div>
+                    {% else %}
                     <div class="row mb-2">
                         <div class="col-6 h4">Minimun Payment for Renewal:</div>
                         <div class="col-4 h4 text-right">{{ pawn.getMinimumPayment|peso }}</div>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
+
+        {% if not pawn.payment_pawn %}
 
         <div class="col-2"></div>
 
         <div class="col-4">
             <div class="card card-success mr-4">
                 <h4 class="card-header">Payment Details</h4>
-                <form action="#" method="POST">
+                <form id="payment-form" action="{% url 'pawn_payment' pawn.pk %}" method="POST">
                     <div class="card-body">
                         {% csrf_token %}
+                        <input type="hidden" name="min_payment" id="min_payment" value="{{ pawn.getMinimumPayment }}" />
+                        <input type="hidden" name="max_payment" id="max_payment" value="{{ pawn.getTotalDue }}" />
                         <div class="form-group">
                             <label for="amount">Amount to Pay<span style="color: red;">*</span></label>
                             <input type="number" class="form-control text-right" id="amount" name="amount" value="{{ pawn.getTotalDue|floatformat:2 }}" required />
@@ -111,11 +128,14 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <submit class="btn btn-primary">Pay</submit>
+                        <button type="submit" class="btn btn-primary">Pay</button>
                     </div>
                 </form>
             </div>
         </div>
+
+        {% endif %}
+
     </div>
 
 {% endblock main_content %}

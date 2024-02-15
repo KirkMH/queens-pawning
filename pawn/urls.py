@@ -10,4 +10,5 @@ urlpatterns = [
          views.PawnUpdateView.as_view(), name='edit_pawn'),
     path('<int:pk>/detail',
          views.PawnDetailView.as_view(), name='pawn_detail'),
+    path('<int:pk>/payment', views.pawn_payment, name='pawn_payment'),
 ]

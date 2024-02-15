@@ -19,15 +19,11 @@ class Pawn(models.Model):
     ACTIVE = 'ACTIVE'
     RENEWED = 'RENEWED'
     REDEEMED = 'REDEEMED'
-    MATURED = 'MATURED'
-    EXPIRED = 'EXPIRED'
     AUCTIONED = 'AUCTIONED'
     STATUS = [
         (ACTIVE, _('Active')),
         (RENEWED, _('Renewed')),
         (REDEEMED, _('Redeemed')),
-        (MATURED, _('Matured')),
-        (EXPIRED, _('Expired')),
         (AUCTIONED, _('Auctioned'))
     ]
 
@@ -79,6 +75,12 @@ class Pawn(models.Model):
         on_delete=models.CASCADE,
         null=True, blank=True
     )
+    renewed_to = models.OneToOneField(
+        'self',
+        related_name='pawn_renewed_to',
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
 
     objects = models.Manager()
     history = HistoricalRecords()
@@ -113,12 +115,46 @@ class Pawn(models.Model):
     def getMinimumPayment(self):
         return self.getInterest() + self.getPenalty()
 
+    def pay(self, amount_paid, cashier):
+        if amount_paid > self.getMinimumPayment():
+            paid_for_principal = amount_paid - self.getMinimumPayment()
+
+        if amount_paid == self.getTotalDue():
+            self.status = 'REDEEMED'
+        else:
+            # create a new pawn ticket for the renewed pawn
+            new_principal = self.principal - paid_for_principal
+            new_pawn = Pawn()
+            new_pawn.client = self.client
+            new_pawn.description = self.description
+            new_pawn.principal = new_principal
+            new_pawn.service_charge = 0
+            new_pawn.advance_interest = 0
+            new_pawn.net_proceeds = 0
+            new_pawn.branch = self.branch
+            new_pawn.status = 'ACTIVE'
+            new_pawn.save()
+
+            self.status = 'RENEWED'
+            new_pawn.renewed_to = new_pawn
+
+        self.status_updated_on = datetime.now()
+        self.save()
+
+        payment = Payment()
+        payment.amount_paid = amount_paid
+        payment.pawn = self
+        payment.cashier = cashier
+        payment.paid_for_principal = paid_for_principal
+        payment.save()
+
 
 class Payment(models.Model):
     date = models.DateTimeField(auto_now_add=True)
-    pawn = models.ForeignKey(
+    pawn = models.OneToOneField(
         Pawn,
         on_delete=models.CASCADE,
+        related_name='payment_pawn',
         null=False, blank=False
     )
     amount_paid = models.DecimalField(

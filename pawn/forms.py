@@ -28,3 +28,23 @@ class PawnForm(forms.ModelForm):
         # self.fields['service_charge'].widget.attrs['required'] = False
         # self.fields['advance_interest'].widget.attrs['required'] = False
         # self.fields['net_proceeds'].widget.attrs['required'] = False
+
+
+class PawnPaymentForm(forms.Form):
+    # I need 3 number fields: amount, tendered, and discount
+    amount = forms.DecimalField(max_digits=10, decimal_places=2, required=True)
+    tendered = forms.DecimalField(
+        max_digits=10, decimal_places=2, required=True)
+    discount = forms.DecimalField(
+        max_digits=10, decimal_places=2, required=False, initial=0)
+
+    # to check if valid, tendere should be greater than or equal to amount - discount
+    def clean(self) -> Mapping[str, Any]:
+        cleaned_data = super().clean()
+        amount = cleaned_data.get('amount') or 0
+        tendered = cleaned_data.get('tendered') or 0
+        discount = cleaned_data.get('discount') or 0
+        if tendered < amount - discount:
+            self.add_error('tendered', _(
+                'Tendered amount should be greater than or equal to the total amount less the discount.'))
+        return cleaned_data
