@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from decimal import Decimal
+
 
 # will be used for the status of different models
 ACTIVE = 'ACTIVE'
@@ -126,7 +128,7 @@ class InterestRateManager(models.Manager):
         # Get the maximum interest rate
         try:
             rate = self.order_by('-interest_rate').first()
-            return rate.interest_rate if rate else None
+            return Decimal(str(rate.interest_rate)) if rate else None
         except InterestRate.DoesNotExist:
             return None
 

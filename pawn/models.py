@@ -12,7 +12,7 @@ from access_hub.models import Employee
 
 class Inventory(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().exclude(status__in=['REDEEMED', 'AUCTIONED'])
+        return super().get_queryset().filter(status='ACTIVE')
 
 
 class Pawn(models.Model):
@@ -84,7 +84,7 @@ class Pawn(models.Model):
 
     objects = models.Manager()
     history = HistoricalRecords()
-    Inventory = Inventory()
+    inventory = Inventory()
 
     def __str__(self):
         return f"{self.description} by {self.client}"
@@ -100,12 +100,26 @@ class Pawn(models.Model):
     def getInterest(self):
         return self.principal * Decimal(str((self.getInterestRate() / 100)))
 
+    def hasMatured(self):
+        return self.getElapseDays() >= TermDuration.get_instance().maturity
+
+    def hasExpired(self):
+        return self.getElapseDays() > TermDuration.get_instance().expiration
+
     def hasPenalty(self):
         return self.getElapseDays() > TermDuration.get_instance().maturity
 
+    def getStanding(self):
+        if self.hasExpired():
+            return 'EXPIRED'
+        if self.hasMatured():
+            return 'MATURED'
+        return 'ACTIVE'
+
     def getPenalty(self):
         if self.hasPenalty():
-            daysPenalty = self.getElapseDays() - TermDuration.get_instance().maturity
+            daysPenalty = Decimal(
+                str(self.getElapseDays() - TermDuration.get_instance().maturity))
             return self.principal * (InterestRate.rates.get_max_rate() / 100) * (daysPenalty / 30)
         return 0
 

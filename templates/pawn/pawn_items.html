@@ -1,0 +1,91 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block title %}Pawned Items List{% endblock title %}
+{% block page_title %}Pawned Items List{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item active">Inventory</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+<div class="card m-4">
+    <form method="get">
+        <div class="card-header">
+            <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                
+            </div>
+            </div>
+        </div>
+    </form>
+    <div class="card-body table-responsive">
+        <table id="table" class="table table-hover table-head-fixed table-sm">
+            <thead>
+                <tr>
+                    <th class="text-center" width="10%">Action</th>
+                    <th class="text-center">Description</th>
+                    <th class="text-center">Principal</th>
+                    <th class="text-center">Client</th>
+                    <th class="text-center">Date</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+{% endblock main_content %}
+
+
+{% block js %}
+<script src="{% static 'js/currency-format.js' %}"></script>
+<script src="{% static 'js/date-format.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            $("#table").DataTable({
+                serverSide: true,
+                sAjaxSource: "{% url 'pawneditems_dtlist' %}", 
+                columns: [
+                    {   
+                        name: 'action',
+                        data: 0,
+                        render: function (data) {
+                            let links = `<a href="/pawn/${data}/detail?from=/pawn/inventory" title="Detail"><i class="far fa-eye"></i></a>`
+                            return links;
+                        },
+                        className: 'text-center'
+                    },
+                    {name: "description", data: 2},
+                    {
+                        name: "principal", 
+                        data: 3,
+                        render: function (data) {
+                            return peso.format(data);
+                        },
+                        "className": "text-right"
+                    },
+                    {
+                        name: "client", 
+                        data: null,
+                        render: function (data) {
+                            return `${data[4]} ${data[5]}, ${data[6]} ${data[7]}`.toUpperCase();
+                        }
+                    },
+                    {
+                        name: "date", 
+                        data: 1,
+                        render: function (data) {
+                            const days = daysSince(data);
+                            const unit = days > 1 ? "days" : "day";
+                            return formatDateMMMddYYYY(data) + " (" + days + " " + unit + " ago)";
+                        }
+                    },
+                ],
+                order: [[1, 'desc']],
+            });
+            
+            $("#menu-reports").addClass("active")
+        })
+    </script>
+{% endblock js %}

@@ -44,7 +44,11 @@
                 {% if not pawn.payment_pawn %}
                 <a href="{% url 'edit_pawn' pawn.pk %}" class="btn btn-warning card-link">Edit</a>
                 {% endif %}
+                {% if 'from' in request.GET %}
+                <a href="{{ request.GET.from }}" class="btn btn-default card-link">Back to list</a>
+                {% else %}
                 <a href="{% url 'pawn_list' %}" class="btn btn-default card-link">Back to list</a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -74,7 +78,7 @@
                         <div class="col-4 h4 text-right">{{ pawn.getTotalDue|peso }}</div>
                     </div>
                     {% if pawn.hasPenalty %}
-                    <div class="row mb-2">
+                    <div class="row mb-2 text-danger">
                         <div class="col-6">Penalty:</div>
                         <div class="col-4 text-right">{{ pawn.getPenalty|peso }}</div>
                     </div>
