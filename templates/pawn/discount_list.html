@@ -1,0 +1,149 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block title %}Discounts{% endblock title %}
+{% block page_title %}Requested discounts{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item active">Discounts</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+<div class="card m-4">
+    <form method="get">
+        <div class="card-header">
+            <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+            </div>
+            </div>
+        </div>
+    </form>
+    <div class="card-body table-responsive">
+        <table id="table" class="table table-hover table-head-fixed table-sm">
+            <thead>
+                <tr>
+                    <th class="text-center" width="10%">Action</th>
+                    <th class="text-center">Date</th>
+                    <th class="text-center">PTN</th>
+                    <th class="text-center">Amount</th>
+                    <th class="text-center">Requested by</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+{% endblock main_content %}
+
+
+{% block js %}
+    <script src="{% static 'js/date-format.js' %}"></script>
+    <script src="{% static 'js/currency-format.js' %}"></script>
+    <script>
+
+        function approve(id) {
+            console.log("approve")
+            const url = "{% url 'approve_discount' 0 %}".replace("0", id);
+            $.ajax({
+                url: url,
+                type: "GET",
+                success: function(data) {
+                    if (data.status === "success") {
+                        toastr.success("Discount request has been approved.");
+                        location.reload();
+                    }
+                }
+            });
+        }
+
+        function reject(id) {
+            console.log("reject")
+            const url = "{% url 'reject_discount' 0 %}".replace("0", id);
+            $.ajax({
+                url: url,
+                type: "GET",
+                success: function(data) {
+                    if (data.status === "success") {
+                        toastr.success("Discount request has been rejected.");
+                        location.reload();
+                    }
+                }
+            });
+        }
+        
+        $(document).ready(function() {
+            $("#table").DataTable({
+                serverSide: true,
+                sAjaxSource: "{% url 'discount_dtlist' %}", 
+                columns: [
+                    {   
+                        data: null,
+                        render: function (data) {
+                            const pk = data[0];
+                            const pawn_id = data[2];
+                            const userType = "{{ user.employee.user_type }}";
+                            const status = data[4];
+                            let links = `<a href="/pawn/${pawn_id}/detail?from=/pawn/discounts" title="Detail" class="btn btn-sm btn-default"><i class="far fa-eye"></i></a>`;
+                            if (userType > 1 && status === "PENDING") {
+                                links += ` | <button type="button" class="btn btn-sm btn-success" id="approve" name="approve" onclick="approve(${pk});" title="Approve"><i class="far fa-check-circle"></i></button>`;
+                                links += ` | <button type="button" class="btn btn-sm btn-danger" id="reject" name="reject" onclick="reject(${pk});" title="Reject"><i class="far fa-times-circle"></i></button>`;
+                            }
+                            return links;
+                        },
+                        className: 'text-center'
+                    },
+                    {
+                        name: "date", 
+                        data: 1,
+                        render: function (data) {
+                            return formatDateMMMddYYYY(data);
+                        }
+                    },
+                    {
+                        name: "ptn", 
+                        data: 2,
+                        className: 'text-center',
+                        render: function (data) {
+                            return data.toString().padStart(6, "0");
+                        }
+                    },
+                    {
+                        name: "amount", 
+                        data: 3,
+                        className: 'text-right',
+                        render: function (data) {
+                            return peso.format(data);
+                        },
+                    },
+                    {
+                        name: "requestor", 
+                        data: null,
+                        render: function (data) {
+                            return `${data[5]}, ${data[6]}`.toUpperCase();
+                        }
+                    },
+                    {
+                        name: "status", 
+                        data: 4,
+                        className: 'text-center',
+                        render: function (data) {
+                            if (data === 'PENDING')
+                                return '<span class="badge badge-pill badge-warning">Pending</span>';
+                            else if (data == 'APPROVED')
+                                return '<span class="badge badge-pill badge-success">Approved</span>';
+                            else if (data == 'REJECTED')
+                                return '<span class="badge badge-pill badge-danger">Rejected</span>';
+                            else
+                                return '<span class="badge badge-pill badge-dark">Cancelled</span>';
+                        },
+                    },
+                ],
+                order: [[0, 'desc']],
+            });
+            
+            $("#menu-records").addClass("active");
+        })
+    </script>
+{% endblock js %}

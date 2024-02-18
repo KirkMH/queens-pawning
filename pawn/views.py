@@ -3,11 +3,10 @@ from django.urls import reverse_lazy
 from django_serverside_datatable.views import ServerSideDatatableView
 from django.views.generic import CreateView, UpdateView, DetailView
 from django.contrib.messages.views import SuccessMessageMixin
+from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-
-from datetime import datetime
 
 from access_hub.models import Employee
 from files.models import OtherFees
@@ -97,15 +96,15 @@ def pawn_payment(request, pk):
         form = PawnPaymentForm(request.POST)
         print(form)
         if form.is_valid():
-            amount_paid = form.cleaned_data['amount']
-            if amount_paid < pawn.getMinimumPayment() or amount_paid > pawn.getTotalDue():
+            amount_to_pay = form.cleaned_data['amount']
+            if amount_to_pay < pawn.getMinimumPayment() or amount_to_pay > pawn.getTotalDue():
                 messages.error(
                     request, f"Amount paid should be within the minimum payment and the total due.")
                 return render(request, 'pawn/pawn_detail.html', {'form': form, 'pawn': pawn})
 
-            pawn.pay(amount_paid, Employee.objects.get(user=request.user))
+            pawn.pay(amount_to_pay, Employee.objects.get(user=request.user))
             messages.success(
-                request, f"Payment of ₱ {'{:,.2f}'.format(amount_paid)} for {pawn.client} was recorded successfully.")
+                request, f"Payment of ₱ {'{:,.2f}'.format(amount_to_pay)} for {pawn.client} was recorded successfully.")
             return redirect('pawn_detail', pk=pk)
         else:
             # get the error message and pass it to messages.error
@@ -133,5 +132,108 @@ class PawnedItemsDTListView(ServerSideDatatableView):
     def get_queryset(self):
         if Employee.objects.filter(user=self.request.user).count() > 0 and Employee.objects.get(user=self.request.user).branch:
             return super().get_queryset().filter(branch=Employee.objects.get(user=self.request.user).branch)
+        else:
+            return super().get_queryset()
+
+
+@login_required
+def request_discount(request, pk):
+    ''' 
+    The cashier requests for a discount for the pawn ticket.
+    pk -> pawn.pk
+    '''
+    success = True
+    error = None
+    try:
+        pawn = Pawn.objects.get(pk=pk)
+        amount = request.GET['amount']
+        discount = DiscountRequests.objects.create(
+            pawn=pawn, amount=amount, requested_by=Employee.objects.get(user=request.user))
+        print(discount)
+    except Exception as e:
+        print(e)
+        success = False
+        error = str(e)
+    return JsonResponse({'success': success, 'error': error})
+
+
+@login_required
+def cancel_request_discount(request, pk):
+    ''' 
+    The cashier cancels the discount request. 
+    pk -> pawn.pk
+    '''
+    success = True
+    error = None
+    try:
+        discount = DiscountRequests.objects.get(pawn=Pawn.objects.get(pk=pk))
+        discount.cancel()
+    except Exception as e:
+        print(e)
+        success = False
+        error = str(e)
+    return JsonResponse({'success': success, 'error': error})
+
+
+@login_required
+def request_discount_status(request, pk):
+    ''' 
+    The frontend repeatedly requests for the status of the discount request until either approved or cancelled. 
+    pk -> pawn.pk
+    '''
+    discount = DiscountRequests.objects.get(pawn=Pawn.objects.get(pk=pk))
+    return JsonResponse({'status': discount.status})
+
+
+@login_required
+def approve_discount(request, pk):
+    ''' 
+    The manager approves the discount request. 
+    pk -> discount.pk
+    '''
+    success = True
+    error = None
+    try:
+        discount = DiscountRequests.objects.get(pk=pk)
+        discount.approve(Employee.objects.get(user=request.user))
+    except Exception as e:
+        print(e)
+        success = False
+        error = str(e)
+    return JsonResponse({'success': success, 'error': error})
+
+
+@login_required
+def reject_discount(request, pk):
+    ''' 
+    The manager rejects the discount request. 
+    pk -> discount.pk
+    '''
+    success = True
+    error = None
+    try:
+        discount = DiscountRequests.objects.get(pk=pk)
+        discount.reject(Employee.objects.get(user=request.user))
+    except Exception as e:
+        print(e)
+        success = False
+        error = str(e)
+    return JsonResponse({'success': success, 'error': error})
+
+
+@login_required
+def discount_requests(request):
+    return render(request, 'pawn/discount_list.html')
+
+
+@method_decorator(login_required, name='dispatch')
+class DiscountRequestsDTListView(ServerSideDatatableView):
+    queryset = DiscountRequests.objects.all()
+    columns = ['pk', 'date', 'pawn__pk', 'amount', 'status',
+               'requested_by__user__last_name', 'requested_by__user__first_name']
+
+    def get_queryset(self):
+        if Employee.objects.filter(user=self.request.user).count() > 0 and Employee.objects.get(user=self.request.user).branch:
+            return super().get_queryset().filter(pawn__branch=Employee.objects.get(user=self.request.user).branch)
         else:
             return super().get_queryset()

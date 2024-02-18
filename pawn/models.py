@@ -198,7 +198,8 @@ class DiscountRequests(models.Model):
     STATUS = [
         ('PENDING', _('Pending')),
         ('APPROVED', _('Approved')),
-        ('REJECTED', _('Rejected'))
+        ('REJECTED', _('Rejected')),
+        ('CANCELLED', _('Cancelled'))
     ]
 
     date = models.DateTimeField(auto_now_add=True)
@@ -221,13 +222,36 @@ class DiscountRequests(models.Model):
         default='PENDING',
         null=False, blank=False
     )
+    requested_by = models.ForeignKey(
+        Employee,
+        related_name='discount_requested_by',
+        on_delete=models.CASCADE,
+        null=False, blank=False
+    )
     approved_by = models.ForeignKey(
         Employee,
         related_name='discount_approved_by',
         on_delete=models.CASCADE,
-        null=True, blank=True
+        null=True, blank=True,
+        default=None
     )
-    approved_on = models.DateTimeField(null=True, blank=True)
+    approved_on = models.DateTimeField(null=True, blank=True, default=None)
+
+    def cancel(self):
+        self.status = 'CANCELLED'
+        self.save()
+
+    def approve(self, employee):
+        self.status = 'APPROVED'
+        self.approved_by = employee
+        self.approved_on = datetime.now()
+        self.save()
+
+    def reject(self, employee):
+        self.status = 'REJECTED'
+        self.approved_by = employee
+        self.approved_on = datetime.now()
+        self.save()
 
     def __str__(self):
         return f"{self.pawn} - {self.amount} on {self.date}"

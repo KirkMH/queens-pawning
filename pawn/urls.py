@@ -15,4 +15,19 @@ urlpatterns = [
     path('inventory', views.inventory_list, name='inventory_list'),
     path('inventory/sdt_list', views.PawnedItemsDTListView.as_view(),
          name='pawneditems_dtlist'),
+
+    path('discounts/<int:pk>/request',
+         views.request_discount, name='request_discount'),            # pk -> pawn.pk
+    path('discounts/<int:pk>/status', views.request_discount_status,
+         name='request_discount_status'),                             # pk -> pawn.pk
+    path('discounts/<int:pk>/cancel', views.cancel_request_discount,
+         name='cancel_request_discount'),                             # pk -> pawn.pk
+    path('discounts/<int:pk>/approve',
+         views.approve_discount, name='approve_discount'),            # pk -> discount.pk
+    path('discounts/<int:pk>/reject', views.reject_discount,
+         name='reject_discount'),                                     # pk -> discount.pk
+    path('discounts', views.discount_requests, name='discount_list'),
+    path('discounts/dt_list', views.DiscountRequestsDTListView.as_view(),
+         name='discount_dtlist'),
+
 ]

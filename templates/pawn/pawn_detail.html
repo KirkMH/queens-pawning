@@ -109,9 +109,10 @@
         <div class="col-4">
             <div class="card card-success mr-4">
                 <h4 class="card-header">Payment Details</h4>
-                <form id="payment-form" action="{% url 'pawn_payment' pawn.pk %}" method="POST">
+                <form id="payment-form" action="{% url 'pawn_payment' pawn.pk %}" method="POST" onsubmit="return validateForm();">
                     <div class="card-body">
                         {% csrf_token %}
+                        <input type="hidden" name="pawn_id" id="pawn_id" value="{{ pawn.pk }}" />
                         <input type="hidden" name="min_payment" id="min_payment" value="{{ pawn.getMinimumPayment }}" />
                         <input type="hidden" name="max_payment" id="max_payment" value="{{ pawn.getTotalDue }}" />
                         <div class="form-group">
@@ -119,12 +120,16 @@
                             <input type="number" class="form-control text-right" id="amount" name="amount" value="{{ pawn.getTotalDue|floatformat:2 }}" required />
                         </div>
                         <div class="form-group">
-                            <label for="amount">Amount Tendered<span style="color: red;">*</span></label>
-                            <input type="number" class="form-control text-right" id="tendered" name="tendered" value="0.00" required />
+                            <label for="discount"><button type="button" class="btn btn-outline-dark" id="request-discount">Discount</button></label>
+                            <input type="number" class="form-control text-right" id="discount" name="discount" value="{{ pawn.discount_requested.amount }}" disabled />
                         </div>
                         <div class="form-group">
-                            <label for="amount"><button type="button" class="btn btn-outline-dark" id="request-discount">Discount</button></label>
-                            <input type="number" class="form-control text-right" id="discount" name="discount" value="0.00" disabled />
+                            <label for="payable">Receivable</label>
+                            <input type="number" class="form-control text-right" id="receivable" name="receivable" value="{{ pawn.getTotalDue|floatformat:2 }}" disabled />
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount Tendered<span style="color: red;">*</span></label>
+                            <input type="number" class="form-control text-right" id="tendered" name="tendered" value="0.00" required />
                         </div>
                         <div class="form-group">
                             <label for="amount">CHANGE</label>
