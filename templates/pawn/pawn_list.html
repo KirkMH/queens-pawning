@@ -24,14 +24,14 @@
         <table id="table" class="table table-hover table-head-fixed table-sm">
             <thead>
                 <tr>
-                    <th class="text-center" width="10%">Action</th>
+                    <th class="text-center">Action</th>
                     <th class="text-center">PTN</th>
                     <th class="text-center">Date</th>
                     <th class="text-center">Client</th>
-                    <th class="text-center">Description</th>
+                    <th class="text-center" width="20%">Description</th>
                     <th class="text-center">Principal</th>
                     <th class="text-center">Service Charge</th>
-                    <th class="text-center">Advance Interest</th>
+                    <!-- <th class="text-center">Advance Interest</th> -->
                     <th class="text-center">Net Proceeds</th>
                     <th class="text-center">Status</th>
                 </tr>
@@ -81,13 +81,19 @@
                         name: "client", 
                         data: null,
                         render: function (data) {
-                            return `${data[9]} ${data[10]}, ${data[11]} ${data[12]}`.toUpperCase();
+                            return `${data[14]} ${data[15]}, ${data[16]} ${data[17]}`.toUpperCase();
                         }
                     },
-                    {name: "description", data: 3},
+                    {
+                        name: "description", 
+                        data: null,
+                        render: function (data) {
+                            return `${data[3]}pc${data[3] > 1 ? 's' : ''} ${data[4]} ${data[5]} ${data[6]} ${data[7]} ${data[8]}g`;
+                        }
+                    },
                     {
                         name: "principal", 
-                        data: 4,
+                        data: 9,
                         render: function (data) {
                             return peso.format(data);
                         },
@@ -95,23 +101,23 @@
                     },
                     {
                         name: "serviceCharge", 
-                        data: 5,
+                        data: 10,
                         render: function (data) {
                             return peso.format(data);
                         },
                         "className": "text-right"
                     },
-                    {
-                        name: "advanceInterest", 
-                        data: 6,
-                        render: function (data) {
-                            return peso.format(data);
-                        },
-                        "className": "text-right"
-                    },
+                    // {
+                    //     name: "advanceInterest", 
+                    //     data: 11,
+                    //     render: function (data) {
+                    //         return peso.format(data);
+                    //     },
+                    //     "className": "text-right"
+                    // },
                     {
                         name: "net", 
-                        data: 7,
+                        data: 12,
                         render: function (data) {
                             return peso.format(data);
                         },
@@ -119,7 +125,7 @@
                     },
                     {
                         name: "status", 
-                        data: 8,
+                        data: 13,
                         render: function (data) {
                             return (data && data[0].toUpperCase() + data.slice(1).toLowerCase()) || "";
                         }

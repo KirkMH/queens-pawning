@@ -26,8 +26,8 @@ def pawn_list(request):
 @method_decorator(login_required, name='dispatch')
 class PawnDTListView(ServerSideDatatableView):
     queryset = Pawn.objects.all()
-    columns = ['pk', 'date', 'client', 'description', 'principal',
-               'service_charge', 'advance_interest', 'net_proceeds', 'status',
+    columns = ['pk', 'date', 'client', 'quantity', 'carat', 'color', 'item_description', 'description', 'grams',
+               'principal', 'service_charge', 'advance_interest', 'net_proceeds', 'status',
                'client__title', 'client__last_name', 'client__first_name', 'client__middle_name']
 
     def get_queryset(self):
@@ -40,16 +40,21 @@ class PawnDTListView(ServerSideDatatableView):
 @method_decorator(login_required, name='dispatch')
 class PawnCreateView(CreateView):
     model = Pawn
-    form_class = PawnForm
     template_name = 'pawn/pawn_form.html'
+    form_class = PawnForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['otherFees'] = OtherFees.get_instance()
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super(PawnCreateView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
     def post(self, request, *args, **kwargs):
-        form = PawnForm(request.POST)
+        form = PawnForm(request.POST, request=request)
         if form.is_valid():
             saved = form.save(commit=False)
             saved.branch = Employee.objects.get(user=request.user).branch
@@ -86,6 +91,11 @@ class PawnDetailView(DetailView):
     model = Pawn
     template_name = "pawn/pawn_detail.html"
     context_object_name = 'pawn'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['otherFees'] = OtherFees.get_instance()
+        return context
 
 
 @login_required

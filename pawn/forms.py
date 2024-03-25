@@ -17,11 +17,17 @@ class PawnForm(forms.ModelForm):
 
     class Meta:
         model = Pawn
-        exclude = ('status', 'date', 'status_updated_on', 'branch', )
+        exclude = ('status', 'date', 'status_updated_on',
+                   'branch', 'renewed_to')
 
-    def __init__(self, *args, **kwards):
-        super().__init__(*args, **kwards)
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(PawnForm, self).__init__(*args, **kwargs)
+
         self.fields['client'].queryset = Client.objects.filter(status='ACTIVE')
+        if self.request:
+            self.fields['client'].queryset = self.fields['client'].queryset.filter(
+                branch=Employee.objects.get(user=self.request.user).branch)
         # self.fields['service_charge'].widget.attrs['disabled'] = True
         # self.fields['advance_interest'].widget.attrs['disabled'] = True
         # self.fields['net_proceeds'].widget.attrs['disabled'] = True

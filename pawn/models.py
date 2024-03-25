@@ -6,7 +6,7 @@ from simple_history.models import HistoricalRecords
 from datetime import datetime
 from decimal import Decimal
 
-from files.models import Client, Branch, InterestRate, TermDuration
+from files.models import Client, Branch, InterestRate, TermDuration, OtherFees
 from access_hub.models import Employee
 
 
@@ -26,6 +26,35 @@ class Pawn(models.Model):
         (REDEEMED, _('Redeemed')),
         (AUCTIONED, _('Auctioned'))
     ]
+    CARAT = [
+        ('10k', '10k'),
+        ('12k', '12k'),
+        ('18k', '18k'),
+        ('21k', '21k'),
+        ('24k', '24k')
+    ]
+    COLOR = [
+        ('White Gold', _('White Gold')),
+        ('Yellow Gold', _('Yellow Gold')),
+        ('Rose Gold', _('Rose Gold')),
+        ('Saudi Gold', _('Saudi Gold')),
+        ('Japan Gold', _('Japan Gold')),
+        ('Tri-Color', _('Tri-Color'))
+    ]
+    ITEM_DESCRIPTION = [
+        ('Anklet', _('Anklet')),
+        ('Bangle', _('Bangle')),
+        ('Bracelet', _('Bracelet')),
+        ('Stud Earrings', _('Stud Earrings')),
+        ('Loop Earrings', _('Loop Earrings')),
+        ('Clip Earrings', _('Clip Earrings')),
+        ('Stud Earrings', _('Stud Earrings')),
+        ('Dangling Earrings', _('Dangling Earrings')),
+        ('Ring', _('Ring')),
+        ('Wedding Ring', _('Wedding Ring')),
+        ('Necklace', _('Necklace')),
+        ('Pendant', _('Pendant'))
+    ]
 
     date = models.DateTimeField(auto_now_add=True)
     client = models.ForeignKey(
@@ -33,8 +62,36 @@ class Pawn(models.Model):
         on_delete=models.CASCADE,
         null=False, blank=False
     )
+    quantity = models.PositiveIntegerField(
+        _('Quantity'),
+        null=False, blank=False,
+        default=1
+    )
+    carat = models.CharField(
+        _('Carat'),
+        max_length=10,
+        choices=CARAT,
+        null=False, blank=False
+    )
+    color = models.CharField(
+        _('Color'),
+        max_length=20,
+        choices=COLOR,
+        null=False, blank=False
+    )
+    item_description = models.CharField(
+        _('Item Description'),
+        max_length=20,
+        choices=ITEM_DESCRIPTION,
+        null=False, blank=False
+    )
     description = models.TextField(
-        _('Description'),
+        _('Additional Description')
+    )
+    grams = models.DecimalField(
+        _('Grams'),
+        max_digits=5,
+        decimal_places=2,
         null=False, blank=False
     )
     principal = models.DecimalField(
@@ -87,7 +144,12 @@ class Pawn(models.Model):
     inventory = Inventory()
 
     def __str__(self):
-        return f"{self.description} by {self.client}"
+        return f"{self.complete_description} by {self.client}"
+
+    @property
+    def complete_description(self):
+        unit = 'pcs' if self.quantity > 1 else 'pc'
+        return f"{self.quantity}{unit} {self.carat} {self.color} {self.item_description} {self.description} {self.grams}g"
 
     def getElapseDays(self):
         return (datetime.now().date() - self.date.date()).days
@@ -126,31 +188,52 @@ class Pawn(models.Model):
     def getTotalDue(self):
         return self.principal + self.getInterest() + self.getPenalty()
 
+    def getRenewalServiceFee(self):
+        return OtherFees.get_instance().service_fee
+
+    def getRenewalAdvanceInterest(self):
+        return OtherFees.get_instance().advance_interest_rate * self.principal
+
     def getMinimumPayment(self):
-        return self.getInterest() + self.getPenalty()
+        otherFees = OtherFees.get_instance()
+        service_charge = otherFees.service_fee
+        adv_int = otherFees.advance_interest_rate * self.principal
+        return self.getInterest() + self.getPenalty() + service_charge + adv_int
 
     def pay(self, amount_paid, cashier):
-        if amount_paid > self.getMinimumPayment():
-            paid_for_principal = amount_paid - self.getMinimumPayment()
+        discounted = 0
+        dr = DiscountRequests.objects.filter(pawn=self)
+        if dr:
+            discounted = dr.first().getApprovedDiscount()
 
         if amount_paid == self.getTotalDue():
+            paid_for_principal = self.principal
             self.status = 'REDEEMED'
         else:
-            # create a new pawn ticket for the renewed pawn
+            paid_for_principal = amount_paid - self.getMinimumPayment() + discounted
             new_principal = self.principal - paid_for_principal
+            otherFees = OtherFees.get_instance()
+            new_sf = otherFees.service_fee
+            new_ai = otherFees.advance_interest_rate * new_principal
+            # create a new pawn ticket for the renewed pawn
             new_pawn = Pawn()
             new_pawn.client = self.client
+            new_pawn.quantity = self.quantity
+            new_pawn.carat = self.carat
+            new_pawn.color = self.color
+            new_pawn.item_description = self.item_description
             new_pawn.description = self.description
+            new_pawn.grams = self.grams
             new_pawn.principal = new_principal
-            new_pawn.service_charge = 0
-            new_pawn.advance_interest = 0
-            new_pawn.net_proceeds = 0
+            new_pawn.service_charge = new_sf
+            new_pawn.advance_interest = new_ai
+            new_pawn.net_proceeds = new_principal - new_sf - new_ai
             new_pawn.branch = self.branch
             new_pawn.status = 'ACTIVE'
             new_pawn.save()
 
             self.status = 'RENEWED'
-            new_pawn.renewed_to = new_pawn
+            self.renewed_to = new_pawn
 
         self.status_updated_on = datetime.now()
         self.save()
@@ -252,6 +335,9 @@ class DiscountRequests(models.Model):
         self.approved_by = employee
         self.approved_on = datetime.now()
         self.save()
+
+    def getApprovedDiscount(self):
+        return self.amount if self.status == 'APPROVED' else 0
 
     def __str__(self):
         return f"{self.pawn} - {self.amount} on {self.date}"

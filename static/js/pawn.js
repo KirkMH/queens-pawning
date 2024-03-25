@@ -12,6 +12,7 @@ const calculateChange = () => {
 };
 calculateChange();
 $("#tendered").on("keyup", calculateChange);
+$("#amount").on("keyup", calculateChange);
 $("#discount").on("change", calculateChange);
 
 function validateForm() {
@@ -42,19 +43,33 @@ const errorProcessor = (error, dialog) => {
 
 $("#request-discount").on("click", function () {
   const pawn_id = $("#pawn_id").val();
+  const max_discount = parseFloat($("#max_discount").val());
+  const discount = parseFloat($("#discount").val());
+
+  if (discount > 0) {
+    toastr.error("Discount was already granted.");
+    return;
+  }
 
   bootbox.prompt({
-    title: "Enter the requested discount amount:",
+    title: "Enter the requested discount amount (max of interest due):",
     inputType: "number",
     step: 0.01,
+    min: 1,
+    max: max_discount,
 
     callback: function (result) {
+      console.log(`requested ${result}`);
       if (result == null) return;
+      else if (result > max_discount) {
+        toastr.error("Requested discount must not exceed the interest due.");
+        return;
+      }
 
       let dialog = bootbox.dialog({
         title: "Requesting discount",
         message:
-          '<p><i class="fas fa-spin fa-spinner"></i>&nbsp;Please wait for approval...</p>',
+          '<p><i class="fas fa-spin fa-spinner"></i>&nbsp;Please wait for the approval...</p>',
         closeButton: false,
         buttons: {
           cancel: {
