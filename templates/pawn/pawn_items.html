@@ -56,7 +56,13 @@
                         },
                         className: 'text-center'
                     },
-                    {name: "description", data: 2},
+                    {
+                        name: "description", 
+                        data: null,
+                        render: function(data) {
+                            return `${data[8]}pc${data[3] > 1 ? 's' : ''} ${data[9]} ${data[10]} ${data[11]} ${data[2]} ${data[12]}g`;
+                        }
+                    },
                     {
                         name: "principal", 
                         data: 3,

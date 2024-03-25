@@ -59,7 +59,6 @@ $("#request-discount").on("click", function () {
     max: max_discount,
 
     callback: function (result) {
-      console.log(`requested ${result}`);
       if (result == null) return;
       else if (result > max_discount) {
         toastr.error("Requested discount must not exceed the interest due.");
@@ -88,6 +87,7 @@ $("#request-discount").on("click", function () {
           type: "GET",
           data: {
             amount: result,
+            interest_due: max_discount,
           },
           success: function (data) {
             const success = data["success"];

@@ -173,18 +173,22 @@
                     <div class="card-body">
                         <div class="row mb-2">
                             <div class="col-6">Paid Interest:</div>
-                            <div class="col-6 text-right">{{ pawn.getInterest|peso }}</div>
+                            <div class="col-6 text-right">{{ pawn.payment_pawn.paid_interest|peso }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">Penalty:</div>
+                            <div class="col-6 text-right">{{ pawn.payment_pawn.penalty|peso }}</div>
                         </div>
                         {% if pawn.status == 'RENEWED' %}
                         <div class="row mb-2">
-                            <div class="col-6">Service Charge:</div>
-                            <div class="col-6 text-right">{{ pawn.service_charge|peso }}</div>
+                            <div class="col-6">Service Fee:</div>
+                            <div class="col-6 text-right">{{ pawn.payment_pawn.service_fee|peso }}</div>
                         </div>
-                        {% endif %}
                         <div class="row mb-2">
                             <div class="col-6">Advance Interest:</div>
-                            <div class="col-6 text-right">{{ pawn.advance_interest|peso }}</div>
+                            <div class="col-6 text-right">{{ pawn.payment_pawn.advance_interest|peso }}</div>
                         </div>
+                        {% endif %}
                         <div class="row mb-2">
                             <div class="col-6">Partial Payment:</div>
                             <div class="col-6 text-right">{{ pawn.payment_pawn.paid_for_principal|peso }}</div>

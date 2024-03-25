@@ -137,7 +137,8 @@ def inventory_list(request):
 class PawnedItemsDTListView(ServerSideDatatableView):
     queryset = Pawn.inventory.all()
     columns = ['pk', 'date', 'description', 'principal',
-               'client__title', 'client__last_name', 'client__first_name', 'client__middle_name']
+               'client__title', 'client__last_name', 'client__first_name', 'client__middle_name',
+               'quantity', 'carat', 'color', 'item_description', 'grams',]
 
     def get_queryset(self):
         if Employee.objects.filter(user=self.request.user).count() > 0 and Employee.objects.get(user=self.request.user).branch:
@@ -157,8 +158,10 @@ def request_discount(request, pk):
     try:
         pawn = Pawn.objects.get(pk=pk)
         amount = request.GET['amount']
+        interest_due = request.GET['interest_due']
         discount = DiscountRequests.objects.create(
-            pawn=pawn, amount=amount, requested_by=Employee.objects.get(user=request.user))
+            pawn=pawn, interest_due=interest_due, amount=amount,
+            requested_by=Employee.objects.get(user=request.user))
         print(discount)
     except Exception as e:
         print(e)
@@ -240,7 +243,8 @@ def discount_requests(request):
 class DiscountRequestsDTListView(ServerSideDatatableView):
     queryset = DiscountRequests.objects.all()
     columns = ['pk', 'date', 'pawn__pk', 'amount', 'status',
-               'requested_by__user__last_name', 'requested_by__user__first_name']
+               'requested_by__user__last_name', 'requested_by__user__first_name',
+               'pawn__principal', 'interest_due']
 
     def get_queryset(self):
         if Employee.objects.filter(user=self.request.user).count() > 0 and Employee.objects.get(user=self.request.user).branch:

@@ -201,20 +201,27 @@ class Pawn(models.Model):
         return self.getInterest() + self.getPenalty() + service_charge + adv_int
 
     def pay(self, amount_paid, cashier):
+        otherFees = OtherFees.get_instance()
+        paid_for_principal = self.principal
+        interest = self.getInterest()
+        penalty = self.getPenalty()
+        adv_interest = 0
+        service_fee = 0
         discounted = 0
         dr = DiscountRequests.objects.filter(pawn=self)
+
         if dr:
             discounted = dr.first().getApprovedDiscount()
 
         if amount_paid == self.getTotalDue():
-            paid_for_principal = self.principal
             self.status = 'REDEEMED'
         else:
-            paid_for_principal = amount_paid - self.getMinimumPayment() + discounted
+            paid_for_principal = amount_paid - interest - penalty + discounted
             new_principal = self.principal - paid_for_principal
-            otherFees = OtherFees.get_instance()
-            new_sf = otherFees.service_fee
-            new_ai = otherFees.advance_interest_rate * new_principal
+            service_fee = otherFees.service_fee
+            adv_interest = new_principal * otherFees.advance_interest_rate
+            paid_for_principal = paid_for_principal - service_fee - adv_interest
+            new_principal = self.principal - paid_for_principal
             # create a new pawn ticket for the renewed pawn
             new_pawn = Pawn()
             new_pawn.client = self.client
@@ -225,9 +232,9 @@ class Pawn(models.Model):
             new_pawn.description = self.description
             new_pawn.grams = self.grams
             new_pawn.principal = new_principal
-            new_pawn.service_charge = new_sf
-            new_pawn.advance_interest = new_ai
-            new_pawn.net_proceeds = new_principal - new_sf - new_ai
+            new_pawn.service_charge = service_fee
+            new_pawn.advance_interest = adv_interest
+            new_pawn.net_proceeds = new_principal - service_fee - adv_interest
             new_pawn.branch = self.branch
             new_pawn.status = 'ACTIVE'
             new_pawn.save()
@@ -241,6 +248,10 @@ class Pawn(models.Model):
         payment = Payment()
         payment.amount_paid = amount_paid
         payment.pawn = self
+        payment.paid_interest = interest
+        payment.penalty = penalty
+        payment.service_fee = service_fee
+        payment.advance_interest = adv_interest
         payment.cashier = cashier
         payment.paid_for_principal = paid_for_principal
         payment.save()
@@ -252,6 +263,30 @@ class Payment(models.Model):
         Pawn,
         on_delete=models.CASCADE,
         related_name='payment_pawn',
+        null=False, blank=False
+    )
+    paid_interest = models.DecimalField(
+        _('Paid Interest'),
+        max_digits=10,
+        decimal_places=2,
+        null=False, blank=False
+    )
+    penalty = models.DecimalField(
+        _('Penalty'),
+        max_digits=10,
+        decimal_places=2,
+        null=False, blank=False
+    )
+    service_fee = models.DecimalField(
+        _('Service Fee'),
+        max_digits=10,
+        decimal_places=2,
+        null=False, blank=False
+    )
+    advance_interest = models.DecimalField(
+        _('Advance Interest'),
+        max_digits=10,
+        decimal_places=2,
         null=False, blank=False
     )
     amount_paid = models.DecimalField(
@@ -290,6 +325,12 @@ class DiscountRequests(models.Model):
         Pawn,
         on_delete=models.CASCADE,
         related_name='discount_requested',
+        null=False, blank=False
+    )
+    interest_due = models.DecimalField(
+        _('Interest Due'),
+        max_digits=10,
+        decimal_places=2,
         null=False, blank=False
     )
     amount = models.DecimalField(
