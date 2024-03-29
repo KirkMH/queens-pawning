@@ -60,7 +60,17 @@
                         name: "description", 
                         data: null,
                         render: function(data) {
-                            return `${data[8]}pc${data[3] > 1 ? 's' : ''} ${data[9]} ${data[10]} ${data[11]} ${data[2]} ${data[12]}g`;
+                            let description = `${data[8]}pc${data[3] > 1 ? 's' : ''}`
+                            if (data[9] != "Others")
+                                description += ` ${data[9]}`
+                            if (data[10] != "Others")
+                                description += ` ${data[10]}`
+                            if (data[11] != "Others")
+                                description += ` ${data[11]}`
+                            if (data[2].length > 0)
+                                description += ` ${data[2]}`
+                            description += ` ${data[12]}g`
+                            return description;
                         }
                     },
                     {

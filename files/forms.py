@@ -12,10 +12,11 @@ class ClientForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['id_link'].required = True
+        self.fields['middle_name'].required = False
 
     class Meta:
         model = Client
-        exclude = ('status', )
+        exclude = ('status', 'branch')
 
 
 class AdminClientForm(forms.ModelForm):

@@ -31,7 +31,8 @@ class Pawn(models.Model):
         ('12k', '12k'),
         ('18k', '18k'),
         ('21k', '21k'),
-        ('24k', '24k')
+        ('24k', '24k'),
+        ('Others', 'Others, specify in description')
     ]
     COLOR = [
         ('White Gold', _('White Gold')),
@@ -39,7 +40,8 @@ class Pawn(models.Model):
         ('Rose Gold', _('Rose Gold')),
         ('Saudi Gold', _('Saudi Gold')),
         ('Japan Gold', _('Japan Gold')),
-        ('Tri-Color', _('Tri-Color'))
+        ('Tri-Color', _('Tri-Color')),
+        ('Others', 'Others, specify in description')
     ]
     ITEM_DESCRIPTION = [
         ('Anklet', _('Anklet')),
@@ -53,7 +55,8 @@ class Pawn(models.Model):
         ('Ring', _('Ring')),
         ('Wedding Ring', _('Wedding Ring')),
         ('Necklace', _('Necklace')),
-        ('Pendant', _('Pendant'))
+        ('Pendant', _('Pendant')),
+        ('Others', 'Others, specify in description')
     ]
 
     date = models.DateTimeField(auto_now_add=True)
@@ -149,7 +152,17 @@ class Pawn(models.Model):
     @property
     def complete_description(self):
         unit = 'pcs' if self.quantity > 1 else 'pc'
-        return f"{self.quantity}{unit} {self.carat} {self.color} {self.item_description} {self.description} {self.grams}g"
+        description = f"{self.quantity}{unit}"
+        if self.carat != 'Others':
+            description += f" {self.carat}"
+        if self.color != 'Others':
+            description += f" {self.color}"
+        if self.item_description != 'Others':
+            description += f" {self.item_description}"
+        if len(self.description) > 0:
+            description += f" {self.description}"
+        description += f" {self.grams}g"
+        return description
 
     def getElapseDays(self):
         return (datetime.now().date() - self.date.date()).days

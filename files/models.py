@@ -57,7 +57,8 @@ class Client(models.Model):
     )
     middle_name = models.CharField(
         _('Middle Name'),
-        max_length=20
+        max_length=20,
+        null=False, blank=False
     )
     address = models.CharField(
         _('Address'),

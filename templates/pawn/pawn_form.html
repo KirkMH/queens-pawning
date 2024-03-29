@@ -75,6 +75,10 @@ New Pawn
             const serviceCharge = parseFloat("{{ otherFees.service_fee }}") || 0;
             const advanceInterest = (parseFloat("{{ otherFees.advance_interest_rate }}") || 0) / 100;
 
+            $("#id_service_charge").prop('readonly', true);
+            $("#id_advance_interest").prop('readonly', true);
+            $("#id_net_proceeds").prop('readonly', true);
+
             // set the service charge and advance interest
             $("#id_service_charge").val(serviceCharge.toFixed(2));
 
