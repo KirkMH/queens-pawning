@@ -198,6 +198,9 @@ class Pawn(models.Model):
             return self.principal * (InterestRate.rates.get_max_rate() / 100) * (daysPenalty / 30)
         return 0
 
+    def getInterestPlusPenalty(self):
+        return self.getInterest() + self.getPenalty()
+
     def getTotalDue(self):
         return self.principal + self.getInterest() + self.getPenalty()
 

@@ -136,3 +136,27 @@ $("#request-discount").on("click", function () {
     },
   });
 });
+
+function toggleForm(action) {
+  const hide = action === "redeem";
+  $("#partial")
+    .parent()
+    .parent()
+    .css("display", hide ? "none" : "block");
+}
+
+$("#btnRedeem").on("click", function () {
+  console.log("Redeem button clicked");
+  if ($("#btnRedeem").prop("checked")) {
+    toggleForm("redeem");
+  }
+});
+
+$("#btnRenew").on("click", function () {
+  console.log("Renew button clicked");
+  if ($("#btnRenew").prop("checked")) {
+    toggleForm("renew");
+  }
+});
+
+toggleForm("redeem");

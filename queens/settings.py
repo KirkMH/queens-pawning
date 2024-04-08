@@ -51,7 +51,7 @@ INSTALLED_APPS = [
 ]
 
 # setting the default pack to be used by crispy-form
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
