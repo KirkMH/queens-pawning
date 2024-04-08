@@ -2,7 +2,7 @@
             <a href="{% url 'dashboard' %}" class="nav-link" id="menu_dashboard">Dashboard</a>
         </li>
         <li class="nav-item dropdown my-auto" id="menu-records">
-            <a id="dropdownRecords" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">Records</a>
+            <a id="dropdownRecords" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">Records</a>
             <ul aria-labelledby="dropdownRecords" class="dropdown-menu border-0 shadow">
                 <li id="menu-clients">
                     <a class="dropdown-item" href="{% url 'client_list' %}">Clients</a>
@@ -28,7 +28,7 @@
             </ul>
         </li>
         <li class="nav-item dropdown my-auto" id="menu-transactions">
-            <a id="dropdownTransactions" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">Transactions</a>
+            <a id="dropdownTransactions" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">Transactions</a>
             <ul aria-labelledby="dropdownTransactions" class="dropdown-menu border-0 shadow">
                 <li id="menu-pawn">
                     <a class="dropdown-item" href="{% url 'pawn_list' %}">Pawn</a>
@@ -45,7 +45,7 @@
             </ul>
         </li>
         <li class="nav-item dropdown my-auto" id="menu-reports">
-            <a id="dropdownReports" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">Reports</a>
+            <a id="dropdownReports" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">Reports</a>
             <ul aria-labelledby="dropdownReports" class="dropdown-menu border-0 shadow">
                 <li id="menu-monitoring">
                     <a class="dropdown-item" href="{% url 'inventory_list' %}">Pawned Items Monitoring</a>
@@ -71,7 +71,7 @@
             </ul>
         </li>
         <li class="nav-item dropdown my-auto" id="menu-account">
-            <a id="dropdownAccount" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">
+            <a id="dropdownAccount" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">
                 <i class="fas fa-user"></i>&nbsp;
                 {% if user.get_full_name != "" %}
                     {{ user.get_full_name }}
