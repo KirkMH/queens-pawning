@@ -1,29 +1,36 @@
-const calculateChange = () => {
-  const totalDue = parseFloat($("#amount").val());
+const calculate = () => {
+  const principal = parseFloat($("#principal").val());
+  const interestPlusPenalty = parseFloat($("#interestPlusPenalty").val());
+
+  let partial = parseFloat($("#partial").val());
+  if (!partial) partial = 0;
+
+  const receivable = parseFloat($("#receivable").val());
   const tendered = parseFloat($("#tendered").val());
+
   let discount = parseFloat($("#discount").val());
   if (!discount) discount = 0;
-  const receivable = totalDue - discount;
-  const change = tendered - receivable;
 
-  $("#discount").val(discount.toFixed(2));
-  $("#receivable").val(receivable.toFixed(2));
+  let toPay = 0;
+  if ($("#btnRedeem").prop("checked")) {
+    toPay = interestPlusPenalty - discount + principal;
+  } else {
+    toPay = interestPlusPenalty - discount + partial;
+  }
+  const change = tendered - toPay;
+
+  $("#receivable").val(toPay.toFixed(2));
   $("#change").val(change.toFixed(2));
 };
-calculateChange();
-$("#tendered").on("keyup", calculateChange);
-$("#amount").on("keyup", calculateChange);
-$("#discount").on("change", calculateChange);
+calculate();
+$("#tendered").on("keyup", calculate);
+$("#partial").on("keyup", calculate);
+$("#discount").on("change", calculate);
 
 function validateForm() {
-  const minPayment = parseFloat($("#min_payment").val());
-  const maxPayment = parseFloat($("#max_payment").val());
-  const toPay = parseFloat($("#amount").val());
   const change = parseFloat($("#change").val());
   let err = "";
-  if (toPay < minPayment || toPay > maxPayment)
-    err = "Amount must be between the minimum payment and the total due.";
-  else if (change < 0)
+  if (change < 0)
     err =
       "Tendered amount must be greater than or equal to the amount to be paid.";
 
@@ -43,7 +50,7 @@ const errorProcessor = (error, dialog) => {
 
 $("#request-discount").on("click", function () {
   const pawn_id = $("#pawn_id").val();
-  const max_discount = parseFloat($("#max_discount").val());
+  const max_discount = parseFloat($("#interestPlusPenalty").val());
   const discount = parseFloat($("#discount").val());
 
   if (discount > 0) {
@@ -52,7 +59,8 @@ $("#request-discount").on("click", function () {
   }
 
   bootbox.prompt({
-    title: "Enter the requested discount amount (max of interest due):",
+    title:
+      "Enter the requested discount amount (max of interest plus penalty):",
     inputType: "number",
     step: 0.01,
     min: 1,
@@ -109,7 +117,7 @@ $("#request-discount").on("click", function () {
                       } else {
                         toastr.success("Discount request approved.");
                         $("#discount").val(result);
-                        calculateChange();
+                        calculate();
                       }
                     }
                   },
@@ -137,26 +145,17 @@ $("#request-discount").on("click", function () {
   });
 });
 
-function toggleForm(action) {
-  const hide = action === "redeem";
-  $("#partial")
-    .parent()
-    .parent()
-    .css("display", hide ? "none" : "block");
+function toggleForm() {
+  $("#partial-payment").toggle();
+  calculate();
 }
 
-$("#btnRedeem").on("click", function () {
-  console.log("Redeem button clicked");
-  if ($("#btnRedeem").prop("checked")) {
-    toggleForm("redeem");
-  }
+$("#btnRedeem").on("change", function () {
+  toggleForm();
 });
 
-$("#btnRenew").on("click", function () {
-  console.log("Renew button clicked");
-  if ($("#btnRenew").prop("checked")) {
-    toggleForm("renew");
-  }
+$("#btnRenew").on("change", function () {
+  toggleForm();
 });
 
-toggleForm("redeem");
+toggleForm();
