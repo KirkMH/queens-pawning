@@ -229,14 +229,13 @@ class Pawn(models.Model):
         if dr:
             discounted = dr.first().getApprovedDiscount()
 
-        if amount_paid == self.getTotalDue():
+        if amount_paid >= self.principal:
             self.status = 'REDEEMED'
         else:
-            paid_for_principal = amount_paid - interest - penalty + discounted
-            new_principal = self.principal - paid_for_principal
+            # TODO: consideration for advance interest
             service_fee = otherFees.service_fee
-            adv_interest = new_principal * otherFees.advance_interest_rate
-            paid_for_principal = paid_for_principal - service_fee - adv_interest
+            paid_for_principal = Decimal(amount_paid) - interest - \
+                penalty + discounted - service_fee
             new_principal = self.principal - paid_for_principal
             # create a new pawn ticket for the renewed pawn
             new_pawn = Pawn()

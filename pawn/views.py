@@ -106,27 +106,15 @@ def pawn_payment(request, pk):
     pawn = Pawn.objects.get(pk=pk)
     print('processing payment for ', pawn)
     if request.method == 'POST':
-        form = PawnPaymentForm(request.POST)
-        print(form)
-        if form.is_valid():
-            amount_to_pay = form.cleaned_data['amount']
-            if amount_to_pay < pawn.getMinimumPayment() or amount_to_pay > pawn.getTotalDue():
-                messages.error(
-                    request, f"Amount paid should be within the minimum payment and the total due.")
-                return render(request, 'pawn/pawn_detail.html', {'form': form, 'pawn': pawn})
-
+        print(request.POST)
+        if request.POST.get('amtToPay'):
+            amount_to_pay = float(request.POST.get('amtToPay'))
             pawn.pay(amount_to_pay, Employee.objects.get(user=request.user))
             messages.success(
                 request, f"Payment of ₱ {'{:,.2f}'.format(amount_to_pay)} for {pawn.client} was recorded successfully.")
             return redirect('pawn_detail', pk=pk)
         else:
-            # get the error message and pass it to messages.error
-            # collect errors from form.errors.as_data() to a list
-            errors = []
-            for key, value in form.errors.as_data().items():
-                errors.append(f"{key}: {value[0]}")
-            if len(errors) > 0:
-                messages.error(request, "\n".join(errors))
+            messages.error(request, "Please fill-in all required fields.")
 
     return render(request, 'pawn/pawn_detail.html', {'pawn': pawn})
 

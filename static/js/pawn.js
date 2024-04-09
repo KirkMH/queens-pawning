@@ -1,25 +1,23 @@
 const calculate = () => {
   const principal = parseFloat($("#principal").val());
   const interestPlusPenalty = parseFloat($("#interestPlusPenalty").val());
-
-  let partial = parseFloat($("#partial").val());
-  if (!partial) partial = 0;
-
   const receivable = parseFloat($("#receivable").val());
   const tendered = parseFloat($("#tendered").val());
 
-  let discount = parseFloat($("#discount").val());
-  if (!discount) discount = 0;
+  let discount = parseFloat($("#discount").val()) || 0;
+  let partial = parseFloat($("#partial").val()) || 0;
+  let serviceFee = parseFloat($("#serviceFee").val()) || 0;
 
   let toPay = 0;
   if ($("#btnRedeem").prop("checked")) {
     toPay = interestPlusPenalty - discount + principal;
   } else {
-    toPay = interestPlusPenalty - discount + partial;
+    toPay = interestPlusPenalty - discount + serviceFee + partial;
   }
   const change = tendered - toPay;
 
   $("#receivable").val(toPay.toFixed(2));
+  $("#amtToPay").val(toPay);
   $("#change").val(change.toFixed(2));
 };
 calculate();
@@ -31,8 +29,7 @@ function validateForm() {
   const change = parseFloat($("#change").val());
   let err = "";
   if (change < 0)
-    err =
-      "Tendered amount must be greater than or equal to the amount to be paid.";
+    err = "Tendered amount must be greater than or equal to the receivable.";
 
   if (err) {
     toastr.error(err);
@@ -146,7 +143,7 @@ $("#request-discount").on("click", function () {
 });
 
 function toggleForm() {
-  $("#partial-payment").toggle();
+  $(".partial-payment").toggle();
   calculate();
 }
 
