@@ -3,16 +3,16 @@
 {% load humanize %}
 {% load form_tags %}
 
-{% block title %}Interest Rates{% endblock title %}
-{% block page_title %}Interest Rates{% endblock page_title %}
+{% block title %}{{ description }}s{% endblock title %}
+{% block page_title %}{{ description }}s{% endblock page_title %}
 
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
-    <li class="breadcrumb-item active">Interest Rates</li>
+    <li class="breadcrumb-item active">{{ description }}s</li>
 {% endblock breadcrumb %}
 
 {% block main_content %}
-<form action="{% url 'interest_rates' %}" method="POST">
+<form method="POST">
     {% csrf_token %}
     <div class="card m-4">
         <div class="card-body">
@@ -23,7 +23,7 @@
                             <tr>
                                 <th></th>
                                 <th>Min Days</th>
-                                <th>Interest Rate (%)</th>
+                                <th>{{ description }} (%)</th>
                             </tr>
                         </thead>
                         <tbody>

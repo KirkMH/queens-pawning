@@ -154,6 +154,45 @@ class InterestRate(models.Model):
         ordering = ['min_day']
 
 
+class AdvanceInterestRateManager(models.Manager):
+    def get_rate(self, elapsed_days):
+        # Get the interest rate for the given number of elapsed days
+        try:
+            rate = self.filter(min_day__lte=elapsed_days).order_by(
+                '-interest_rate').first()
+            return rate.interest_rate if rate else None
+        except AdvanceInterestRate.DoesNotExist:
+            return None
+
+    def get_max_rate(self):
+        # Get the maximum interest rate
+        try:
+            rate = self.order_by('-interest_rate').first()
+            return Decimal(str(rate.interest_rate)) if rate else None
+        except AdvanceInterestRate.DoesNotExist:
+            return None
+
+
+class AdvanceInterestRate(models.Model):
+    interest_rate = models.PositiveSmallIntegerField(
+        _('Interest Rate'),
+        null=False, blank=False
+    )
+    min_day = models.PositiveSmallIntegerField(
+        _('Minimum Days'),
+        null=False, blank=False
+    )
+
+    objects = models.Manager()
+    rates = AdvanceInterestRateManager()
+
+    def __str__(self):
+        return f'From {self.min_day} days: {self.interest_rate}%'
+
+    class Meta:
+        ordering = ['min_day']
+
+
 class OtherFees(models.Model):
     service_fee = models.DecimalField(
         _('Service Fee'),

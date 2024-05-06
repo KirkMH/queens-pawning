@@ -14,7 +14,10 @@
                     <a class="dropdown-item" href="{% url 'expense_category_list' %}">Expense Categories</a>
                 </li>
                 <li id="menu-expense-ir">
-                    <a class="dropdown-item" href="{% url 'interest_rates' %}">Interest Rates</a>
+                    <a class="dropdown-item" href="{% url 'interest_rates' 'int' %}">Interest Rates</a>
+                </li>
+                <li id="menu-expense-ir">
+                    <a class="dropdown-item" href="{% url 'interest_rates' 'adv' %}">Advance Interest Rates</a>
                 </li>
                 <li id="menu-other-fees">
                     <a class="dropdown-item" href="{% url 'other_fees' %}">Other Fees</a>

@@ -237,7 +237,10 @@ def term_duration(request):
 ###############################################################################################
 
 @login_required
-def interest_rate(request):
+def interest_rate(request, type):
+    obj = InterestRate if type == 'int' else AdvanceInterestRate
+    description = "Interest rate" if type == 'int' else "Advance interest rate"
+
     # check if post
     if request.method == 'POST':
         # get the form data
@@ -246,21 +249,22 @@ def interest_rate(request):
 
         if len(min_days) > 0 and (len(min_days) == len(rate)):
             print(min_days, rate)
-            # clear contents of InterestRate model
-            InterestRate.objects.all().delete()
+            # clear contents of the model
+            obj.objects.all().delete()
 
             # insert each element
             for i in range(len(min_days)):
-                InterestRate.objects.create(
+                obj.objects.create(
                     min_day=int(min_days[i]),
                     interest_rate=int(rate[i])
                 )
 
             messages.success(
-                request, "Interest rates was updated successfully.")
+                request, f"{description} was updated successfully.")
 
-    rates = InterestRate.objects.all()
+    rates = obj.objects.all()
     context = {
+        'description': description,
         'interest_rates': rates
     }
     return render(request, 'files/interest_rate.html', context)
