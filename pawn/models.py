@@ -58,8 +58,19 @@ class Pawn(models.Model):
         ('Pendant', _('Pendant')),
         ('Others', 'Others, specify in description')
     ]
+    TRANSACTION_TYPE = [
+        ('NEW', _('New')),
+        ('EXISTING', _('Existing'))
+    ]
 
     date = models.DateTimeField(auto_now_add=True)
+    # NEW = Advance Interest Rate; EXISTING = Interest Rate
+    transaction_type = models.CharField(
+        _('Transaction Type'),
+        max_length=10,
+        choices=TRANSACTION_TYPE,
+        default='NEW',
+    )
     client = models.ForeignKey(
         Client,
         on_delete=models.CASCADE,
@@ -97,10 +108,20 @@ class Pawn(models.Model):
         decimal_places=2,
         null=False, blank=False
     )
+    appraised_value = models.DecimalField(
+        _('Appraised Value'),
+        max_digits=10,
+        decimal_places=2,
+        null=False, blank=False
+    )
     principal = models.DecimalField(
         _('Principal'),
         max_digits=10,
         decimal_places=2,
+        null=False, blank=False
+    )
+    promised_renewal_date = models.DateField(
+        _('Promised Renewal Date'),
         null=False, blank=False
     )
     service_charge = models.DecimalField(
