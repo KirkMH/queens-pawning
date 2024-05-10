@@ -22,15 +22,20 @@
         </div>
         <div class="card-body">
             <div class="row mb-2">
-                <div class="col-lg-6 col-sm-12">
+                <div class="col-lg-6 col-sm-12 mb-4">
                     <p class="card-text"><span class="text-muted h4">Principal: </span><span class="h4">{{ pawn.principal|peso }}</span></p>
                     <p class="card-text"><span class="text-muted">LESS Service Fee: </span>{{ pawn.service_charge|peso }}</p>
                     <p class="card-text"><span class="text-muted">LESS Advance Interest: </span>{{ pawn.advance_interest|peso }}</p>
                     <p class="card-text"><span class="text-muted">NET PROCEEDS: </span><span class="h5">{{ pawn.net_proceeds|peso }}</span></p>
                 </div>
                 <div class="col-lg-6 col-sm-12">
+                    <p class="card-text"><span class="text-muted">Transaction Type: </span>{{ pawn.transaction_type }}</p>
+                    <p class="card-text"><span class="text-muted">Appraised Value: </span>{{ pawn.appraised_value|peso }}</p>
                     <p class="card-text"><span class="text-muted">Branch: </span>{{ pawn.branch }}</p>
                     <p class="card-text"><span class="text-muted">Date Pawned: </span>{{ pawn.date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
+                    {% if pawn.transaction_type == 'NEW' %}
+                    <p class="card-text"><span class="text-muted">Promised Renewal Date: </span>{{ pawn.promised_renewal_date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
+                    {% endif %}
                     <p class="card-text"><span class="text-muted">Status: </span>{{ pawn.status }}</p>
                     {% if pawn.status == 'RENEWED' and pawn.renewed_to %}
                     <p class="card-text"><a href="{% url 'pawn_detail' pawn.renewed_to.pk  %}">Pawn Ticket # {{ pawn.renewed_to.pk|stringformat:"08d" }}</a></p>
@@ -67,18 +72,27 @@
                             <div class="col-6">Days Elapsed:</div>
                             <div class="col-6 text-right">{{ pawn.getElapseDays }} day{{pawn.getElapseDays|pluralize}}</div>
                         </div>
+                        {% if pawn.transaction_type != 'NEW' %}
                         <div class="row mb-4">
                             <div class="col-6">Interest Rate:</div>
                             <div class="col-6 text-right">{{ pawn.getInterestRate }}%</div>
                         </div>
+                        {% endif %}
                         <div class="row mb-2">
                             <div class="col-6">Principal:</div>
                             <div class="col-6 text-right">{{ pawn.principal|peso }}</div>
                         </div>
+                        {% if pawn.transaction_type == 'NEW' %}
+                        <div class="row mb-2">
+                            <div class="col-6">Additional Interest Due:</div>
+                            <div class="col-6 text-right">{{ pawn.getAdditionalInterest|peso }}</div>
+                        </div>
+                        {% else %}
                         <div class="row mb-2">
                             <div class="col-6">Interest Due:</div>
                             <div class="col-6 text-right">{{ pawn.getInterest|peso }}</div>
                         </div>
+                        {% endif %}
                         {% if pawn.hasPenalty %}
                         <div class="row mb-2">
                             <div class="col-6">Penalty:</div>
@@ -89,15 +103,25 @@
                             <div class="col-6 h5">Total Due:</div>
                             <div class="col-6 h5 text-right">{{ pawn.getTotalDue|peso }}</div>
                         </div>
-                        {%if not pawn.payment_pawn %}
+                        {% if not pawn.payment_pawn %}
                         <div class="row mt-4">
                             <div class="col-6 h5">Minimum Payment for Renewal:</div>
-                            <div class="col-6 h5 text-right">{{ pawn.getMinimumPayment|peso }}</div>
+                            <div class="col-6 h5 text-right">
+                                {{ pawn.getMinimumPayment|peso }}
+                                {% if pawn.transaction_type == 'NEW' %}<sup style="color: red;" title="plus advance interest">++</sup>{% endif %}
+                            </div>
                         </div>
+                        {% if pawn.transaction_type == 'NEW' %}
+                        <div class="row mt-2 ml-5 mr-5 text-muted">
+                            <div class="col-6">Additional Interest Due:</div>
+                            <div class="col-6 text-right">{{ pawn.getAdditionalInterest|peso }}</div>
+                        </div>
+                        {% else %}
                         <div class="row mt-2 ml-5 mr-5 text-muted">
                             <div class="col-6">Interest Due:</div>
                             <div class="col-6 text-right">{{ pawn.getInterest|peso }}</div>
                         </div>
+                        {% endif %}
                         <div class="row mt-2 ml-5 mr-5 text-muted">
                             <div class="col-6">Penalty:</div>
                             <div class="col-6 text-right">{{ pawn.getPenalty|peso }}</div>
@@ -105,10 +129,6 @@
                         <div class="row mt-2 ml-5 mr-5 text-muted">
                             <div class="col-6">Service Fee:</div>
                             <div class="col-6 text-right">{{ pawn.getRenewalServiceFee|peso }}</div>
-                        </div>
-                        <div class="row mt-2 ml-5 mr-5 text-muted">
-                            <div class="col-6">Advance Interest:</div>
-                            <div class="col-6 text-right">{{ pawn.getRenewalAdvanceInterest|peso }}</div>
                         </div>
                         {% endif %}
                     </div>

@@ -3,10 +3,10 @@ from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
-from datetime import datetime
+from django.utils import timezone
 from decimal import Decimal
 
-from files.models import Client, Branch, InterestRate, TermDuration, OtherFees
+from files.models import Client, Branch, InterestRate, AdvanceInterestRate, TermDuration, OtherFees
 from access_hub.models import Employee
 
 
@@ -186,15 +186,44 @@ class Pawn(models.Model):
         return description
 
     def getElapseDays(self):
-        return (datetime.now().date() - self.date.date()).days
+        if self.transaction_type == 'NEW':
+            return (timezone.now().date() - self.promised_renewal_date).days
+        else:
+            return (timezone.now().date() - self.date.date()).days
 
     def getInterestRate(self):
         elapsed = self.getElapseDays()
         rate = InterestRate.rates.get_rate(elapsed)
         return rate if rate else 0
 
+    @staticmethod
+    def advanceInterestRate(promise_date):
+        elapsed = (promise_date - timezone.now().date()).days
+        rate = AdvanceInterestRate.rates.get_rate(elapsed)
+        return rate if rate else 0
+
+    def getAdvanceInterestRate(self):
+        return Pawn.advanceInterestRate(self.promised_renewal_date)
+
     def getInterest(self):
-        return self.principal * Decimal(str((self.getInterestRate() / 100)))
+        interest = 0
+        if self.transaction_type == 'EXISTING':
+            interest = self.principal * \
+                Decimal(str((self.getInterestRate() / 100)))
+        return interest
+
+    def getAdditionalInterest(self):
+        ''' the additional interest is calculated when the pawn is renewed past the promised renewal date '''
+        additional_interest = 0
+        if self.transaction_type == 'NEW':
+            interest = self.principal * \
+                Decimal(str((Pawn.advanceInterestRate(timezone.now().date()) / 100)))
+            if interest > self.advance_interest:
+                additional_interest = interest - self.advance_interest
+        return additional_interest
+
+    def getAdvanceInterest(self):
+        return self.principal * Decimal(str((self.getAdvanceInterestRate() / 100)))
 
     def hasMatured(self):
         return self.getElapseDays() >= TermDuration.get_instance().maturity
@@ -223,19 +252,21 @@ class Pawn(models.Model):
         return self.getInterest() + self.getPenalty()
 
     def getTotalDue(self):
-        return self.principal + self.getInterest() + self.getPenalty()
+        return self.principal + self.getInterest() + self.getPenalty() + self.getAdditionalInterest()
 
     def getRenewalServiceFee(self):
         return OtherFees.get_instance().service_fee
 
-    def getRenewalAdvanceInterest(self):
-        return OtherFees.get_instance().advance_interest_rate * self.principal
-
     def getMinimumPayment(self):
         otherFees = OtherFees.get_instance()
         service_charge = otherFees.service_fee
-        adv_int = otherFees.advance_interest_rate * self.principal
-        return self.getInterest() + self.getPenalty() + service_charge + adv_int
+        adv_int = 0
+        interest = 0
+        if self.transaction_type == 'EXISTING':
+            adv_int = self.getAdvanceInterest()
+        else:
+            interest = self.getInterest()
+        return interest + self.getPenalty() + service_charge + adv_int
 
     def pay(self, amount_paid, cashier):
         otherFees = OtherFees.get_instance()
@@ -278,7 +309,7 @@ class Pawn(models.Model):
             self.status = 'RENEWED'
             self.renewed_to = new_pawn
 
-        self.status_updated_on = datetime.now()
+        self.status_updated_on = timezone.now()
         self.save()
 
         payment = Payment()
@@ -404,13 +435,13 @@ class DiscountRequests(models.Model):
     def approve(self, employee):
         self.status = 'APPROVED'
         self.approved_by = employee
-        self.approved_on = datetime.now()
+        self.approved_on = timezone.now()
         self.save()
 
     def reject(self, employee):
         self.status = 'REJECTED'
         self.approved_by = employee
-        self.approved_on = datetime.now()
+        self.approved_on = timezone.now()
         self.save()
 
     def getApprovedDiscount(self):

@@ -26,12 +26,11 @@
                 <tr>
                     <th class="text-center">Action</th>
                     <th class="text-center">PTN</th>
+                    <th class="text-center">Type</th>
                     <th class="text-center">Date</th>
                     <th class="text-center">Client</th>
                     <th class="text-center" width="20%">Description</th>
                     <th class="text-center">Principal</th>
-                    <th class="text-center">Service Charge</th>
-                    <!-- <th class="text-center">Advance Interest</th> -->
                     <th class="text-center">Net Proceeds</th>
                     <th class="text-center">Status</th>
                 </tr>
@@ -69,6 +68,10 @@
                         render: function (data) {
                             return String(data).padStart(8, '0');
                         }
+                    },
+                    {
+                        name: 'type',
+                        data: 18
                     },
                     {
                         name: "date", 
@@ -109,22 +112,6 @@
                         },
                         "className": "text-right"
                     },
-                    {
-                        name: "serviceCharge", 
-                        data: 10,
-                        render: function (data) {
-                            return peso.format(data);
-                        },
-                        "className": "text-right"
-                    },
-                    // {
-                    //     name: "advanceInterest", 
-                    //     data: 11,
-                    //     render: function (data) {
-                    //         return peso.format(data);
-                    //     },
-                    //     "className": "text-right"
-                    // },
                     {
                         name: "net", 
                         data: 12,

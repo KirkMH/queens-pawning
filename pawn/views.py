@@ -8,6 +8,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
+from datetime import datetime
+
 from access_hub.models import Employee
 from files.models import OtherFees
 from .models import *
@@ -28,7 +30,7 @@ class PawnDTListView(ServerSideDatatableView):
     queryset = Pawn.objects.all()
     columns = ['pk', 'date', 'client', 'quantity', 'carat', 'color', 'item_description', 'description', 'grams',
                'principal', 'service_charge', 'advance_interest', 'net_proceeds', 'status',
-               'client__title', 'client__last_name', 'client__first_name', 'client__middle_name']
+               'client__title', 'client__last_name', 'client__first_name', 'client__middle_name', 'transaction_type']
 
     def get_queryset(self):
         cur_employee = Employee.objects.filter(user=self.request.user).first()
@@ -242,3 +244,30 @@ class DiscountRequestsDTListView(ServerSideDatatableView):
             return super().get_queryset().filter(pawn__branch=Employee.objects.get(user=self.request.user).branch)
         else:
             return super().get_queryset()
+
+
+def calculate_advance_interest(request):
+    ''' 
+    Calculate the advance interest of the pawn ticket. 
+    '''
+    success = True
+    error = None
+    advance_interest = 0
+    advance_interest_rate = 0
+    try:
+        print(f'Calculating advance interest for {request.GET}')
+        promised_date = datetime.strptime(
+            request.GET['promised_date'], '%Y-%m-%d').date()
+        principal = float(request.GET['principal'])
+        advance_interest_rate = Pawn.advanceInterestRate(promised_date)
+        advance_interest = principal * (advance_interest_rate / 100)
+    except Exception as e:
+        print(e)
+        success = False
+        error = str(e)
+    return JsonResponse({
+        'success': success,
+        'error': error,
+        'advance_interest_rate': advance_interest_rate,
+        'advance_interest': advance_interest
+    })

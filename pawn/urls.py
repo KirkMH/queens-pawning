@@ -11,6 +11,8 @@ urlpatterns = [
     path('<int:pk>/detail',
          views.PawnDetailView.as_view(), name='pawn_detail'),
     path('<int:pk>/payment', views.pawn_payment, name='pawn_payment'),
+    path('advance_interest', views.calculate_advance_interest,
+         name='calculate_advance_interest'),
 
     path('inventory', views.inventory_list, name='inventory_list'),
     path('inventory/sdt_list', views.PawnedItemsDTListView.as_view(),

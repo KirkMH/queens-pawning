@@ -200,10 +200,6 @@ class OtherFees(models.Model):
         decimal_places=2,
         default=0
     )
-    advance_interest_rate = models.PositiveSmallIntegerField(
-        _('Advance Interest Rate (in percent)'),
-        default=0
-    )
 
     @classmethod
     def get_instance(self):
@@ -212,7 +208,7 @@ class OtherFees(models.Model):
         return instance
 
     def __str__(self):
-        return f'Service Fee: {self.service_fee} | Advance Interest Rate: {self.advance_interest_rate}%'
+        return f'Service Fee: {self.service_fee}'
 
 
 class TermDuration(models.Model):

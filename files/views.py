@@ -186,16 +186,13 @@ def other_fees(request):
             # update the values
             if fee_type == 'service_fee':
                 other_fees.service_fee = Decimal(value)
-            else:
-                other_fees.advance_interest_rate = int(value)
             other_fees.save()
 
             # return to other fees page with success message
             messages.success(request, "Other fees were updated successfully.")
 
     context = {
-        'service_fee': other_fees.service_fee,
-        'advance_interest': other_fees.advance_interest_rate
+        'service_fee': other_fees.service_fee
     }
     return render(request, 'files/other_fees.html', context)
 
