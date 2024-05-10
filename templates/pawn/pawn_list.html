@@ -53,11 +53,19 @@
                 columns: [
                     {   
                         name: 'action',
-                        data: 0,
+                        data: null,
                         render: function (data) {
-                            let links = `<a href="/pawn/${data}/detail" title="Detail"><i class="far fa-eye"></i></a> | ` +
-                                        `<a href="/pawn/${data}/edit" title="Edit"><i class="far fa-edit"></i></a>`;
-
+                            const is_cashier = parseInt("{{ request.user.employee.user_type }}") == 1;
+                            const pawnDate = new Date(data[1]);
+                            pawnDate.setHours(0, 0, 0, 0);
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const is_pawn_date_today = pawnDate.getTime() === today.getTime();
+                            
+                            let links = `<a href="/pawn/${data[0]}/detail" title="Detail"><i class="far fa-eye"></i></a>`;
+                            if (!is_cashier || (is_cashier && is_pawn_date_today)) {
+                                links += ` | <a href="/pawn/${data[0]}/update" title="Update"><i class="far fa-edit"></i></a>`;
+                            }
                             return links;
                         },
                         className: 'text-center'
