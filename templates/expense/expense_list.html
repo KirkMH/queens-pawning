@@ -1,0 +1,123 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block title %}Expenses{% endblock title %}
+{% block page_title %}Expenses{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item active">Expenses</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+<div class="card m-4">
+    <form method="get">
+        <div class="card-header">
+            <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                <a href="#" class="btn btn-primary">New</a>
+            </div>
+            </div>
+        </div>
+    </form>
+    <div class="card-body table-responsive">
+        <table id="table" class="table table-hover table-head-fixed table-sm">
+            <thead>
+                <tr>
+                    <th class="text-center">Action</th>
+                    <th class="text-center">Branch</th>
+                    <th class="text-center">Category</th>
+                    <th class="text-center">Description</th>
+                    <th class="text-center">Amount</th>
+                    <th class="text-center">Date</th>
+                    <th class="text-center">Encoder</th>
+                    <th class="text-center">Encoded on</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+{% endblock main_content %}
+
+
+{% block js %}
+<script src="{% static 'js/currency-format.js' %}"></script>
+<script src="{% static 'js/date-format.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            $("#table").DataTable({
+                serverSide: true,
+                sAjaxSource: "{% url 'expense_dtlist' %}", 
+                columns: [
+                    {   
+                        name: 'action',
+                        data: 0,
+                        render: function (data) {
+                            let links = `<a href="/expense/${data}/update" title="Update"><i class="far fa-edit"></i></a>`;
+                            return links;
+                        },
+                        className: 'text-center'
+                    },
+                    { name: 'branch', data: 1 },
+                    { name: 'category', data: 2 },
+                    { name: 'description', data: 3 },
+                    {
+                        name: "amount", 
+                        data: 4,
+                        render: function (data) {
+                            return peso.format(data);
+                        },
+                        "className": "text-right"
+                    },
+                    {
+                        name: "date", 
+                        data: 5,
+                        render: function (data) {
+                            return formatDateMMMddYYYY(data);
+                        }
+                    },
+                    { name: 'encoder', data: 6 },
+                    {
+                        name: "encoded_on", 
+                        data: 7,
+                        render: function (data) {
+                            return formatDateMMMddYYYY(data);
+                        }
+                    },
+                ],
+                order: [[5, 'desc']],
+                initComplete: function () {
+                    this.api()
+                        .columns()
+                        .every(function () {
+                            let column = this;
+            
+                            // Create select element
+                            let select = document.createElement('select');
+                            select.add(new Option(''));
+                            column.footer().replaceChildren(select);
+            
+                            // Apply listener for user change in value
+                            select.addEventListener('change', function () {
+                                column
+                                    .search(select.value, {exact: true})
+                                    .draw();
+                            });
+            
+                            // Add list of options
+                            column
+                                .data()
+                                .unique()
+                                .sort()
+                                .each(function (d, j) {
+                                    select.add(new Option(d));
+                                });
+                        });
+                }
+            });
+            
+            $("#menu-transactions").addClass("active")
+        })
+    </script>
+{% endblock js %}

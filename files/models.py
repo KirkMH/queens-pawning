@@ -248,6 +248,12 @@ class ExpenseCategory(models.Model):
     def __str__(self):
         return self.category
 
+    def get_expenses(self, date):
+        return self.expenses.filter(date=date)
+
+    def get_total(self, date):
+        return sum([expense.amount for expense in self.get_expenses(date)])
+
     class Meta:
         ordering = ['category']
         verbose_name_plural = 'Expense categories'
