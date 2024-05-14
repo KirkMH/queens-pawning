@@ -110,10 +110,9 @@ def pawn_payment(request, pk):
     if request.method == 'POST':
         print(request.POST)
         if request.POST.get('amtToPay'):
-            amount_to_pay = float(request.POST.get('amtToPay'))
-            pawn.pay(amount_to_pay, Employee.objects.get(user=request.user))
+            pawn.pay(request.POST, Employee.objects.get(user=request.user))
             messages.success(
-                request, f"Payment of ₱ {'{:,.2f}'.format(amount_to_pay)} for {pawn.client} was recorded successfully.")
+                request, f"Pawn ticket was successfully {pawn.status.lower()}.")
             return redirect('pawn_detail', pk=pk)
         else:
             messages.error(request, "Please fill-in all required fields.")
@@ -246,6 +245,7 @@ class DiscountRequestsDTListView(ServerSideDatatableView):
             return super().get_queryset()
 
 
+@login_required
 def calculate_advance_interest(request):
     ''' 
     Calculate the advance interest of the pawn ticket. 

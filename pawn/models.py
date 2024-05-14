@@ -120,6 +120,13 @@ class Pawn(models.Model):
         decimal_places=2,
         null=False, blank=False
     )
+    additional_principal = models.DecimalField(
+        _('Additional Principal'),
+        max_digits=10,
+        decimal_places=2,
+        null=False, blank=False,
+        default=0
+    )
     promised_renewal_date = models.DateField(
         _('Promised Renewal Date'),
         null=False, blank=False
@@ -268,12 +275,18 @@ class Pawn(models.Model):
             interest = self.getInterest()
         return interest + self.getPenalty() + service_charge + adv_int
 
-    def pay(self, amount_paid, cashier):
+    def pay(self, post, cashier):
+        amount_paid = Decimal(post.get('amtToPay'))
         otherFees = OtherFees.get_instance()
-        paid_for_principal = self.principal
+        paid_for_principal = Decimal(post.get('partial'))
         interest = self.getInterest()
         penalty = self.getPenalty()
-        adv_interest = 0
+        additional_principal = Decimal(post.get('additionalPrincipal', '0'))
+        promised_date = timezone.datetime.strptime(
+            post.get('promised_renewal_date'), '%Y-%m-%d').date()
+        adv_interest_rate = Pawn.advanceInterestRate(promised_date)
+        adv_interest = (self.principal - paid_for_principal +
+                        additional_principal) * Decimal(adv_interest_rate / 100)
         service_fee = 0
         discounted = 0
         dr = DiscountRequests.objects.filter(pawn=self)
@@ -284,11 +297,8 @@ class Pawn(models.Model):
         if amount_paid >= self.principal:
             self.status = 'REDEEMED'
         else:
-            # TODO: consideration for advance interest
             service_fee = otherFees.service_fee
-            paid_for_principal = Decimal(amount_paid) - interest - \
-                penalty + discounted - service_fee
-            new_principal = self.principal - paid_for_principal
+            new_principal = self.principal - paid_for_principal + additional_principal
             # create a new pawn ticket for the renewed pawn
             new_pawn = Pawn()
             new_pawn.client = self.client
@@ -299,6 +309,9 @@ class Pawn(models.Model):
             new_pawn.description = self.description
             new_pawn.grams = self.grams
             new_pawn.principal = new_principal
+            new_pawn.appraised_value = self.appraised_value
+            new_pawn.additional_principal = additional_principal
+            new_pawn.promised_renewal_date = promised_date
             new_pawn.service_charge = service_fee
             new_pawn.advance_interest = adv_interest
             new_pawn.net_proceeds = new_principal - service_fee - adv_interest
@@ -321,6 +334,7 @@ class Pawn(models.Model):
         payment.advance_interest = adv_interest
         payment.cashier = cashier
         payment.paid_for_principal = paid_for_principal
+        payment.discount_granted = discounted
         payment.save()
 
 
@@ -367,6 +381,13 @@ class Payment(models.Model):
         max_digits=10,
         decimal_places=2,
         null=False, blank=False
+    )
+    discount_granted = models.DecimalField(
+        _('Discount Granted'),
+        max_digits=10,
+        decimal_places=2,
+        null=False, blank=False,
+        default=0
     )
     cashier = models.ForeignKey(
         Employee,

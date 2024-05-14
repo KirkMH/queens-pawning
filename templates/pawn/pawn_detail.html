@@ -153,6 +153,9 @@
                             {% csrf_token %}
                             <input type="hidden" name="pawn_id" id="pawn_id" value="{{ pawn.pk }}" />
                             <input type="hidden" name="amtToPay" id="amtToPay" />
+                            <input type="hidden" name="appraised_value" id="appraised_value" value="{{ pawn.appraised_value }}" />
+                            <input type="hidden" name="transaction_type" id="transaction_type" value="{{ pawn.transaction_type }}" />
+                            <input type="hidden" name="advIntUri" id="advIntUri" value="{% url 'calculate_advance_interest' %}" />
                             <div class="form-group row">
                                 <label for="amount" class="col-sm-4 col-form-label">Principal</label>
                                 <div class="col-sm-8">
@@ -174,6 +177,26 @@
                                     <input type="number" class="form-control text-right" id="discount" name="discount" value="{{ pawn.discount_requested.amount|floatformat:2 }}" disabled />
                                 </div>
                             </div>
+                            <div class="form-group row partial-payment">
+                                <label for="amount" class="col-sm-4 col-form-label">Additional Principal</label>
+                                <div class="col-sm-8">
+                                    <input type="number" step="0.01" class="form-control text-right" id="additionalPrincipal" name="additionalPrincipal" value="0.00" />
+                                </div>
+                            </div>
+                            {% if pawn.transaction_type == 'NEW' %}
+                            <div class="form-group row partial-payment">
+                                <label for="amount" class="col-sm-4 col-form-label">Promised Renewal Date <span style="color: red;">*</span></label>
+                                <div class="col-sm-8">
+                                    <input type="date" class="form-control" id="promised_renewal_date" name="promised_renewal_date" />
+                                </div>
+                            </div>
+                            <div class="form-group row partial-payment">
+                                <label for="amount" class="col-sm-4 col-form-label">Advance Interest</label>
+                                <div class="col-sm-8">
+                                    <input type="number" step="0.01" class="form-control text-right" id="advanceInterest" name="advanceInterest" value="0.00" disabled />
+                                </div>
+                            </div>
+                            {% endif %}
                             <div class="form-group row partial-payment">
                                 <div class="col-sm-4">
                                     <label for="serviceFee" class="col-form-label">Service Fee</label>
