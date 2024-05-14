@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django_serverside_datatable.views import ServerSideDatatableView
 from django.views.generic import CreateView, UpdateView, DetailView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -55,3 +55,12 @@ class ExpenseUpdateView(SuccessMessageMixin, UpdateView):
     pk_url_kwarg = 'pk'
     success_url = reverse_lazy('expense_list')
     success_message = "The expense information was updated successfully."
+
+    def post(self, request, *args, **kwargs):
+        object = self.get_object()
+        if "delete" in request.POST:
+            object.delete()
+            messages.success(request, f"Expense was deleted successfully.")
+            return redirect('expense_list')
+        else:
+            return super().post(request, *args, **kwargs)
