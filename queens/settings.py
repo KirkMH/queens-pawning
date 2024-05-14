@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'files',
     'access_hub',
     'pawn',
+    'expense',
 ]
 
 # setting the default pack to be used by crispy-form

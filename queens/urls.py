@@ -25,4 +25,5 @@ urlpatterns = [
     path('', include('access_hub.urls')),
     path('pawn/', include('pawn.urls')),
     path('reports/', include('reports.urls')),
+    path('expenses/', include('expense.urls')),
 ]
