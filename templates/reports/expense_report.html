@@ -3,12 +3,12 @@
 {% load humanize %}
 {% load form_tags %}
 
-{% block title %}Itemized Expenses{% endblock title %}
-{% block page_title %}Itemized Expenses{% endblock page_title %}
+{% block title %}{{ type|title }} Expenses{% endblock title %}
+{% block page_title %}{{ type|title }} Expenses{% endblock page_title %}
 
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
-    <li class="breadcrumb-item active">Itemized Expenses</li>
+    <li class="breadcrumb-item active">{{ type|title }} Expenses</li>
 {% endblock breadcrumb %}
 
 {% block main_content %}
@@ -62,23 +62,35 @@
             <div class="row mb-2">
                 <div class="col-12">
                     <table class="table table-borderless">
-                        {% for categories in expenses %}
-                            <tr>
-                                <td>{{ categories.category }}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td class="text-right">{{ categories.total|peso }}</td>
-                            </tr>
-                            {% for expense in categories.expenses %}
-                            <tr>
-                                <td></td>
-                                <td>{{ expense.date|date:'F d, Y' }}</td>
-                                <td>{{ expense.description }}</td>
-                                <td class="text-right">{{ expense.amount|peso }}</td>
-                                <td></td>
-                            {% endfor %}
+                    {% for categories in expenses %}
+                        <tr>
+                            <td>{{ categories.category }}</td>
+                            {% if type == 'itemized' %}
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            {% endif %}
+                            <td class="text-right">{{ categories.total|peso }}</td>
+                        </tr>
+                        {% if type == 'itemized' %}
+                        {% for expense in categories.expenses %}
+                        <tr>
+                            <td></td>
+                            <td>{{ expense.date|date:'F d, Y' }}</td>
+                            <td>{{ expense.description }}</td>
+                            <td class="text-right">{{ expense.amount|peso }}</td>
+                            <td></td>
                         {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                        <tr style="border-top: 1pt solid gray;">
+                            <td>GRAND TOTAL</td>
+                            {% if type == 'itemized' %}
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            {% endif %}
+                            <td class="text-right">{{ grand_total|peso }}</td>
                     </table>
                 </div>
             </div>
@@ -110,7 +122,7 @@
                     return
                 }
                 else {
-                    window.location.href = "{% url 'itemized_expenses' %}?branch=" + branch + "&month=" + month
+                    window.location.href = "{% url 'expense_report' type=type %}?branch=" + branch + "&month=" + month
                 }
             });
 

@@ -15,7 +15,7 @@ def get_month_name(month, year):
 
 
 @login_required
-def itemized_expenses(request):
+def expense_report(request, type):
     sel_branch = request.GET.get('branch')
     sel_month = request.GET.get('month')
     expenses = None
@@ -32,6 +32,7 @@ def itemized_expenses(request):
                 branch=sel_branch
             )
         else:
+            expense_list = Expense.objects.all()
             selected_branch = 'All Branches'
 
         sel_month_parts = sel_month.split('-')
@@ -64,18 +65,23 @@ def itemized_expenses(request):
                         'expenses': [expense]
                     })
     # calculate total per category
-    for exp in expenses:
-        total = 0
-        for expense in exp['expenses']:
-            total += expense.amount
-        exp['total'] = total
+    grand_total = 0
+    if expenses:
+        for exp in expenses:
+            total = 0
+            for expense in exp['expenses']:
+                total += expense.amount
+            exp['total'] = total
+            grand_total += total
     print(f"expenses: {expenses}")
     context = {
         'branches': Branch.objects.all(),
         'expenses': expenses,
+        'grand_total': grand_total,
         'sel_branch': sel_branch,
         'sel_month': sel_month,
         'selected_branch': selected_branch,
-        'selected_month': selected_month
+        'selected_month': selected_month,
+        'type': type
     }
-    return render(request, 'reports/itemized_expenses.html', context=context)
+    return render(request, 'reports/expense_report.html', context=context)

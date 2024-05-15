@@ -248,11 +248,11 @@ class ExpenseCategory(models.Model):
     def __str__(self):
         return self.category
 
-    def get_expenses(self, date):
-        return self.expenses.filter(date=date)
+    def get_expenses(self, month, year):
+        return self.expenses.filter(date__month=month, date__year=year)
 
-    def get_total(self, date):
-        return sum([expense.amount for expense in self.get_expenses(date)])
+    def get_total(self, month, year):
+        return sum([expense.amount for expense in self.get_expenses(month, year)])
 
     class Meta:
         ordering = ['category']
