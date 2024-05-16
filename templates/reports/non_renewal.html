@@ -3,12 +3,12 @@
 {% load humanize %}
 {% load form_tags %}
 
-{% block title %}{{ type|title }} Expenses{% endblock title %}
-{% block page_title %}{{ type|title }} Expenses{% endblock page_title %}
+{% block title %}Non-Renewal{% endblock title %}
+{% block page_title %}Non-Renewal{% endblock page_title %}
 
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
-    <li class="breadcrumb-item active">{{ type|title }} Expenses</li>
+    <li class="breadcrumb-item active">Non-Renewal</li>
 {% endblock breadcrumb %}
 
 {% block main_content %}
@@ -29,10 +29,13 @@
             </div>
             <div class="row mb-2">
                 <div class="col-md-2">
-                    <p class="card-text text-muted">Month:</p>
+                    <p class="card-text text-muted">Type:</p>
                 </div>
                 <div class="col-md-4">
-                    <input type="month" name="month" id="month" class="form-control" value="{{ sel_month }}"/>
+                    <select name="type" id="type" class="form-select">
+                        <option value="star">Star</option>
+                        <option value="orig">Orig</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -45,54 +48,50 @@
         </div>
     </div>
 
-    {% if expenses != None %}
+    {% if report != None %}
     <div class="card m-4" id="report">
-        {% if expenses.count == 0 %}
+        {% if report.count == 0 %}
         <div class="card-header mt-2">
             <h6>No record found.</h6>
         </div>
         {% else %}
         <div class="card-header text-center">
             <h5>V.B. Queen's Jewelry and Pawnshop</h5>
-            <h6>{{ selected_branch }}</h6>
+            <h6>{{ sel_branch }} - {{ sel_type }}</h6>
             <br>
-            <h5>TOTAL EXPENSES FOR THE MONTH ENDED {{ selected_month }}</h5>
+            <h5>NON-RENEWAL OF PAWNED ITEMS AS OF {% now "F d, Y" %}</h5>
         </div>
         <div class="card-body">
             <div class="row mb-2">
-                <div class="col-12">
+                <div class="col-md-1"></div>
+                <div class="col-md-10">
                     <table class="table table-borderless">
-                    {% for categories in expenses %}
                         <tr>
-                            <td>{{ categories.category }}</td>
-                            {% if type == 'itemized' %}
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            {% endif %}
-                            <td class="text-right">{{ categories.total|peso }}</td>
+                            <th class="text-center">PT#</th>
+                            <th class="text-center">NAME</th>
+                            <th class="text-center">AMOUNT</th>
+                            <th class="text-center">LAST RENEW RATE</th>
+                            <th class="text-center text-danger">FOR SUBASTA</th>
                         </tr>
-                        {% if type == 'itemized' %}
-                        {% for expense in categories.expenses %}
+                        {% for item in report %}
                         <tr>
-                            <td></td>
-                            <td>{{ expense.date|date:'F d, Y' }}</td>
-                            <td>{{ expense.description }}</td>
-                            <td class="text-right">{{ expense.amount|peso }}</td>
-                            <td></td>
+                            <td class="text-center">{{ item.pk|stringformat:"05d" }}</td>
+                            <td>{{ item.client.first_name }} {{ item.client.last_name }}</td>
+                            <td class="text-right">{{ item.principal|peso }}</td>
+                            <td>{{ item.get_last_renewal_date|date:"F d, Y" }}</td>
+                            <td class="text-center text-danger">{{ item.has_expired|yesno:"SUBASTA," }}</td>
+                        </tr>
                         {% endfor %}
-                        {% endif %}
-                    {% endfor %}
                         <tr style="border-top: 1pt solid gray;">
-                            <td>GRAND TOTAL</td>
-                            {% if type == 'itemized' %}
+                            <td>{{ report.count }} items</td>
                             <td></td>
-                            <td></td>
-                            <td></td>
-                            {% endif %}
                             <td class="text-right">{{ grand_total|peso }}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
                     </table>
                 </div>
+                <div class="col-md-1"></div>
             </div>
         </div>
         <div class="card-footer no-print">
@@ -114,15 +113,15 @@
         $(document).ready(function() {
             $("#btn_generate").click(function() {
                 const branch = $("#branch").val()
-                const month = $("#month").val()
-                console.log(branch, month)
+                const type = $("#type").val()
+                console.log(branch, type)
 
-                if (branch == "" || month == "") {
-                    toastr.error("Please select a branch and month.")
+                if (branch == "" || type == "") {
+                    toastr.error("Please select a branch and type.")
                     return
                 }
                 else {
-                    window.location.href = "{% url 'expense_report' type=type %}?branch=" + branch + "&month=" + month
+                    window.location.href = "{% url 'nonrenewal_report' %}?branch=" + branch + "&type=" + type
                 }
             });
 

@@ -1,0 +1,167 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load humanize %}
+{% load form_tags %}
+
+{% block title %}{{ type|title }} Expenses{% endblock title %}
+{% block page_title %}{{ type|title }} Expenses{% endblock page_title %}
+
+{% block css %}
+    <style>
+        .bottom-border {
+            border-bottom: 1px solid black;
+        }
+    </style>
+{% endblock css %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item active">{{ type|title }} Expenses</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+    <div class="card m-4 no-print">
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-md-2">
+                    <p class="card-text text-muted">Date:</p>
+                </div>
+                <div class="col-md-4">
+                    <input type="date" name="date" id="date" class="form-control" value="{{ sel_date }}"/>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-lg-12">
+                    <button class="btn btn-primary" id="btn_set">Set</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if cash_position != None %}
+    <div class="card m-4" id="report">
+        <div class="card-header text-center">
+            <h5>V.B. Queen's Jewelry and Pawnshop</h5>
+            <h6>{{ selected_branch }}</h6>
+            <br>
+            <h5>DAILY CASH POSITION REPORT</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="card-text text-right">Date: {{ cash_position.date|date:"F m, Y" }}</p>
+                            <p>No. <u>{{ cash_position.pk|stringformat:"06" }}</u></p>
+                            <p class="ml-2">Balance as of <u>{{ cash_position.last_date|date:"F m, Y" }}</u></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1"></div>
+                        <div class="col-md-2">Cash on Hand</div>
+                        <div class="col-md-1"></div>
+                        <div class="col-md-3 text-right bottom-border">{{ cash_position.balance_coh|peso }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-1"></div>
+                        <div class="col-md-2">Cash in Bank</div>
+                        <div class="col-md-1"></div>
+                        <div class="col-md-3 text-right bottom-border">{{ cash_position.balance_cib|peso }}</div>
+                        <div class="col-md-2"></div>
+                        <div class="col-md-3 text-right bottom-border">{{ cash_position.get_total_balance|peso }}</div>
+                    </div>
+                    <div class="row bottom-border">
+                        <div class="col-md-12">
+                            ADD: Receipts <span class="float-right"><a href="#" class="btn btn-primary">New</a></span>
+                        </div>
+                    </div>
+                    {% if receipts %}
+                        <div class="row">
+                            <div class="col-md-2 ml-1">OR/PR No.</div>
+                            <div class="col-md-2 ml-1">Received from</div>
+                            <div class="col-md-2 ml-1">Particulars</div>
+                            <div class="col-md-2 ml-1">Amount</div>
+                            <div class="col-md-2"></div>
+                        </div>
+                        {% for receipt in receipts %}
+                        <div class="row">
+                            <div class="col-md-2 ml-1 bottom-border">{{ receipt.reference_number }}</div>
+                            <div class="col-md-2 ml-1 bottom-border">{{ receipt.received_from }}</div>
+                            <div class="col-md-2 ml-1 bottom-border">{{ receipt.particulars }}</div>
+                            <div class="col-md-2 ml-1 bottom-border">{{ receipt.amount|peso }}</div>
+                            {% if forloop.last %}
+                            <div class="col-md-2 bottom-border">{{ cash_position.get_total_receipts|peso }}}</div>
+                            {% else %}
+                            <div class="col-md-2 bottom-border"></div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        <div class="row">
+                            <div class="col-md-6"></div>
+                            <div class="col-md-1">Total</div>
+                            <div class="col-md-5">{{ cash_position.get_net_subtotal|peso }}</div>
+                        </div>
+                    {% else %}
+                        <div class="row">
+                            <div class="col-md-12 text-muted">No receipts found.</div>
+                        </div>
+                    {% endif %}
+
+                    <br />
+                    
+                    {% if disbursements %}
+                        <div class="row">
+                            <div class="col-md-2 ml-1">OR/PR No.</div>
+                            <div class="col-md-2 ml-1">Received from</div>
+                            <div class="col-md-2 ml-1">Particulars</div>
+                            <div class="col-md-2 ml-1">Amount</div>
+                            <div class="col-md-2"></div>
+                        </div>
+                        {% for disbursement in disbursements %}
+                        <div class="row">
+                            <div class="col-md-2 ml-1 bottom-border">{{ disbursement.reference_number }}</div>
+                            <div class="col-md-2 ml-1 bottom-border">{{ disbursement.payee }}</div>
+                            <div class="col-md-2 ml-1 bottom-border">{{ disbursement.particulars }}</div>
+                            <div class="col-md-2 ml-1 bottom-border">{{ disbursement.amount|peso }}</div>
+                            {% if forloop.last %}
+                            <div class="col-md-2 bottom-border">{{ cash_position.get_total_disbursements|peso }}}</div>
+                            {% else %}
+                            <div class="col-md-2 bottom-border"></div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        <div class="row">
+                            <div class="col-md-6"></div>
+                            <div class="col-md-1">Total</div>
+                            <div class="col-md-5">{{ cash_position.get_net_total|peso }}</div>
+                        </div>
+                    {% else %}
+                        <div class="row">
+                            <div class="col-md-12 text-muted">No disbursements found.</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-footer no-print">
+            <div class="row">
+                <div class="col-lg-12">
+                    <button class="btn btn-primary" id="btn_print" onclick="window.print();">Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+{% endblock main_content %}
+
+
+{% block js %}
+    <script>
+        $(document).ready(function() {
+            $("#menu-reports").addClass("active")
+        })
+    </script>
+{% endblock js %}

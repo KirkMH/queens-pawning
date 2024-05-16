@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
 
 from files.models import Branch
 from expense.models import Expense
+from pawn.models import Pawn
 
 
 def get_month_name(month, year):
@@ -73,7 +75,6 @@ def expense_report(request, type):
                 total += expense.amount
             exp['total'] = total
             grand_total += total
-    print(f"expenses: {expenses}")
     context = {
         'branches': Branch.objects.all(),
         'expenses': expenses,
@@ -85,3 +86,36 @@ def expense_report(request, type):
         'type': type
     }
     return render(request, 'reports/expense_report.html', context=context)
+
+
+def nonrenewal_report(request):
+    sel_branch = request.GET.get('branch', None)
+    sel_type = request.GET.get('type', None)
+
+    report = None
+    grand_total = 0
+
+    if sel_branch and sel_type:
+        report = Pawn.star  # assumes star
+        sel_branch = int(sel_branch)
+        if sel_type == 'orig':  # orig
+            report = Pawn.orig
+        if sel_branch == -1:
+            sel_branch = 'All Branches'
+            report = report.all()
+        else:
+            branch = Branch.objects.get(pk=sel_branch)
+            report = report.filter(branch=branch)
+            sel_branch = branch.name
+
+        grand_total = report.aggregate(Sum('principal'))['principal__sum']
+
+    context = {
+        "branches": Branch.objects.all(),
+        "sel_branch": sel_branch,
+        "sel_type": sel_type.upper(),
+        "report": report,
+        "grand_total": grand_total
+    }
+
+    return render(request, 'reports/non_renewal.html', context)

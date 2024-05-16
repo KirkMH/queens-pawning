@@ -10,9 +10,22 @@ from files.models import Client, Branch, InterestRate, AdvanceInterestRate, Term
 from access_hub.models import Employee
 
 
+STAR_BENCHMARK = 10000  # TODO: confirm the condition for star
+
+
 class Inventory(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(status='ACTIVE')
+
+
+class Star(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(principal__gte=STAR_BENCHMARK)
+
+
+class Orig(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(principal__lt=STAR_BENCHMARK)
 
 
 class Pawn(models.Model):
@@ -173,6 +186,8 @@ class Pawn(models.Model):
     objects = models.Manager()
     history = HistoricalRecords()
     inventory = Inventory()
+    star = Star()
+    orig = Orig()
 
     def __str__(self):
         return f"{self.complete_description} by {self.client}"
@@ -336,6 +351,12 @@ class Pawn(models.Model):
         payment.paid_for_principal = paid_for_principal
         payment.discount_granted = discounted
         payment.save()
+
+    def get_last_renewal_date(self):
+        renewal = None
+        if self.pawn_renewed_to:
+            renewal = self.date
+        return renewal
 
 
 class Payment(models.Model):
