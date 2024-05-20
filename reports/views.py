@@ -13,7 +13,7 @@ from expense.models import Expense
 from pawn.models import Pawn
 from access_hub.models import Employee
 from .models import DailyCashPosition, AddReceipts, LessDisbursements
-from .forms import ReceiptForm
+from .forms import *
 
 
 def get_month_name(month, year):
@@ -163,6 +163,11 @@ class ReceiptCreateView(CreateView):
     template_name = 'reports/daily_cash_position_form.html'
     form_class = ReceiptForm
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['type'] = 'Receipt'
+        return context
+
     def post(self, request, *args, **kwargs):
         form = ReceiptForm(request.POST)
         if form.is_valid():
@@ -175,5 +180,32 @@ class ReceiptCreateView(CreateView):
                 request, f"New receipt was added successfully.")
             if "another" in request.POST:
                 return redirect('add_receipt', pk=pk)
+            else:
+                return redirect('daily_cash_position')
+
+
+@method_decorator(login_required, name='dispatch')
+class DisbursementCreateView(CreateView):
+    model = LessDisbursements
+    template_name = 'reports/daily_cash_position_form.html'
+    form_class = DisbursementForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['type'] = 'Disbursement'
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = DisbursementForm(request.POST)
+        if form.is_valid():
+            pk = kwargs.get('pk')
+            daily_cash_position = DailyCashPosition.objects.get(pk=pk)
+            disbursement = form.save(commit=False)
+            disbursement.daily_cash_position = daily_cash_position
+            disbursement.save()
+            messages.success(
+                request, f"New disbursement was added successfully.")
+            if "another" in request.POST:
+                return redirect('add_disbursement', pk=pk)
             else:
                 return redirect('daily_cash_position')

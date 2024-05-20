@@ -116,7 +116,7 @@
                     
                     <div class="row bottom-border-3 mt-4">
                         <div class="col-md-12">
-                            LESS: Disbursements <span class="float-right no-print"><a href="#" class="btn btn-sm btn-outline-success">New</a></span>
+                            LESS: Disbursements <span class="float-right no-print"><a href="{% url 'add_disbursement' cash_position.pk %}" class="btn btn-sm btn-outline-success">New</a></span>
                         </div>
                     </div>
                     {% if disbursements %}
@@ -132,18 +132,18 @@
                             <div class="col-sm-2 ml-3 bottom-border">{{ disbursement.reference_number|default_if_none:"" }}</div>
                             <div class="col-sm-2 ml-3 bottom-border">{{ disbursement.payee|default_if_none:"" }}</div>
                             <div class="col-sm-2 ml-3 bottom-border">{{ disbursement.particulars|default_if_none:"" }}</div>
-                            <div class="col-sm-2 ml-3 bottom-border">{{ disbursement.amount|peso }}</div>
+                            <div class="col-sm-2 ml-3 text-right bottom-border">{{ disbursement.amount|peso }}</div>
                             {% if forloop.last %}
-                            <div class="col-sm-2 bottom-border">{{ cash_position.get_total_disbursements|peso }}}</div>
+                            <div class="col-sm-2 ml-3 text-right bottom-border">{{ cash_position.get_total_disbursements|peso }}</div>
                             {% else %}
-                            <div class="col-sm-2 bottom-border"></div>
+                            <div class="col-sm-2 ml-3 bottom-border"></div>
                             {% endif %}
                         </div>
                         {% endfor %}
                         <div class="row">
-                            <div class="col-md-6"></div>
+                            <div class="col-md-7"></div>
                             <div class="col-md-1">Total</div>
-                            <div class="col-md-5">{{ cash_position.get_net_total|peso }}</div>
+                            <div class="col-md-4 text-right bottom-border">{{ cash_position.get_net_total|peso }}</div>
                         </div>
                     {% else %}
                         <div class="row">

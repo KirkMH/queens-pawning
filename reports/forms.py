@@ -10,3 +10,11 @@ class ReceiptForm(forms.ModelForm):
     class Meta:
         model = AddReceipts
         exclude = ('daily_cash_position', )
+
+
+class DisbursementForm(forms.ModelForm):
+    required_css_class = 'required'
+
+    class Meta:
+        model = LessDisbursements
+        exclude = ('daily_cash_position', )
