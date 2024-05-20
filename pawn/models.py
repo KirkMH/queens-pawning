@@ -29,6 +29,15 @@ class Orig(models.Manager):
         return super().get_queryset().filter(principal__lt=STAR_BENCHMARK)
 
 
+class Expired(models.Manager):
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # calculate the date from today back to a 10 days
+        expired_today = timezone.now().date(
+        ) - timezone.timedelta(days=TermDuration.get_instance().expiration)
+        return qs.filter(status='ACTIVE').filter(date__date__lte=expired_today)
+
+
 class Pawn(models.Model):
     ACTIVE = 'ACTIVE'
     RENEWED = 'RENEWED'
@@ -193,6 +202,7 @@ class Pawn(models.Model):
     inventory = Inventory()
     star = Star()
     orig = Orig()
+    expired = Expired()
 
     def __str__(self):
         return f"{self.complete_description} by {self.client}"
@@ -261,11 +271,11 @@ class Pawn(models.Model):
         elapsed = (timezone.now().date() - self.date.date()).days
         return elapsed >= TermDuration.get_instance().maturity
 
+    def get_maturity_date(self):
+        return self.date.date() + timezone.timedelta(days=TermDuration.get_instance().maturity)
+
     def hasExpired(self):
         elapsed = (timezone.now().date() - self.date.date()).days
-        print(f"Pawn: {self}, Date: {self.date.date()}")
-        print(
-            f"Elapsed: {elapsed}, Expiration: {TermDuration.get_instance().expiration}")
         return elapsed > TermDuration.get_instance().expiration
 
     def hasPenalty(self):
@@ -289,8 +299,11 @@ class Pawn(models.Model):
     def getInterestPlusPenalty(self):
         return self.getInterest() + self.getPenalty()
 
+    def getPrincipalPlusInterest(self):
+        return self.principal + self.getInterest()
+
     def getTotalDue(self):
-        return self.principal + self.getInterest() + self.getPenalty() + self.getAdditionalInterest()
+        return self.getPrincipalPlusInterest() + self.getPenalty() + self.getAdditionalInterest()
 
     def getRenewalServiceFee(self):
         return OtherFees.get_instance().service_fee

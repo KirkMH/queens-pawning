@@ -23,4 +23,6 @@ urlpatterns = [
     path('cash-count', views.cash_count, name='cash_count'),
     path('cash-count/<int:pk>/add',
          views.OtherCashCountCreateView.as_view(), name='add_cash_count'),
+
+    path('auction/branch', views.auction_report, name='auction_report'),
 ]

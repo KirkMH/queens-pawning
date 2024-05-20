@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import Sum, ExpressionWrapper, fields
 from django.http import Http404
 from django.views.generic import CreateView, UpdateView
 from django.contrib.messages.views import SuccessMessageMixin
@@ -11,9 +11,9 @@ from django.urls import reverse
 from urllib.parse import urlencode
 from decimal import Decimal
 
-from files.models import Branch
+from files.models import Branch, TermDuration
 from expense.models import Expense
-from pawn.models import Pawn
+from pawn.models import Pawn, STAR_BENCHMARK
 from access_hub.models import Employee
 from .models import DailyCashPosition, AddReceipts, LessDisbursements
 from .forms import *
@@ -108,19 +108,19 @@ def nonrenewal_report(request):
     grand_total = 0
 
     if sel_branch and sel_type:
-        report = Pawn.star  # assumes star
+        report = Pawn.expired.filter(status='ACTIVE')
         sel_branch = int(sel_branch)
         if sel_type == 'orig':  # orig
-            report = Pawn.orig
+            report = report.filter(principal__lt=STAR_BENCHMARK)
+        else:  # star
+            report = report.filter(principal__gte=STAR_BENCHMARK)
         if sel_branch == -1:
             sel_branch = 'All Branches'
-            report = report.all()
         else:
             branch = Branch.objects.get(pk=sel_branch)
             report = report.filter(branch=branch)
             sel_branch = branch.name
 
-        report = report.filter(status='ACTIVE')
         grand_total = report.aggregate(Sum('principal'))['principal__sum']
 
     context = {
@@ -145,7 +145,7 @@ def set_onhold(request, pk, status):
 
     if pawn.on_hold:
         messages.success(
-            request, f"PTN {pawn.pk:06d} is now ON HOLD.")
+            request, f"PTN {pawn.pk:05d} is now ON HOLD.")
     else:
         messages.success(
             request, f"Disabled ON HOLD status of PTN {pawn.pk:06d}.")
@@ -324,3 +324,40 @@ class OtherCashCountCreateView(CreateView):
                 return redirect('add_cash_count', pk=pk)
             else:
                 return redirect('cash_count')
+
+
+def auction_report(request):
+    type = request.GET.get('type', 'star')
+    employee = Employee.objects.get(user=request.user)
+    branch = employee.branch
+
+    report = Pawn.expired.filter(on_hold=False)
+    if type == 'orig':  # orig
+        report = report.filter(principal__lt=STAR_BENCHMARK)
+    else:  # star
+        report = report.filter(principal__gte=STAR_BENCHMARK)
+
+    if not branch:
+        branch = 'All Branches'
+        report = report.all()
+    else:
+        report = report.filter(branch=branch)
+        branch = branch.name + ' Branch'
+
+    principal_total = report.aggregate(Sum('principal'))['principal__sum']
+    interest_total = sum([pawn.getInterest() for pawn in report])
+    grand_total = principal_total + interest_total
+
+    context = {
+        'report': report,
+        'branch': branch,
+        'type': type,
+        'principal_total': principal_total,
+        'interest_total': interest_total,
+        'grand_total': grand_total
+    }
+
+    if branch == 'All Branches':
+        return render(request, 'reports/auction_overall.html', context)
+    else:
+        return render(request, 'reports/auction_branch.html', context)
