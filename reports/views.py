@@ -1,10 +1,14 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from django.db.models import Sum
+from django.http import Http404
 
 from files.models import Branch
 from expense.models import Expense
 from pawn.models import Pawn
+from access_hub.models import Employee
+from .models import DailyCashPosition
 
 
 def get_month_name(month, year):
@@ -119,3 +123,30 @@ def nonrenewal_report(request):
     }
 
     return render(request, 'reports/non_renewal.html', context)
+
+
+def daily_cash_position(request):
+    date = request.GET.get('date', timezone.now().date())
+    employee = Employee.objects.get(user=request.user)
+    branch = employee.branch
+    if not branch:
+        raise Http404("This feature is only available to branches.")
+    print(f"Branch: {branch}")
+    print(f"Date: {date}")
+    daily_cash_position, _ = DailyCashPosition.objects.get_or_create(
+        branch=branch,
+        date=date,
+        prepared_by=employee
+    )
+    receipts = daily_cash_position.receipts.all()
+    disbursements = daily_cash_position.disbursements.all()
+    last = DailyCashPosition.objects.all().order_by('date').last()
+    context = {
+        'cash_position': daily_cash_position,
+        'receipts': receipts,
+        'disbursements': disbursements,
+        'last': last,
+        'sel_date': date,
+        'selected_brach': branch.name + ' Branch'
+    }
+    return render(request, 'reports/daily_cash_position.html', context)

@@ -39,9 +39,6 @@
                 <li id="menu-discount">
                     <a class="dropdown-item" href="{% url 'discount_list' %}">Discounts</a>
                 </li>
-                <li id="menu-cash-flow">
-                    <a class="dropdown-item" href="#">Cash Flow</a>
-                </li>
                 <li id="menu-voucher">
                     <a class="dropdown-item" href="{% url 'expense_list' %}">Expenses</a>
                 </li>
@@ -53,14 +50,11 @@
                 <li id="menu-monitoring">
                     <a class="dropdown-item" href="{% url 'inventory_list' %}">Pawned Items Monitoring</a>
                 </li>
-                <li id="menu-auction">
-                    <a class="dropdown-item" href="#">Items for Auction</a>
+                <li id="menu-cash-flow">
+                    <a class="dropdown-item" href="{% url 'daily_cash_position' %}">Daily Cash Position</a>
                 </li>
                 <li id="menu-cash-count">
                     <a class="dropdown-item" href="#">Cash Count</a>
-                </li>
-                <li id="menu-income-stmt">
-                    <a class="dropdown-item" href="#">Income Statement</a>
                 </li>
                 <li id="menu-expenses-itemized">
                     <a class="dropdown-item" href="{% url 'expense_report' 'itemized' %}">Itemized Expenses</a>
@@ -70,6 +64,9 @@
                 </li>
                 <li id="menu-non-renewal">
                     <a class="dropdown-item" href="{% url 'nonrenewal_report' %}">Non-renewal Items</a>
+                </li>
+                <li id="menu-auction">
+                    <a class="dropdown-item" href="#">Items for Auction</a>
                 </li>
             </ul>
         </li>

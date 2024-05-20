@@ -3,8 +3,8 @@
 {% load humanize %}
 {% load form_tags %}
 
-{% block title %}{{ type|title }} Expenses{% endblock title %}
-{% block page_title %}{{ type|title }} Expenses{% endblock page_title %}
+{% block title %}Daily Cash Position{% endblock title %}
+{% block page_title %}Daily Cash Position{% endblock page_title %}
 
 {% block css %}
     <style>
@@ -16,7 +16,7 @@
 
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
-    <li class="breadcrumb-item active">{{ type|title }} Expenses</li>
+    <li class="breadcrumb-item active">Daily Cash Position</li>
 {% endblock breadcrumb %}
 
 {% block main_content %}
@@ -27,7 +27,7 @@
                     <p class="card-text text-muted">Date:</p>
                 </div>
                 <div class="col-md-4">
-                    <input type="date" name="date" id="date" class="form-control" value="{{ sel_date }}"/>
+                    <input type="date" name="date" id="date" class="form-control" value="{{ sel_date|date:'Y-m-d' }}"/>
                 </div>
             </div>
         </div>
@@ -53,9 +53,9 @@
                 <div class="col-12">
                     <div class="row">
                         <div class="col-md-12">
-                            <p class="card-text text-right">Date: {{ cash_position.date|date:"F m, Y" }}</p>
-                            <p>No. <u>{{ cash_position.pk|stringformat:"06" }}</u></p>
-                            <p class="ml-2">Balance as of <u>{{ cash_position.last_date|date:"F m, Y" }}</u></p>
+                            <div class="card-text text-right">Date: {{ cash_position.date|date:"F m, Y" }}</div>
+                            <div>No. <u>{{ cash_position.pk|stringformat:"06d" }}</u></div>
+                            <div class="ml-2">Balance as of <u>{{ last.date|date:"F m, Y" }}</u></div>
                         </div>
                     </div>
                     <div class="row">
@@ -72,9 +72,9 @@
                         <div class="col-md-2"></div>
                         <div class="col-md-3 text-right bottom-border">{{ cash_position.get_total_balance|peso }}</div>
                     </div>
-                    <div class="row bottom-border">
+                    <div class="row bottom-border mt-4">
                         <div class="col-md-12">
-                            ADD: Receipts <span class="float-right"><a href="#" class="btn btn-primary">New</a></span>
+                            ADD: Receipts <span class="float-right no-print"><a href="#" class="btn btn-sm btn-outline-success">New</a></span>
                         </div>
                     </div>
                     {% if receipts %}
@@ -92,7 +92,7 @@
                             <div class="col-md-2 ml-1 bottom-border">{{ receipt.particulars }}</div>
                             <div class="col-md-2 ml-1 bottom-border">{{ receipt.amount|peso }}</div>
                             {% if forloop.last %}
-                            <div class="col-md-2 bottom-border">{{ cash_position.get_total_receipts|peso }}}</div>
+                            <div class="col-md-2 bottom-border">{{ cash_position.get_total_receipts|peso }}</div>
                             {% else %}
                             <div class="col-md-2 bottom-border"></div>
                             {% endif %}
@@ -111,6 +111,11 @@
 
                     <br />
                     
+                    <div class="row bottom-border mt-4">
+                        <div class="col-md-12">
+                            LESS: Disbursements <span class="float-right no-print"><a href="#" class="btn btn-sm btn-outline-success">New</a></span>
+                        </div>
+                    </div>
                     {% if disbursements %}
                         <div class="row">
                             <div class="col-md-2 ml-1">OR/PR No.</div>
@@ -142,6 +147,52 @@
                             <div class="col-md-12 text-muted">No disbursements found.</div>
                         </div>
                     {% endif %}
+
+                    <br />
+                    
+                    <div class="row mt-4">
+                        <h6 class="col-sm-12 text-center text-bold">CASH IN BANK BREAKDOWN</h6>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-sm-3"></div>
+                        <div class="col-sm-2 ml-2">Cash in bank (date)</div>
+                        <div class="col-sm-2 ml-2 bottom-border">{{ last.date|date:"F d, Y" }}</div>
+                        <div class="col-sm-2 ml-2 text-right bottom-border">{{ last.balance_cib|peso }}</div>
+                        <div class="col-sm-2"></div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-sm-3"></div>
+                        <div class="col-sm-2 ml-2">Add: Deposits for the day</div>
+                        <div class="col-sm-2 ml-2"></div>
+                        <div class="col-sm-2 ml-2"><input type="number" class="form-control" name="deposits_today" id="deposits_today" /></div>
+                        <div class="col-sm-2"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3"></div>
+                        <div class="col-sm-2 ml-2">Total</div>
+                        <div class="col-sm-2 ml-2"></div>
+                        <div class="col-sm-2 ml-2 text-right">{{ cash_position.get_subtotal|peso }}</div>
+                        <div class="col-sm-2"></div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-sm-3"></div>
+                        <div class="col-sm-2 ml-2">Less: Withdrawals for the day</div>
+                        <div class="col-sm-2 ml-2"></div>
+                        <div class="col-sm-2 ml-2"><input type="number" class="form-control" name="withdrawals_today" id="withdrawals_today" /></div>
+                        <div class="col-sm-2"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3"></div>
+                        <div class="col-sm-2 ml-2">Cash in Bank (date)</div>
+                        <div class="col-sm-2 ml-2 bottom-border">{% now "F d, Y" %}</div>
+                        <div class="col-sm-2 ml-2 text-right bottom-border">{{ cash_position.get_cash_in_bank|peso }}</div>
+                        <div class="col-sm-2"></div>
+                    </div>
+                    <div class="row no-print mt-4">
+                        <div class="col-sm-12 text-center">
+                            <button class="btn btn-sm btn-success" id="btn_update">Update</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
