@@ -1,14 +1,19 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.db.models import Sum
 from django.http import Http404
+from django.views.generic import CreateView, UpdateView
+from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 from files.models import Branch
 from expense.models import Expense
 from pawn.models import Pawn
 from access_hub.models import Employee
-from .models import DailyCashPosition
+from .models import DailyCashPosition, AddReceipts, LessDisbursements
+from .forms import ReceiptForm
 
 
 def get_month_name(month, year):
@@ -150,3 +155,25 @@ def daily_cash_position(request):
         'selected_brach': branch.name + ' Branch'
     }
     return render(request, 'reports/daily_cash_position.html', context)
+
+
+@method_decorator(login_required, name='dispatch')
+class ReceiptCreateView(CreateView):
+    model = AddReceipts
+    template_name = 'reports/daily_cash_position_form.html'
+    form_class = ReceiptForm
+
+    def post(self, request, *args, **kwargs):
+        form = ReceiptForm(request.POST)
+        if form.is_valid():
+            pk = kwargs.get('pk')
+            daily_cash_position = DailyCashPosition.objects.get(pk=pk)
+            receipt = form.save(commit=False)
+            receipt.daily_cash_position = daily_cash_position
+            receipt.save()
+            messages.success(
+                request, f"New receipt was added successfully.")
+            if "another" in request.POST:
+                return redirect('add_receipt', pk=pk)
+            else:
+                return redirect('daily_cash_position')

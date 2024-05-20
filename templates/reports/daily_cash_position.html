@@ -11,6 +11,9 @@
         .bottom-border {
             border-bottom: 1px solid black;
         }
+        .bottom-border-3 {
+            border-bottom: 3px solid black;
+        }
     </style>
 {% endblock css %}
 
@@ -72,36 +75,36 @@
                         <div class="col-md-2"></div>
                         <div class="col-md-3 text-right bottom-border">{{ cash_position.get_total_balance|peso }}</div>
                     </div>
-                    <div class="row bottom-border mt-4">
+                    <div class="row bottom-border-3 mt-4">
                         <div class="col-md-12">
-                            ADD: Receipts <span class="float-right no-print"><a href="#" class="btn btn-sm btn-outline-success">New</a></span>
+                            ADD: Receipts <span class="float-right no-print"><a href="{% url 'add_receipt' cash_position.pk %}" class="btn btn-sm btn-outline-success">New</a></span>
                         </div>
                     </div>
                     {% if receipts %}
                         <div class="row">
-                            <div class="col-md-2 ml-1">OR/PR No.</div>
-                            <div class="col-md-2 ml-1">Received from</div>
-                            <div class="col-md-2 ml-1">Particulars</div>
-                            <div class="col-md-2 ml-1">Amount</div>
-                            <div class="col-md-2"></div>
+                            <div class="col-sm-2 ml-3">OR/PR No.</div>
+                            <div class="col-sm-2 ml-3">Received from</div>
+                            <div class="col-sm-2 ml-3">Particulars</div>
+                            <div class="col-sm-2 ml-3">Amount</div>
+                            <div class="col-sm-2"></div>
                         </div>
                         {% for receipt in receipts %}
                         <div class="row">
-                            <div class="col-md-2 ml-1 bottom-border">{{ receipt.reference_number }}</div>
-                            <div class="col-md-2 ml-1 bottom-border">{{ receipt.received_from }}</div>
-                            <div class="col-md-2 ml-1 bottom-border">{{ receipt.particulars }}</div>
-                            <div class="col-md-2 ml-1 bottom-border">{{ receipt.amount|peso }}</div>
+                            <div class="col-sm-2 ml-3 bottom-border">{{ receipt.reference_number|default_if_none:"" }}</div>
+                            <div class="col-sm-2 ml-3 bottom-border">{{ receipt.received_from|default_if_none:"" }}</div>
+                            <div class="col-sm-2 ml-3 bottom-border">{{ receipt.particulars|default_if_none:"" }}</div>
+                            <div class="col-sm-2 ml-3 text-right bottom-border">{{ receipt.amount|peso }}</div>
                             {% if forloop.last %}
-                            <div class="col-md-2 bottom-border">{{ cash_position.get_total_receipts|peso }}</div>
+                            <div class="col-sm-2 ml-3 text-right bottom-border">{{ cash_position.get_total_receipts|peso }}</div>
                             {% else %}
-                            <div class="col-md-2 bottom-border"></div>
+                            <div class="col-sm-2 ml-3 bottom-border"></div>
                             {% endif %}
                         </div>
                         {% endfor %}
                         <div class="row">
-                            <div class="col-md-6"></div>
-                            <div class="col-md-1">Total</div>
-                            <div class="col-md-5">{{ cash_position.get_net_subtotal|peso }}</div>
+                            <div class="col-sm-7"></div>
+                            <div class="col-sm-1">Total</div>
+                            <div class="col-sm-4 text-right bottom-border">{{ cash_position.get_net_subtotal|peso }}</div>
                         </div>
                     {% else %}
                         <div class="row">
@@ -111,29 +114,29 @@
 
                     <br />
                     
-                    <div class="row bottom-border mt-4">
+                    <div class="row bottom-border-3 mt-4">
                         <div class="col-md-12">
                             LESS: Disbursements <span class="float-right no-print"><a href="#" class="btn btn-sm btn-outline-success">New</a></span>
                         </div>
                     </div>
                     {% if disbursements %}
                         <div class="row">
-                            <div class="col-md-2 ml-1">OR/PR No.</div>
-                            <div class="col-md-2 ml-1">Received from</div>
-                            <div class="col-md-2 ml-1">Particulars</div>
-                            <div class="col-md-2 ml-1">Amount</div>
-                            <div class="col-md-2"></div>
+                            <div class="col-sm-2 ml-3">OR/PR No.</div>
+                            <div class="col-sm-2 ml-3">Received from</div>
+                            <div class="col-sm-2 ml-3">Particulars</div>
+                            <div class="col-sm-2 ml-3">Amount</div>
+                            <div class="col-sm-2"></div>
                         </div>
                         {% for disbursement in disbursements %}
                         <div class="row">
-                            <div class="col-md-2 ml-1 bottom-border">{{ disbursement.reference_number }}</div>
-                            <div class="col-md-2 ml-1 bottom-border">{{ disbursement.payee }}</div>
-                            <div class="col-md-2 ml-1 bottom-border">{{ disbursement.particulars }}</div>
-                            <div class="col-md-2 ml-1 bottom-border">{{ disbursement.amount|peso }}</div>
+                            <div class="col-sm-2 ml-3 bottom-border">{{ disbursement.reference_number|default_if_none:"" }}</div>
+                            <div class="col-sm-2 ml-3 bottom-border">{{ disbursement.payee|default_if_none:"" }}</div>
+                            <div class="col-sm-2 ml-3 bottom-border">{{ disbursement.particulars|default_if_none:"" }}</div>
+                            <div class="col-sm-2 ml-3 bottom-border">{{ disbursement.amount|peso }}</div>
                             {% if forloop.last %}
-                            <div class="col-md-2 bottom-border">{{ cash_position.get_total_disbursements|peso }}}</div>
+                            <div class="col-sm-2 bottom-border">{{ cash_position.get_total_disbursements|peso }}}</div>
                             {% else %}
-                            <div class="col-md-2 bottom-border"></div>
+                            <div class="col-sm-2 bottom-border"></div>
                             {% endif %}
                         </div>
                         {% endfor %}
