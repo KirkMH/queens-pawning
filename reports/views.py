@@ -7,6 +7,8 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.urls import reverse
+from urllib.parse import urlencode
 from decimal import Decimal
 
 from files.models import Branch
@@ -99,8 +101,8 @@ def expense_report(request, type):
 
 
 def nonrenewal_report(request):
-    sel_branch = request.GET.get('branch', None)
-    sel_type = request.GET.get('type', None)
+    sel_branch = url_branch = request.GET.get('branch', None)
+    sel_type = url_type = request.GET.get('type', 'star')
 
     report = None
     grand_total = 0
@@ -118,17 +120,41 @@ def nonrenewal_report(request):
             report = report.filter(branch=branch)
             sel_branch = branch.name
 
+        report = report.filter(status='ACTIVE')
         grand_total = report.aggregate(Sum('principal'))['principal__sum']
 
     context = {
         "branches": Branch.objects.all(),
         "sel_branch": sel_branch,
         "sel_type": sel_type.upper(),
+        "url_branch": url_branch,
+        "url_type": url_type,
         "report": report,
         "grand_total": grand_total
     }
 
     return render(request, 'reports/non_renewal.html', context)
+
+
+def set_onhold(request, pk, status):
+    url_branch = request.GET.get('branch', None)
+    url_type = request.GET.get('type', 'star')
+    pawn = Pawn.objects.get(pk=pk)
+    pawn.on_hold = (status > 0)
+    pawn.save()
+
+    if pawn.on_hold:
+        messages.success(
+            request, f"PTN {pawn.pk:06d} is now ON HOLD.")
+    else:
+        messages.success(
+            request, f"Disabled ON HOLD status of PTN {pawn.pk:06d}.")
+
+    base_url = reverse('nonrenewal_report')
+    query_string = urlencode({'branch': url_branch, 'type': url_type})
+    url = '{}?{}'.format(base_url, query_string)
+
+    return redirect(url)
 
 
 def daily_cash_position(request):

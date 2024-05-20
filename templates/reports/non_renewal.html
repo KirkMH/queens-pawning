@@ -78,8 +78,14 @@
                             <td class="text-center">{{ item.pk|stringformat:"05d" }}</td>
                             <td>{{ item.client.first_name }} {{ item.client.last_name }}</td>
                             <td class="text-right">{{ item.principal|peso }}</td>
-                            <td>{{ item.get_last_renewal_date|date:"F d, Y" }}</td>
-                            <td class="text-center text-danger">{{ item.has_expired|yesno:"SUBASTA," }}</td>
+                            <td>{{ item.get_last_renewal_date|date:"d-M-y" }}</td>
+                            <td class="text-center text-danger">
+                                {% if item.hasExpired and item.on_hold %}
+                                <a href="{% url 'set_onhold' item.pk 0 %}?branch={{url_branch}}&type={{url_type}}" class="btn btn-sm btn-success" title="Click to unhold">HOLD</a>
+                                {% elif item.hasExpired %}
+                                <a href="{% url 'set_onhold' item.pk 1 %}?branch={{url_branch}}&type={{url_type}}" class="btn btn-sm btn-warning" title="Click to hold">SUBASTA</a>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                         <tr style="border-top: 1pt solid gray;">

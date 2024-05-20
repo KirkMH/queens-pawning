@@ -170,6 +170,10 @@ class Pawn(models.Model):
         default=ACTIVE,
         null=False, blank=False
     )
+    on_hold = models.BooleanField(
+        _('On Hold'),
+        default=False
+    )
     status_updated_on = models.DateTimeField(null=True, blank=True)
     branch = models.ForeignKey(
         Branch,
@@ -254,13 +258,19 @@ class Pawn(models.Model):
         return self.principal * Decimal(str((self.getAdvanceInterestRate() / 100)))
 
     def hasMatured(self):
-        return self.getElapseDays() >= TermDuration.get_instance().maturity
+        elapsed = (timezone.now().date() - self.date.date()).days
+        return elapsed >= TermDuration.get_instance().maturity
 
     def hasExpired(self):
-        return self.getElapseDays() > TermDuration.get_instance().expiration
+        elapsed = (timezone.now().date() - self.date.date()).days
+        print(f"Pawn: {self}, Date: {self.date.date()}")
+        print(
+            f"Elapsed: {elapsed}, Expiration: {TermDuration.get_instance().expiration}")
+        return elapsed > TermDuration.get_instance().expiration
 
     def hasPenalty(self):
-        return self.getElapseDays() > TermDuration.get_instance().maturity
+        elapsed = (timezone.now().date() - self.date.date()).days
+        return elapsed > TermDuration.get_instance().maturity
 
     def getStanding(self):
         if self.hasExpired():
