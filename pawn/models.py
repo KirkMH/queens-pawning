@@ -222,7 +222,9 @@ class Pawn(models.Model):
     @staticmethod
     def advanceInterestRate(promise_date):
         elapsed = (promise_date - timezone.now().date()).days
-        rate = AdvanceInterestRate.rates.get_rate(elapsed)
+        rate = AdvanceInterestRate.rates.get_rate(abs(elapsed))
+        print(
+            f"Promise Date: {promise_date}, Elapsed: {elapsed}, Rate: {rate}")
         return rate if rate else 0
 
     def getAdvanceInterestRate(self):
@@ -240,7 +242,10 @@ class Pawn(models.Model):
         additional_interest = 0
         if self.transaction_type == 'NEW':
             interest = self.principal * \
-                Decimal(str((Pawn.advanceInterestRate(timezone.now().date()) / 100)))
+                Decimal(
+                    str((Pawn.advanceInterestRate(self.date.date()) / 100)))
+            print(f"Interest: {interest}")
+            print(f"Current Advance Interest: {self.advance_interest}")
             if interest > self.advance_interest:
                 additional_interest = interest - self.advance_interest
         return additional_interest
