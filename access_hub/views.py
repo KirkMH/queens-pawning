@@ -16,6 +16,8 @@ def dashboard(request):
     context = {
         'greeting': 'Hello, there!',
         'newClientCountToday': newClientCountToday,
-        'transactionsCountToday': transactionsCountToday
+        'transactionsCountToday': transactionsCountToday,
+        'maturedToday': Pawn.matured.count(),
+        'expiredToday': Pawn.expired.count(),
     }
     return render(request, 'dashboard.html', context)

@@ -32,10 +32,17 @@ class Orig(models.Manager):
 class Expired(models.Manager):
     def get_queryset(self):
         qs = super().get_queryset()
-        # calculate the date from today back to a 10 days
         expired_today = timezone.now().date(
         ) - timezone.timedelta(days=TermDuration.get_instance().expiration)
         return qs.filter(status='ACTIVE').filter(date__date__lte=expired_today)
+
+
+class Matured(models.Manager):
+    def get_queryset(self):
+        qs = super().get_queryset()
+        matured_today = timezone.now().date(
+        ) - timezone.timedelta(days=TermDuration.get_instance().maturity)
+        return qs.filter(status='ACTIVE').filter(date__date__lte=matured_today)
 
 
 class Pawn(models.Model):
@@ -202,6 +209,7 @@ class Pawn(models.Model):
     inventory = Inventory()
     star = Star()
     orig = Orig()
+    matured = Matured()
     expired = Expired()
 
     def __str__(self):
