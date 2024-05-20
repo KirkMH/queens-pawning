@@ -8,6 +8,7 @@ from decimal import Decimal
 
 from files.models import Client, Branch, InterestRate, AdvanceInterestRate, TermDuration, OtherFees
 from access_hub.models import Employee
+from reports.models import AddReceipts, DailyCashPosition, LessDisbursements
 
 
 STAR_BENCHMARK = 10000  # TODO: confirm the condition for star
@@ -333,6 +334,10 @@ class Pawn(models.Model):
             new_pawn.branch = self.branch
             new_pawn.status = 'ACTIVE'
             new_pawn.save()
+            # if new_pawn.net_proceeds > 0:
+            #     new_pawn.update_receipts(cashier, 'Renewed Pawn Ticket')
+            # elif new_pawn.net_proceeds < 0:
+            #     new_pawn.update_disbursements(cashier, 'Renewed Pawn Ticket')
 
             self.status = 'RENEWED'
             self.renewed_to = new_pawn
@@ -357,6 +362,38 @@ class Pawn(models.Model):
         if self.pawn_renewed_to:
             renewal = self.date
         return renewal
+
+    def update_receipts(self, cashier, description):
+        cash_position, _ = DailyCashPosition.objects.get_or_create(
+            branch=self.branch,
+            date=timezone.now().date(),
+            prepared_by=cashier
+        )
+        receipt, _ = AddReceipts.objects.get_or_create(
+            daily_cash_position=cash_position,
+            reference_number=self.pk
+        )
+        receipt.received_from = self.client.full_name
+        receipt.particulars = description
+        receipt.amount = self.net_proceeds
+        receipt.save()
+        return receipt
+
+    def update_disbursements(self, cashier, description):
+        cash_position, _ = DailyCashPosition.objects.get_or_create(
+            branch=self.branch,
+            date=timezone.now().date(),
+            prepared_by=cashier
+        )
+        disbursement, _ = LessDisbursements.objects.get_or_create(
+            daily_cash_position=cash_position,
+            reference_number=self.pk
+        )
+        disbursement.payee = self.client.full_name
+        disbursement.particulars = description
+        disbursement.amount = self.net_proceeds
+        disbursement.save()
+        return disbursement
 
 
 class Payment(models.Model):

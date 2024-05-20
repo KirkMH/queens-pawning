@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django_serverside_datatable.views import ServerSideDatatableView
 from django.views.generic import CreateView, UpdateView, DetailView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -61,15 +61,17 @@ class PawnCreateView(CreateView):
     def post(self, request, *args, **kwargs):
         form = PawnForm(request.POST, request=request)
         if form.is_valid():
-            saved = form.save(commit=False)
-            saved.branch = Employee.objects.get(user=request.user).branch
-            saved.save()
+            employee = Employee.objects.get(user=request.user)
+            pawn = form.save(commit=False)
+            pawn.branch = employee.branch
+            pawn.save()
+            pawn.update_receipts(employee, 'Pawn ticket'),
             messages.success(
-                request, f"New pawn ticket for {saved.client} was created successfully.")
+                request, f"New pawn ticket for {pawn.client} was created successfully.")
             if "another" in request.POST:
                 return redirect('new_pawn')
             else:
-                return redirect('pawn_detail', pk=saved.pk)
+                return redirect('pawn_detail', pk=pawn.pk)
 
         else:
             return render(request, 'pawn/pawn_form.html', {'form': form})
@@ -89,6 +91,12 @@ class PawnUpdateView(SuccessMessageMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['otherFees'] = OtherFees.get_instance()
         return context
+
+    def post(self, request, *args, **kwargs):
+        pawn = self.get_object()
+        employee = Employee.objects.get(user=request.user)
+        pawn.update_disbursements(employee, 'Pawn ticket')
+        return super().post(request, *args, **kwargs)
 
 
 @method_decorator(login_required, name='dispatch')
