@@ -7,6 +7,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from decimal import Decimal
 
 from files.models import Branch
 from expense.models import Expense
@@ -131,7 +132,13 @@ def nonrenewal_report(request):
 
 
 def daily_cash_position(request):
-    date = request.GET.get('date', timezone.now().date())
+    date = request.GET.get('date')
+    is_today = False
+    if not date:
+        date = timezone.now().date()
+        is_today = True
+    else:
+        date = timezone.datetime.strptime(date, '%Y-%m-%d').date()
     employee = Employee.objects.get(user=request.user)
     branch = employee.branch
     if not branch:
@@ -152,7 +159,8 @@ def daily_cash_position(request):
         'disbursements': disbursements,
         'last': last,
         'sel_date': date,
-        'selected_brach': branch.name + ' Branch'
+        'selected_brach': branch.name + ' Branch',
+        'is_today': is_today
     }
     return render(request, 'reports/daily_cash_position.html', context)
 
@@ -209,3 +217,17 @@ class DisbursementCreateView(CreateView):
                 return redirect('add_disbursement', pk=pk)
             else:
                 return redirect('daily_cash_position')
+
+
+def update_cib_brakedown(request, pk):
+    if request.method == 'POST':
+        print(f"POST: {request.POST}")
+        deposits = request.POST.get('deposits_today') or '0'
+        withdrawals = request.POST.get('withdrawals_today') or '0'
+        daily_cash_position = DailyCashPosition.objects.get(pk=pk)
+        daily_cash_position.deposits = float(deposits)
+        daily_cash_position.withdrawals = float(withdrawals)
+        daily_cash_position.save()
+        messages.success(
+            request, f"CIB breakdown was updated successfully.")
+    return redirect('daily_cash_position')

@@ -14,5 +14,7 @@ urlpatterns = [
          views.ReceiptCreateView.as_view(), name='add_receipt'),
     path('daily-cash-position/<int:pk>/disbursement/add',
          views.DisbursementCreateView.as_view(), name='add_disbursement'),
+    path('daily-cash-position/<int:pk>/cib-breakdown',
+         views.update_cib_brakedown, name='update_cib_brakedown'),
 
 ]

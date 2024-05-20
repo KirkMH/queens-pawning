@@ -77,7 +77,10 @@
                     </div>
                     <div class="row bottom-border-3 mt-4">
                         <div class="col-md-12">
-                            ADD: Receipts <span class="float-right no-print"><a href="{% url 'add_receipt' cash_position.pk %}" class="btn btn-sm btn-outline-success">New</a></span>
+                            ADD: Receipts
+                            {% if is_today %}
+                                <span class="float-right no-print"><a href="{% url 'add_receipt' cash_position.pk %}" class="btn btn-sm btn-outline-success">New</a></span>
+                            {% endif %}
                         </div>
                     </div>
                     {% if receipts %}
@@ -116,7 +119,10 @@
                     
                     <div class="row bottom-border-3 mt-4">
                         <div class="col-md-12">
-                            LESS: Disbursements <span class="float-right no-print"><a href="{% url 'add_disbursement' cash_position.pk %}" class="btn btn-sm btn-outline-success">New</a></span>
+                            LESS: Disbursements 
+                            {% if is_today %}
+                                <span class="float-right no-print"><a href="{% url 'add_disbursement' cash_position.pk %}" class="btn btn-sm btn-outline-success">New</a></span>
+                            {% endif %}
                         </div>
                     </div>
                     {% if disbursements %}
@@ -152,50 +158,67 @@
                     {% endif %}
 
                     <br />
-                    
-                    <div class="row mt-4">
-                        <h6 class="col-sm-12 text-center text-bold">CASH IN BANK BREAKDOWN</h6>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-sm-3"></div>
-                        <div class="col-sm-2 ml-2">Cash in bank (date)</div>
-                        <div class="col-sm-2 ml-2 bottom-border">{{ last.date|date:"F d, Y" }}</div>
-                        <div class="col-sm-2 ml-2 text-right bottom-border">{{ last.balance_cib|peso }}</div>
-                        <div class="col-sm-2"></div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-sm-3"></div>
-                        <div class="col-sm-2 ml-2">Add: Deposits for the day</div>
-                        <div class="col-sm-2 ml-2"></div>
-                        <div class="col-sm-2 ml-2"><input type="number" class="form-control" name="deposits_today" id="deposits_today" /></div>
-                        <div class="col-sm-2"></div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-3"></div>
-                        <div class="col-sm-2 ml-2">Total</div>
-                        <div class="col-sm-2 ml-2"></div>
-                        <div class="col-sm-2 ml-2 text-right">{{ cash_position.get_subtotal|peso }}</div>
-                        <div class="col-sm-2"></div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-sm-3"></div>
-                        <div class="col-sm-2 ml-2">Less: Withdrawals for the day</div>
-                        <div class="col-sm-2 ml-2"></div>
-                        <div class="col-sm-2 ml-2"><input type="number" class="form-control" name="withdrawals_today" id="withdrawals_today" /></div>
-                        <div class="col-sm-2"></div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-3"></div>
-                        <div class="col-sm-2 ml-2">Cash in Bank (date)</div>
-                        <div class="col-sm-2 ml-2 bottom-border">{% now "F d, Y" %}</div>
-                        <div class="col-sm-2 ml-2 text-right bottom-border">{{ cash_position.get_cash_in_bank|peso }}</div>
-                        <div class="col-sm-2"></div>
-                    </div>
-                    <div class="row no-print mt-4">
-                        <div class="col-sm-12 text-center">
-                            <button class="btn btn-sm btn-success" id="btn_update">Update</button>
+
+                    <form action="{% url 'update_cib_brakedown' cash_position.pk %}" method="post">
+                        {% csrf_token %}
+                        <div class="row mt-4">
+                            <h6 class="col-sm-12 text-center text-bold">CASH IN BANK BREAKDOWN</h6>
                         </div>
-                    </div>
+                        <div class="row mt-2">
+                            <div class="col-sm-3"></div>
+                            <div class="col-sm-2 ml-2">Cash in bank (date)</div>
+                            <div class="col-sm-2 ml-2 bottom-border">{{ last.date|date:"F d, Y" }}</div>
+                            <div class="col-sm-2 ml-2 text-right bottom-border">{{ last.balance_cib|peso }}</div>
+                            <div class="col-sm-2"></div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-sm-3"></div>
+                            <div class="col-sm-2 ml-2">Add: Deposits for the day</div>
+                            <div class="col-sm-2 ml-2"></div>
+                            <div class="col-sm-2 ml-2">    
+                            {% if is_today %}
+                                <input type="number" class="form-control text-right" name="deposits_today" id="deposits_today" value="{{ cash_position.deposits }}" />
+                            {% else %}
+                                {{ cash_position.deposits|peso }}
+                            {% endif %}
+                            </div>
+                            <div class="col-sm-2"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3"></div>
+                            <div class="col-sm-2 ml-2">Total</div>
+                            <div class="col-sm-2 ml-2"></div>
+                            <div class="col-sm-2 ml-2 text-right">{{ cash_position.get_subtotal|peso }}</div>
+                            <div class="col-sm-2"></div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-sm-3"></div>
+                            <div class="col-sm-2 ml-2">Less: Withdrawals for the day</div>
+                            <div class="col-sm-2 ml-2"></div>
+                            <div class="col-sm-2 ml-2">
+                            {% if is_today %}
+                                <input type="number" class="form-control text-right" name="withdrawals_today" id="withdrawals_today" value="{{ cash_position.withdrawals }}" />
+                            {% else %}
+                                {{ cash_position.withdrawals|peso }}
+                            {% endif %}
+                            </div>
+                            <div class="col-sm-2"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3"></div>
+                            <div class="col-sm-2 ml-2">Cash in Bank (date)</div>
+                            <div class="col-sm-2 ml-2 bottom-border">{% now "F d, Y" %}</div>
+                            <div class="col-sm-2 ml-2 text-right bottom-border">{{ cash_position.get_cash_in_bank|peso }}</div>
+                            <div class="col-sm-2"></div>
+                        </div>
+                        {% if is_today %}
+                        <div class="row no-print mt-4">
+                            <div class="col-sm-12 text-center">
+                                <button type="submit" class="btn btn-sm btn-success" id="btn_update">Update</button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </form>
                 </div>
             </div>
         </div>
@@ -215,6 +238,12 @@
 {% block js %}
     <script>
         $(document).ready(function() {
+            $("#btn_set").click(function() {
+                const date = $("#date").val()
+                console.log(date)
+                window.location.href = "{% url 'daily_cash_position' %}?date=" + date
+            });
+
             $("#menu-reports").addClass("active")
         })
     </script>
