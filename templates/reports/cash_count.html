@@ -1,0 +1,206 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load humanize %}
+{% load form_tags %}
+
+{% block title %}Cash Count{% endblock title %}
+{% block page_title %}Cash Count{% endblock page_title %}
+
+{% block css %}
+    <style>
+        .bottom-border {
+            border-bottom: 1px solid black;
+        }
+        .double-bottom-border {
+            border-bottom: 1px double black;
+        }
+    </style>
+{% endblock css %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item active">Cash Count</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+    <div class="card m-4 no-print">
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-md-2">
+                    <p class="card-text text-muted">Date:</p>
+                </div>
+                <div class="col-md-4">
+                    <input type="date" name="date" id="date" class="form-control" value="{{ sel_date|date:'Y-m-d' }}"/>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-lg-12">
+                    <button class="btn btn-primary" id="btn_set">Set</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+    {% csrf_token %}
+    <div class="card m-4" id="report">
+        <div class="card-header text-center">
+            <h5>V.B. Queen's Jewelry and Pawnshop</h5>
+            <h6>{{ selected_branch }}</h6>
+            <br>
+            <h5>CASH COUNT</h5>
+            <h5>{{ cash_count.date|date:"F m, Y" }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-12">
+                    <div class="row mb-4">
+                        <div class="col-sm-6">
+                            <h5 class="text-center text-bold">DENOMINATION</h5>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-2 text-right">₱</div>
+                        <div class="col-sm-1 text-right">1000 X</div>
+                        <div class="col-sm-2">
+                            <input class="form-control text-right" type="number" name="one_thousands" id="one_thousands" min="0" value="{{ cash_count.one_thousands }}">
+                        </div>
+                        =
+                        <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_one_thousands|floatformat:"2" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-2 text-right">₱</div>
+                        <div class="col-sm-1 text-right">500 X</div>
+                        <div class="col-sm-2">
+                            <input class="form-control text-right" type="number" name="five_hundreds" id="five_hundreds" min="0" value="{{ cash_count.five_hundreds }}">
+                        </div>
+                        =
+                        <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_five_hundreds|floatformat:"2" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-2 text-right">₱</div>
+                        <div class="col-sm-1 text-right">200 X</div>
+                        <div class="col-sm-2">
+                            <input class="form-control text-right" type="number" name="two_hundreds" id="two_hundreds" min="0" value="{{ cash_count.two_hundreds }}">
+                        </div>
+                        =
+                        <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_two_hundreds|floatformat:"2" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-2 text-right">₱</div>
+                        <div class="col-sm-1 text-right">100 X</div>
+                        <div class="col-sm-2">
+                            <input class="form-control text-right" type="number" name="one_hundreds" id="one_hundreds" min="0" value="{{ cash_count.one_hundreds }}">
+                        </div>
+                        =
+                        <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_one_hundreds|floatformat:"2" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-2 text-right">₱</div>
+                        <div class="col-sm-1 text-right">50 X</div>
+                        <div class="col-sm-2">
+                            <input class="form-control text-right" type="number" name="fifties" id="fifties" min="0" value="{{ cash_count.fifties }}">
+                        </div>
+                        =
+                        <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_fifties|floatformat:"2" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-2 text-right">₱</div>
+                        <div class="col-sm-1 text-right">20 X</div>
+                        <div class="col-sm-2">
+                            <input class="form-control text-right" type="number" name="twenties" id="twenties" min="0" value="{{ cash_count.twenties }}">
+                        </div>
+                        =
+                        <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_twenties|floatformat:"2" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-2 text-right">₱</div>
+                        <div class="col-sm-1 text-right">10 X</div>
+                        <div class="col-sm-2">
+                            <input class="form-control text-right" type="number" name="tens" id="tens" min="0" value="{{ cash_count.tens }}">
+                        </div>
+                        =
+                        <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_tens|floatformat:"2" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-2 text-right">₱</div>
+                        <div class="col-sm-1 text-right">5 X</div>
+                        <div class="col-sm-2">
+                            <input class="form-control text-right" type="number" name="fives" id="fives" min="0" value="{{ cash_count.fives }}">
+                        </div>
+                        =
+                        <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_fives|floatformat:"2" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-2 text-right">₱</div>
+                        <div class="col-sm-1 text-right">COINS X</div>
+                        <div class="col-sm-2">
+                            <input class="form-control text-right" type="number" name="coins" id="coins" min="0" value="{{ cash_count.coins }}">
+                        </div>
+                        =
+                        <div class="col-sm-3 text-right"><input class="form-control text-right" type="number" name="coins_total" id="coins_total" min="0.00" step="0.01" value="{{ cash_count.coins_total }}"></div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-sm-2 text-right mr-1">Total Cash</div>
+                        <div class="col-sm-1 text-right"></div>
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_cash|peso }}</div>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-sm-2 text-right mr-2">Add:</div>
+                        {% if is_today %}
+                        <div class="col-sm-1">
+                            <a href="{% url 'add_cash_count' cash_count.pk %}" class="btn btn-sm btn-outline-success no-print">New</a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% for other in cash_count.other_cash_counts.all %}
+                    <div class="row">
+                        <div class="col-sm-3"></div>
+                        <div class="col-sm-2">{{ other.particulars }}</div>
+                        <div class="col-sm-3 bottom-border text-right">{{ other.amount|floatformat:"2" }}</div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="row mt-4">
+                        <div class="col-sm-2 text-right text-bold">GRAND TOTAL</div>
+                        <div class="col-sm-1 text-right"></div>
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-3 bottom-border text-bold text-right">{{ cash_count.grand_total|peso }}</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="card-footer no-print">
+            <div class="row">
+                <div class="col-lg-12">
+                    {% if is_today %}
+                    <button class="btn btn-success" type="submit">Save</button>
+                    {% endif %}
+                    <button class="btn btn-primary" id="btn_print" onclick="window.print();">Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+
+{% endblock main_content %}
+
+
+{% block js %}
+    <script>
+        $(document).ready(function() {
+            $("#btn_set").click(function() {
+                const date = $("#date").val()
+                console.log(date)
+                window.location.href = "{% url 'cash_count' %}?date=" + date
+            });
+
+            $("#menu-reports").addClass("active")
+        })
+    </script>
+{% endblock js %}

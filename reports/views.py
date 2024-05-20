@@ -159,7 +159,7 @@ def daily_cash_position(request):
         'disbursements': disbursements,
         'last': last,
         'sel_date': date,
-        'selected_brach': branch.name + ' Branch',
+        'selected_branch': branch.name + ' Branch',
         'is_today': is_today
     }
     return render(request, 'reports/daily_cash_position.html', context)
@@ -231,3 +231,70 @@ def update_cib_brakedown(request, pk):
         messages.success(
             request, f"CIB breakdown was updated successfully.")
     return redirect('daily_cash_position')
+
+
+def cash_count(request):
+    date = request.GET.get('date')
+    is_today = False
+    if not date:
+        date = timezone.now().date()
+        is_today = True
+    else:
+        date = timezone.datetime.strptime(date, '%Y-%m-%d').date()
+    employee = Employee.objects.get(user=request.user)
+    branch = employee.branch
+    if not branch:
+        raise Http404("This feature is only available to branches.")
+    print(f"Branch: {branch}")
+    print(f"Date: {date}")
+    cash_count, _ = CashCount.objects.get_or_create(
+        branch=branch,
+        date=date,
+        prepared_by=employee
+    )
+
+    if request.method == 'POST':
+        cash_count.one_thousands = int(
+            request.POST.get('one_thousands') or '0')
+        cash_count.five_hundreds = int(
+            request.POST.get('five_hundreds') or '0')
+        cash_count.two_hundreds = int(request.POST.get('two_hundreds') or '0')
+        cash_count.one_hundreds = int(request.POST.get('one_hundreds') or '0')
+        cash_count.fifties = int(request.POST.get('fifties') or '0')
+        cash_count.twenties = int(request.POST.get('twenties') or '0')
+        cash_count.tens = int(request.POST.get('tens') or '0')
+        cash_count.fives = int(request.POST.get('fives') or '0')
+        cash_count.coins = int(request.POST.get('coins') or '0')
+        cash_count.coins_total = Decimal(
+            request.POST.get('coins_total') or '0')
+        cash_count.save()
+
+    context = {
+        'cash_count': cash_count,
+        'sel_date': date,
+        'selected_branch': branch.name + ' Branch',
+        'is_today': is_today
+    }
+    return render(request, 'reports/cash_count.html', context)
+
+
+@method_decorator(login_required, name='dispatch')
+class OtherCashCountCreateView(CreateView):
+    model = OtherCashCount
+    template_name = 'reports/cash_count_form.html'
+    form_class = OtherCashCountForm
+
+    def post(self, request, *args, **kwargs):
+        form = OtherCashCountForm(request.POST)
+        if form.is_valid():
+            pk = kwargs.get('pk')
+            cash_count = CashCount.objects.get(pk=pk)
+            other = form.save(commit=False)
+            other.cash_count = cash_count
+            other.save()
+            messages.success(
+                request, f"New item on cash count was added successfully.")
+            if "another" in request.POST:
+                return redirect('add_cash_count', pk=pk)
+            else:
+                return redirect('cash_count')

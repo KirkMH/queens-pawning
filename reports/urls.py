@@ -17,4 +17,7 @@ urlpatterns = [
     path('daily-cash-position/<int:pk>/cib-breakdown',
          views.update_cib_brakedown, name='update_cib_brakedown'),
 
+    path('cash-count', views.cash_count, name='cash_count'),
+    path('cash-count/<int:pk>/add',
+         views.OtherCashCountCreateView.as_view(), name='add_cash_count'),
 ]

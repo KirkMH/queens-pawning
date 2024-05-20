@@ -101,3 +101,83 @@ class LessDisbursements(models.Model):
 
     def __str__(self):
         return f'{self.particulars} - {self.amount}'
+
+
+class CashCount(models.Model):
+    date = models.DateField()
+    branch = models.ForeignKey(
+        Branch,
+        related_name='cash_counts',
+        on_delete=models.CASCADE
+    )
+    prepared_by = models.ForeignKey(
+        Employee,
+        related_name='cash_counts',
+        on_delete=models.CASCADE
+    )
+    one_thousands = models.IntegerField(default=0)
+    five_hundreds = models.IntegerField(default=0)
+    two_hundreds = models.IntegerField(default=0)
+    one_hundreds = models.IntegerField(default=0)
+    fifties = models.IntegerField(default=0)
+    twenties = models.IntegerField(default=0)
+    tens = models.IntegerField(default=0)
+    fives = models.IntegerField(default=0)
+    coins = models.IntegerField(default=0)
+    coins_total = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
+    def total_one_thousands(self):
+        return self.one_thousands * 1000
+
+    def total_five_hundreds(self):
+        return self.five_hundreds * 500
+
+    def total_two_hundreds(self):
+        return self.two_hundreds * 200
+
+    def total_one_hundreds(self):
+        return self.one_hundreds * 100
+
+    def total_fifties(self):
+        return self.fifties * 50
+
+    def total_twenties(self):
+        return self.twenties * 20
+
+    def total_tens(self):
+        return self.tens * 10
+
+    def total_fives(self):
+        return self.fives * 5
+
+    def total_cash(self):
+        return self.total_one_thousands() + self.total_five_hundreds() + self.total_two_hundreds() + self.total_one_hundreds() + self.total_fifties() + self.total_twenties() + self.total_tens() + self.total_fives() + self.coins_total
+
+    def total_others(self):
+        return sum([other.amount for other in self.other_cash_counts.all()])
+
+    def grand_total(self):
+        return self.total_cash() + self.total_others()
+
+    def __str__(self):
+        return f'{self.date}: {self.grand_total()}'
+
+
+class OtherCashCount(models.Model):
+    cash_count = models.ForeignKey(
+        CashCount,
+        related_name='other_cash_counts',
+        on_delete=models.CASCADE
+    )
+    particulars = models.CharField(max_length=50)
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    def __str__(self):
+        return f'{self.particulars} - {self.amount}'
