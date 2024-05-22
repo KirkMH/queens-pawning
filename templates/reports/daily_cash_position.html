@@ -56,24 +56,24 @@
                 <div class="col-12">
                     <div class="row">
                         <div class="col-md-12">
-                            <div class="card-text text-right">Date: {{ cash_position.date|date:"F m, Y" }}</div>
+                            <div class="card-text text-right">Date: {{ cash_position.date|date:"F d, Y" }}</div>
                             <div>No. <u>{{ cash_position.pk|stringformat:"06d" }}</u></div>
-                            <div class="ml-2">Balance as of <u>{{ last.date|date:"F m, Y" }}</u></div>
+                            <div class="ml-2">Balance as of {% if last %}<u>{{ last.date|date:"F d, Y" }}</u>{% endif %}</div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-1"></div>
                         <div class="col-md-2">Cash on Hand</div>
                         <div class="col-md-1"></div>
-                        <div class="col-md-3 text-right bottom-border">{{ cash_position.balance_coh|peso }}</div>
+                        <div class="col-md-3 text-right bottom-border">{{ cash_position.balance_coh|peso|default_if_none:"" }}</div>
                     </div>
                     <div class="row">
                         <div class="col-md-1"></div>
                         <div class="col-md-2">Cash in Bank</div>
                         <div class="col-md-1"></div>
-                        <div class="col-md-3 text-right bottom-border">{{ cash_position.balance_cib|peso }}</div>
+                        <div class="col-md-3 text-right bottom-border">{{ cash_position.balance_cib|peso|default_if_none:"" }}</div>
                         <div class="col-md-2"></div>
-                        <div class="col-md-3 text-right bottom-border">{{ cash_position.get_total_balance|peso }}</div>
+                        <div class="col-md-3 text-right bottom-border">{{ cash_position.get_total_balance|peso|default_if_none:"" }}</div>
                     </div>
                     <div class="row bottom-border-3 mt-4">
                         <div class="col-md-12">
@@ -207,7 +207,7 @@
                         <div class="row">
                             <div class="col-sm-3"></div>
                             <div class="col-sm-2 ml-2">Cash in Bank (date)</div>
-                            <div class="col-sm-2 ml-2 bottom-border">{% now "F d, Y" %}</div>
+                            <div class="col-sm-2 ml-2 bottom-border">{{ cash_position.date|date:"F d, Y" }}</div>
                             <div class="col-sm-2 ml-2 text-right bottom-border">{{ cash_position.get_cash_in_bank|peso }}</div>
                             <div class="col-sm-2"></div>
                         </div>

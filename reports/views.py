@@ -150,18 +150,17 @@ def set_onhold(request, pk, status):
 
 def daily_cash_position(request):
     date = request.GET.get('date')
-    is_today = False
+    is_today = True
     if not date:
         date = timezone.now().date()
-        is_today = True
     else:
         date = timezone.datetime.strptime(date, '%Y-%m-%d').date()
+        if date != timezone.now().date():
+            is_today = False
     employee = Employee.objects.get(user=request.user)
     branch = employee.branch
     if not branch:
         raise Http404("This feature is only available to branches.")
-    print(f"Branch: {branch}")
-    print(f"Date: {date}")
     daily_cash_position, _ = DailyCashPosition.objects.get_or_create(
         branch=branch,
         date=date,
@@ -169,7 +168,7 @@ def daily_cash_position(request):
     )
     receipts = daily_cash_position.receipts.all()
     disbursements = daily_cash_position.disbursements.all()
-    last = DailyCashPosition.objects.all().order_by('date').last()
+    last = daily_cash_position.fill_in_from_yesterday()
     context = {
         'cash_position': daily_cash_position,
         'receipts': receipts,

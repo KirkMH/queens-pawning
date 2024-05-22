@@ -1,5 +1,7 @@
 from django.db import models
 
+from django.utils import timezone
+
 from files.models import Branch
 from access_hub.models import Employee
 
@@ -43,7 +45,7 @@ class DailyCashPosition(models.Model):
     )
 
     def __str__(self):
-        return f'{self.date} - {self.branch}'
+        return f'{self.date} - {self.branch}: {self.get_net_total()}'
 
     def get_total_balance(self):
         return self.balance_coh + self.balance_cib
@@ -61,10 +63,26 @@ class DailyCashPosition(models.Model):
         return sum([disbursement.amount for disbursement in self.disbursements.all()])
 
     def get_net_subtotal(self):
-        return self.get_total_balance() + self.get_total_receipts()
+        return self.balance_coh + self.get_total_receipts()
 
     def get_net_total(self):
         return self.get_net_subtotal() - self.get_total_disbursements()
+
+    def fill_in_from_yesterday(self):
+        # get the last daily cash position before today
+        positions = DailyCashPosition.objects.filter(
+            branch=self.branch,
+            date__lt=self.date
+        ).order_by('-date')
+
+        last_position = None
+        if positions.exists():
+            last_position = positions.first()
+            self.balance_coh = last_position.get_net_total()
+            self.balance_cib = last_position.get_cash_in_bank()
+            self.cash_in_bank = last_position.get_cash_in_bank()
+            self.save()
+        return last_position
 
 
 class AddReceipts(models.Model):

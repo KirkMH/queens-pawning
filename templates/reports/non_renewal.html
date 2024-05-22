@@ -27,17 +27,6 @@
                     </select>
                 </div>
             </div>
-            <div class="row mb-2">
-                <div class="col-md-2">
-                    <p class="card-text text-muted">Type:</p>
-                </div>
-                <div class="col-md-4">
-                    <select name="type" id="type" class="form-select">
-                        <option value="star">Star</option>
-                        <option value="orig">Orig</option>
-                    </select>
-                </div>
-            </div>
         </div>
         <div class="card-footer">
             <div class="row">
@@ -57,7 +46,7 @@
         {% else %}
         <div class="card-header text-center">
             <h5>V.B. Queen's Jewelry and Pawnshop</h5>
-            <h6>{{ sel_branch }} - {{ sel_type }}</h6>
+            <h6>{{ sel_branch }}</h6>
             <br>
             <h5>NON-RENEWAL OF PAWNED ITEMS AS OF {% now "F d, Y" %}</h5>
         </div>
@@ -81,9 +70,9 @@
                             <td>{{ item.get_last_renewal_date|date:"d-M-y" }}</td>
                             <td class="text-center text-danger">
                                 {% if item.hasExpired and item.on_hold %}
-                                <a href="{% url 'set_onhold' item.pk 0 %}?branch={{url_branch}}&type={{url_type}}" class="btn btn-sm btn-success" title="Click to unhold">HOLD</a>
+                                <a href="{% url 'set_onhold' item.pk 0 %}?branch={{url_branch}}" class="btn btn-sm btn-success" title="Click to unhold">HOLD</a>
                                 {% elif item.hasExpired %}
-                                <a href="{% url 'set_onhold' item.pk 1 %}?branch={{url_branch}}&type={{url_type}}" class="btn btn-sm btn-warning" title="Click to hold">SUBASTA</a>
+                                <a href="{% url 'set_onhold' item.pk 1 %}?branch={{url_branch}}" class="btn btn-sm btn-warning" title="Click to hold">SUBASTA</a>
                                 {% endif %}
                             </td>
                         </tr>
@@ -119,15 +108,14 @@
         $(document).ready(function() {
             $("#btn_generate").click(function() {
                 const branch = $("#branch").val()
-                const type = $("#type").val()
-                console.log(branch, type)
+                console.log(branch)
 
-                if (branch == "" || type == "") {
-                    toastr.error("Please select a branch and type.")
+                if (branch == "") {
+                    toastr.error("Please select a branch.")
                     return
                 }
                 else {
-                    window.location.href = "{% url 'nonrenewal_report' %}?branch=" + branch + "&type=" + type
+                    window.location.href = "{% url 'nonrenewal_report' %}?branch=" + branch
                 }
             });
 
