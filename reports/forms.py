@@ -9,7 +9,7 @@ class ReceiptForm(forms.ModelForm):
 
     class Meta:
         model = AddReceipts
-        exclude = ('daily_cash_position', )
+        exclude = ('daily_cash_position', 'automated', )
 
 
 class DisbursementForm(forms.ModelForm):
@@ -17,7 +17,7 @@ class DisbursementForm(forms.ModelForm):
 
     class Meta:
         model = LessDisbursements
-        exclude = ('daily_cash_position', )
+        exclude = ('daily_cash_position', 'automated', )
 
 
 class OtherCashCountForm(forms.ModelForm):

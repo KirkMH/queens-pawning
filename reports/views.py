@@ -99,6 +99,7 @@ def expense_report(request, type):
     return render(request, 'reports/expense_report.html', context=context)
 
 
+@login_required
 def nonrenewal_report(request):
     sel_branch = url_branch = request.GET.get('branch', None)
 
@@ -128,6 +129,7 @@ def nonrenewal_report(request):
     return render(request, 'reports/non_renewal.html', context)
 
 
+@login_required
 def set_onhold(request, pk, status):
     url_branch = request.GET.get('branch', None)
     pawn = Pawn.objects.get(pk=pk)
@@ -148,6 +150,7 @@ def set_onhold(request, pk, status):
     return redirect(url)
 
 
+@login_required
 def daily_cash_position(request):
     date = request.GET.get('date')
     is_today = True
@@ -235,6 +238,7 @@ class DisbursementCreateView(CreateView):
                 return redirect('daily_cash_position')
 
 
+@login_required
 def update_cib_brakedown(request, pk):
     if request.method == 'POST':
         print(f"POST: {request.POST}")
@@ -249,6 +253,7 @@ def update_cib_brakedown(request, pk):
     return redirect('daily_cash_position')
 
 
+@login_required
 def cash_count(request):
     date = request.GET.get('date')
     is_today = False
@@ -316,6 +321,7 @@ class OtherCashCountCreateView(CreateView):
                 return redirect('cash_count')
 
 
+@login_required
 def auction_report(request):
     employee = Employee.objects.get(user=request.user)
     branch = employee.branch
@@ -345,3 +351,21 @@ def auction_report(request):
         return render(request, 'reports/auction_overall.html', context)
     else:
         return render(request, 'reports/auction_branch.html', context)
+
+
+@login_required
+def delete_receipt(request, pk):
+    receipt = AddReceipts.objects.get(pk=pk)
+    receipt.delete()
+    messages.success(
+        request, f"Receipt was deleted successfully.")
+    return redirect('daily_cash_position')
+
+
+@login_required
+def delete_disbursement(request, pk):
+    disbursement = LessDisbursements.objects.get(pk=pk)
+    disbursement.delete()
+    messages.success(
+        request, f"Disbursement was deleted successfully.")
+    return redirect('daily_cash_position')

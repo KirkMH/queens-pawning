@@ -98,6 +98,7 @@ class AddReceipts(models.Model):
         max_digits=10,
         decimal_places=2
     )
+    automated = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.particulars} - {self.amount}'
@@ -116,6 +117,7 @@ class LessDisbursements(models.Model):
         max_digits=10,
         decimal_places=2
     )
+    automated = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.particulars} - {self.amount}'
