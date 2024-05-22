@@ -15,9 +15,10 @@
     <div class="card m-4" id="report">
         <div class="card-header text-center">
             <h5>V.B. Queen's Jewelry and Pawnshop</h5>
-            <h6>{{ branch }}</h6>
+            <h6>Kalibo, Aklan</h6>
             <br>
-            <h5>ITEMS FOR AUCTION AS OF {% now "F d, Y" %}</h5>
+            <h5>FOR AUCTION</h5>
+            <h5>{% now "F d, Y" %}</h5>
         </div>
         <div class="card-body">
             <div class="row mb-2">
@@ -70,6 +71,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
 {% endblock main_content %}
 
@@ -77,6 +79,22 @@
 {% block js %}
     <script>
         $(document).ready(function() {
+            $("#btn_generate").click(function() {
+                const type = $("#type").val()
+                console.log(type)
+
+                if (type == "") {
+                    toastr.error("Please select a type.")
+                    return
+                }
+                else {
+                    window.location.href = "{% url 'auction_report' %}?type=" + type
+                }
+            });
+
+            const type = "{{ type }}".toLowerCase()
+            $("#type").val(type)
+
             $("#menu-reports").addClass("active")
         })
     </script>

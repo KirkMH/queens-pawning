@@ -1,9 +1,8 @@
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from django.db.models import Sum, ExpressionWrapper, fields
+from django.db.models import Sum
 from django.http import Http404
-from django.views.generic import CreateView, UpdateView
-from django.contrib.messages.views import SuccessMessageMixin
+from django.views.generic import CreateView
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -11,9 +10,9 @@ from django.urls import reverse
 from urllib.parse import urlencode
 from decimal import Decimal
 
-from files.models import Branch, TermDuration
+from files.models import Branch
 from expense.models import Expense
-from pawn.models import Pawn, STAR_BENCHMARK
+from pawn.models import Pawn
 from access_hub.models import Employee
 from .models import DailyCashPosition, AddReceipts, LessDisbursements
 from .forms import *
@@ -102,18 +101,13 @@ def expense_report(request, type):
 
 def nonrenewal_report(request):
     sel_branch = url_branch = request.GET.get('branch', None)
-    sel_type = url_type = request.GET.get('type', 'star')
 
     report = None
     grand_total = 0
 
-    if sel_branch and sel_type:
+    if sel_branch:
         report = Pawn.expired.filter(status='ACTIVE')
         sel_branch = int(sel_branch)
-        if sel_type == 'orig':  # orig
-            report = report.filter(principal__lt=STAR_BENCHMARK)
-        else:  # star
-            report = report.filter(principal__gte=STAR_BENCHMARK)
         if sel_branch == -1:
             sel_branch = 'All Branches'
         else:
@@ -126,9 +120,7 @@ def nonrenewal_report(request):
     context = {
         "branches": Branch.objects.all(),
         "sel_branch": sel_branch,
-        "sel_type": sel_type.upper(),
         "url_branch": url_branch,
-        "url_type": url_type,
         "report": report,
         "grand_total": grand_total
     }
@@ -138,7 +130,6 @@ def nonrenewal_report(request):
 
 def set_onhold(request, pk, status):
     url_branch = request.GET.get('branch', None)
-    url_type = request.GET.get('type', 'star')
     pawn = Pawn.objects.get(pk=pk)
     pawn.on_hold = (status > 0)
     pawn.save()
@@ -151,7 +142,7 @@ def set_onhold(request, pk, status):
             request, f"Disabled ON HOLD status of PTN {pawn.pk:06d}.")
 
     base_url = reverse('nonrenewal_report')
-    query_string = urlencode({'branch': url_branch, 'type': url_type})
+    query_string = urlencode({'branch': url_branch})
     url = '{}?{}'.format(base_url, query_string)
 
     return redirect(url)
@@ -327,15 +318,9 @@ class OtherCashCountCreateView(CreateView):
 
 
 def auction_report(request):
-    type = request.GET.get('type', 'star')
     employee = Employee.objects.get(user=request.user)
     branch = employee.branch
-
     report = Pawn.expired.filter(on_hold=False)
-    if type == 'orig':  # orig
-        report = report.filter(principal__lt=STAR_BENCHMARK)
-    else:  # star
-        report = report.filter(principal__gte=STAR_BENCHMARK)
 
     if not branch:
         branch = 'All Branches'

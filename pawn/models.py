@@ -11,22 +11,9 @@ from access_hub.models import Employee
 from reports.models import AddReceipts, DailyCashPosition, LessDisbursements
 
 
-STAR_BENCHMARK = 10000  # TODO: confirm the condition for star
-
-
 class Inventory(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(status='ACTIVE')
-
-
-class Star(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(principal__gte=STAR_BENCHMARK)
-
-
-class Orig(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(principal__lt=STAR_BENCHMARK)
 
 
 class Expired(models.Manager):
@@ -207,8 +194,6 @@ class Pawn(models.Model):
     objects = models.Manager()
     history = HistoricalRecords()
     inventory = Inventory()
-    star = Star()
-    orig = Orig()
     matured = Matured()
     expired = Expired()
 
