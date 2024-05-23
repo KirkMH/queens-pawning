@@ -15,7 +15,7 @@
         <div class="card-header">
             <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-                
+                <a href="{% url 'print_inventory_list' %}" class="btn btn-primary">Print Preview</a>
             </div>
             </div>
         </div>
@@ -25,6 +25,7 @@
             <thead>
                 <tr>
                     <th class="text-center" width="10%">Action</th>
+                    <th class="text-center">PT Number</th>
                     <th class="text-center">Description</th>
                     <th class="text-center">Principal</th>
                     <th class="text-center">Client</th>
@@ -53,6 +54,14 @@
                         render: function (data) {
                             let links = `<a href="/pawn/${data}/detail?from=/pawn/inventory" title="Detail"><i class="far fa-eye"></i></a>`
                             return links;
+                        },
+                        className: 'text-center'
+                    },
+                    {
+                        name: 'ptn',
+                        data: 0,
+                        render: function (data) {
+                            return String(data).padStart(6, '0');
                         },
                         className: 'text-center'
                     },

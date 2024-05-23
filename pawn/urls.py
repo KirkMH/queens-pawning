@@ -17,6 +17,8 @@ urlpatterns = [
     path('inventory', views.inventory_list, name='inventory_list'),
     path('inventory/sdt_list', views.PawnedItemsDTListView.as_view(),
          name='pawneditems_dtlist'),
+    path('inventory/print', views.print_inventory_list,
+         name='print_inventory_list'),
 
     path('discounts/<int:pk>/request',
          views.request_discount, name='request_discount'),            # pk -> pawn.pk

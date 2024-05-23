@@ -148,6 +148,26 @@ class PawnedItemsDTListView(ServerSideDatatableView):
 
 
 @login_required
+def print_inventory_list(request):
+    queryset = Pawn.inventory.all()
+    selected_branch = 'All Branches'
+    try:
+        branch = Employee.objects.get(user=request.user).branch
+
+        if branch:
+            queryset = queryset.filter(branch=branch)
+            selected_branch = f"{branch.name} Branch"
+    except:
+        pass
+
+    context = {
+        'list': queryset,
+        'selected_branch': selected_branch
+    }
+    return render(request, 'pawn/pawn_items_print.html', context)
+
+
+@login_required
 def request_discount(request, pk):
     ''' 
     The cashier requests for a discount for the pawn ticket.
