@@ -48,8 +48,8 @@
                             <td>{{ item.get_last_renewal_date|date:"d-M-y" }}</td>
                             <td>{{ item.get_maturity_date|date:"d-M-y" }}</td>
                             <td class="text-right">{{ item.principal|peso }}</td>
-                            <td class="text-right">{{ item.getInterest|peso }}</td>
-                            <td class="text-right">{{ item.getPrincipalPlusInterest|peso }}</td>
+                            <td class="text-right">{{ item.getAuctionInterest|peso }}</td>
+                            <td class="text-right">{{ item.getPrincipalPlusAuctionInterest|peso }}</td>
                         </tr>
                         {% endfor %}
                         <tr style="border-top: 1pt solid gray;">

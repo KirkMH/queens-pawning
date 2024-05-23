@@ -282,6 +282,12 @@ class Pawn(models.Model):
             return 'MATURED'
         return 'ACTIVE'
 
+    def getAuctionInterest(self):
+        return self.principal * Decimal(4 * 0.04)
+
+    def getPrincipalPlusAuctionInterest(self):
+        return self.principal + self.getAuctionInterest()
+
     def getPenalty(self):
         if self.hasPenalty():
             daysPenalty = Decimal(

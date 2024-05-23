@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import Sum, F, DecimalField, ExpressionWrapper
 from django.http import Http404
 from django.views.generic import CreateView
 from django.contrib import messages
@@ -335,7 +335,7 @@ def auction_report(request):
         branch = branch.name + ' Branch'
 
     principal_total = report.aggregate(Sum('principal'))['principal__sum']
-    interest_total = sum([pawn.getInterest() for pawn in report])
+    interest_total = sum([pawn.getAuctionInterest() for pawn in report])
     grand_total = principal_total + interest_total
 
     context = {
