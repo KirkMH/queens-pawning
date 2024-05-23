@@ -319,11 +319,15 @@ class Pawn(models.Model):
         interest = self.getInterest()
         penalty = self.getPenalty()
         additional_principal = Decimal(post.get('additionalPrincipal', '0'))
-        promised_date = timezone.datetime.strptime(
-            post.get('promised_renewal_date'), '%Y-%m-%d').date()
-        adv_interest_rate = Pawn.advanceInterestRate(promised_date)
-        adv_interest = (self.principal - paid_for_principal +
-                        additional_principal) * Decimal(adv_interest_rate / 100)
+        promised_date = None
+        adv_interest_rate = 0
+        adv_interest = 0
+        if post.get('promised_renewal_date'):
+            promised_date = timezone.datetime.strptime(
+                post.get('promised_renewal_date'), '%Y-%m-%d').date()
+            adv_interest_rate = Pawn.advanceInterestRate(promised_date)
+            adv_interest = (self.principal - paid_for_principal +
+                            additional_principal) * Decimal(adv_interest_rate / 100)
         service_fee = 0
         discounted = 0
         dr = DiscountRequests.objects.filter(pawn=self)
@@ -333,6 +337,7 @@ class Pawn(models.Model):
 
         if amount_paid >= self.principal:
             self.status = 'REDEEMED'
+
         else:
             service_fee = otherFees.service_fee
             new_principal = self.principal - paid_for_principal + additional_principal
@@ -355,10 +360,6 @@ class Pawn(models.Model):
             new_pawn.branch = self.branch
             new_pawn.status = 'ACTIVE'
             new_pawn.save()
-            # if new_pawn.net_proceeds > 0:
-            #     new_pawn.update_receipts(cashier, 'Renewed Pawn Ticket')
-            # elif new_pawn.net_proceeds < 0:
-            #     new_pawn.update_disbursements(cashier, 'Renewed Pawn Ticket')
 
             self.status = 'RENEWED'
             self.renewed_to = new_pawn
@@ -378,13 +379,22 @@ class Pawn(models.Model):
         payment.discount_granted = discounted
         payment.save()
 
+        # update daily cash position
+        if self.status == 'RENEWED':
+            self.update_cash_position_renew_ticket(
+                cashier, 'Renewed pawn ticket', new_pawn
+            )
+        elif self.status == 'REDEEMED':
+            self.update_receipts(
+                cashier, 'Redeemed', amount_paid)
+
     def get_last_renewal_date(self):
         renewal = None
         if self.pawn_renewed_to:
             renewal = self.date
         return renewal
 
-    def update_receipts(self, cashier, description):
+    def update_receipts(self, cashier, description, amount):
         cash_position, _ = DailyCashPosition.objects.get_or_create(
             branch=self.branch,
             date=timezone.now().date(),
@@ -396,11 +406,12 @@ class Pawn(models.Model):
         )
         receipt.received_from = self.client.full_name
         receipt.particulars = description
-        receipt.amount = self.net_proceeds
+        receipt.amount = amount
+        receipt.automated = True
         receipt.save()
         return receipt
 
-    def update_disbursements(self, cashier, description):
+    def update_disbursements(self, cashier, description, amount):
         cash_position, _ = DailyCashPosition.objects.get_or_create(
             branch=self.branch,
             date=timezone.now().date(),
@@ -412,9 +423,38 @@ class Pawn(models.Model):
         )
         disbursement.payee = self.client.full_name
         disbursement.particulars = description
-        disbursement.amount = self.net_proceeds
+        disbursement.amount = amount
+        disbursement.automated = True
         disbursement.save()
         return disbursement
+
+    def update_cash_position_new_ticket(self, cashier, description):
+        receipt = None
+        disbursement = None
+        if self.transaction_type == 'NEW':
+            receipt = self.update_receipts(
+                cashier, description, self.advance_interest)
+            d_amt = self.principal - self.service_charge
+            disbursement = self.update_disbursements(
+                cashier, description, d_amt)
+        return (receipt, disbursement)
+
+    def update_cash_position_renew_ticket(self, cashier, description, new_ticket):
+        receipt = None
+        disbursement = None
+        total_interest = 0
+        if self.transaction_type == 'NEW':
+            total_interest = new_ticket.advance_interest
+        else:
+            total_interest = self.getInterest()
+
+        r_amt = new_ticket.principal + total_interest
+        receipt = self.update_receipts(
+            cashier, description, r_amt)
+        d_amt = new_ticket.principal - new_ticket.service_charge
+        disbursement = self.update_disbursements(
+            cashier, description, d_amt)
+        return (receipt, disbursement)
 
 
 class Payment(models.Model):

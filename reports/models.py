@@ -96,7 +96,8 @@ class AddReceipts(models.Model):
     particulars = models.CharField(max_length=50, blank=True, null=True)
     amount = models.DecimalField(
         max_digits=10,
-        decimal_places=2
+        decimal_places=2,
+        default=0
     )
     automated = models.BooleanField(default=False)
 
@@ -115,7 +116,8 @@ class LessDisbursements(models.Model):
     particulars = models.CharField(max_length=50, blank=True, null=True)
     amount = models.DecimalField(
         max_digits=10,
-        decimal_places=2
+        decimal_places=2,
+        default=0
     )
     automated = models.BooleanField(default=False)
 

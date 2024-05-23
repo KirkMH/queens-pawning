@@ -97,7 +97,7 @@
                                 
                                 {{ receipt.reference_number|default_if_none:"" }}
                             </div>
-                            <div class="col-sm-2 ml-3 bottom-border">{{ receipt.received_from|default_if_none:"" }}</div>
+                            <div class="col-sm-2 ml-3 bottom-border">{{ receipt.received_from|default_if_none:""|title }}</div>
                             <div class="col-sm-3 ml-3 bottom-border">{{ receipt.particulars|default_if_none:"" }}</div>
                             <div class="col-sm-2 ml-3 bottom-border">
                                 
@@ -114,16 +114,16 @@
                             {% endif %}
                         </div>
                         {% endfor %}
-                        <div class="row">
-                            <div class="col-sm-7"></div>
-                            <div class="col-sm-1">Total</div>
-                            <div class="col-sm-4 text-right bottom-border">{{ cash_position.get_net_subtotal|peso }}</div>
-                        </div>
                     {% else %}
                         <div class="row">
                             <div class="col-md-12 text-muted">No receipts found.</div>
                         </div>
                     {% endif %}
+                    <div class="row">
+                        <div class="col-sm-7"></div>
+                        <div class="col-sm-1">Total</div>
+                        <div class="col-sm-4 text-right bottom-border">{{ cash_position.get_net_subtotal|peso }}</div>
+                    </div>
 
                     <br />
                     
@@ -137,7 +137,7 @@
                     </div>
                     {% if disbursements %}
                         <div class="row">
-                            <div class="col-sm-2 ml-3">OR/PR No.</div>
+                            <div class="col-sm-2 ml-3">PT/CV No.</div>
                             <div class="col-sm-2 ml-3">Received from</div>
                             <div class="col-sm-3 ml-3">Particulars</div>
                             <div class="col-sm-2 ml-3">Amount</div>
@@ -146,7 +146,7 @@
                         {% for disbursement in disbursements %}
                         <div class="row">
                             <div class="col-sm-2 ml-3 bottom-border">{{ disbursement.reference_number|default_if_none:"" }}</div>
-                            <div class="col-sm-2 ml-3 bottom-border">{{ disbursement.payee|default_if_none:"" }}</div>
+                            <div class="col-sm-2 ml-3 bottom-border">{{ disbursement.payee|default_if_none:""|title }}</div>
                             <div class="col-sm-3 ml-3 bottom-border">{{ disbursement.particulars|default_if_none:"" }}</div>
                             <div class="col-sm-2 ml-3 bottom-border">
                                 
@@ -163,16 +163,17 @@
                             {% endif %}
                         </div>
                         {% endfor %}
-                        <div class="row">
-                            <div class="col-sm-7"></div>
-                            <div class="col-sm-1">Total</div>
-                            <div class="col-sm-4 text-right bottom-border">{{ cash_position.get_net_total|peso }}</div>
-                        </div>
                     {% else %}
                         <div class="row">
                             <div class="col-md-12 text-muted">No disbursements found.</div>
                         </div>
                     {% endif %}
+
+                    <div class="row">
+                        <div class="col-sm-7"></div>
+                        <div class="col-sm-1">Total</div>
+                        <div class="col-sm-4 text-right bottom-border">{{ cash_position.get_net_total|peso }}</div>
+                    </div>
 
                     <br />
 

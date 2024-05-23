@@ -18,7 +18,7 @@ class PawnForm(forms.ModelForm):
     class Meta:
         model = Pawn
         exclude = ('status', 'on_hold', 'status_updated_on',
-                   'branch', 'renewed_to',)
+                   'branch', 'renewed_to', 'additional_principal', )
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)

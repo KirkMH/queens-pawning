@@ -65,7 +65,7 @@ class PawnCreateView(CreateView):
             pawn = form.save(commit=False)
             pawn.branch = employee.branch
             pawn.save()
-            pawn.update_receipts(employee, 'Pawn ticket'),
+            pawn.update_cash_position_new_ticket(employee, 'New pawn ticket'),
             messages.success(
                 request, f"New pawn ticket for {pawn.client} was created successfully.")
             if "another" in request.POST:
