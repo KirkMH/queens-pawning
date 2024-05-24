@@ -10,6 +10,7 @@ urlpatterns = [
          views.nonrenewal_report, name='nonrenewal_report'),
     path('pawns/<int:pk>/hold/<int:status>',
          views.set_onhold, name='set_onhold'),
+    path('pawn/new', views.new_pawn_tickets, name='new_pawn_report'),
 
     path('daily-cash-position',
          views.daily_cash_position, name='daily_cash_position'),

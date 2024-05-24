@@ -1,0 +1,123 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load humanize %}
+{% load form_tags %}
+
+{% block title %}New Pawn Tickets{% endblock title %}
+{% block page_title %}New Pawn Tickets{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item active">New Pawn Tickets</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+    <div class="card m-4 no-print">
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-md-2">
+                    <p class="card-text text-muted">Branch:</p>
+                </div>
+                <div class="col-md-4">
+                    <select name="branch" id="branch" class="form-select">
+                        <option value="-1">All</option>
+                        {% for branch in branches %}
+                        <option value="{{ branch.pk }}" {% if branch.pk == sel_branch %}selected{% endif %}>{{ branch }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-2">
+                    <p class="card-text text-muted">Month:</p>
+                </div>
+                <div class="col-md-4">
+                    <input type="month" name="month" id="month" class="form-control" value="{{ sel_month }}"/>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-lg-12">
+                    <button class="btn btn-primary" id="btn_generate">Generate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if pawns != None %}
+    <div class="card m-4" id="report">
+        {% if pawns.count == 0 %}
+        <div class="card-header mt-2">
+            <h6>No record found.</h6>
+        </div>
+        {% else %}
+        <div class="card-header text-center">
+            <h5>V.B. Queen's Jewelry and Pawnshop</h5>
+            <h6>{{ selected_branch }}</h6>
+            <br>
+            <h5>NEW PAWN TICKETS FOR THE MONTH {{ selected_month }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-12">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <td class="text-center">PT #</td>
+                                <td class="text-center">Client</td>
+                                <td class="text-center">Description</td>
+                                <td class="text-center">Date Granted</td>
+                                <td class="text-center">Principal</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pawn in pawns %}
+                            <tr>
+                                <td class="text-center">{{ pawn.pk|stringformat:"06d" }}</td>
+                                <td>{{ pawn.client }}</td>
+                                <td>{{ pawn.complete_description }}</td>
+                                <td>{{ pawn.date|date:"F d Y" }}</td>
+                                <td class="text-right">{{ pawn.principal|peso }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer no-print">
+            <div class="row">
+                <div class="col-lg-12">
+                    <button class="btn btn-primary" id="btn_print" onclick="window.print();">Print</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+{% endblock main_content %}
+
+
+{% block js %}
+    <script>
+        $(document).ready(function() {
+            $("#btn_generate").click(function() {
+                const branch = $("#branch").val()
+                const month = $("#month").val()
+                console.log(branch, month)
+
+                if (branch == "" || month == "") {
+                    toastr.error("Please select a branch and month.")
+                    return
+                }
+                else {
+                    window.location.href = "{% url 'new_pawn_report' %}?branch=" + branch + "&month=" + month
+                }
+            });
+
+            $("#menu-reports").addClass("active")
+        })
+    </script>
+{% endblock js %}

@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.db.models import Sum, F, DecimalField, ExpressionWrapper
 from django.http import Http404
@@ -369,3 +369,53 @@ def delete_disbursement(request, pk):
     messages.success(
         request, f"Disbursement was deleted successfully.")
     return redirect('daily_cash_position')
+
+
+@login_required
+def new_pawn_tickets(request):
+    sel_branch = request.GET.get('branch', None)
+    sel_month = request.GET.get('month', None)
+
+    pawns = None
+    branch = None
+    selected_month = None
+    selected_branch = None
+    pawn_list = Pawn.objects.all()
+
+    if selected_branch or sel_month:
+        pawn_list = pawn_list.filter(status='ACTIVE')
+    if sel_branch:
+        sel_branch = int(sel_branch)
+        if sel_branch >= 0:
+            branch = get_object_or_404(Branch, pk=sel_branch)
+            pawn_list = pawn_list.filter(branch=branch)
+            selected_branch = f"{branch} Branch"
+        else:
+            selected_branch = "All Branches"
+    if sel_month:
+        parts = sel_month.split("-")
+        year = int(parts[0])
+        month = int(parts[1])
+        selected_month = get_month_name(month, year).upper()
+        pawn_list = pawn_list.filter(
+            date__year=year,
+            date__month=month
+        )
+
+    if pawn_list.count() > 0:
+        pawns = []
+        for pawn in pawn_list:
+            if not hasattr(pawn, 'pawn_renewed_to'):
+                pawns.append(pawn)
+
+    context = {
+        'pawns': pawns,
+        'branch': branch,
+        'branches': Branch.objects.all(),
+        'selected_month': selected_month,
+        'selected_branch': selected_branch,
+        'sel_branch': sel_branch,
+        'sel_month': sel_month,
+    }
+
+    return render(request, 'reports/new_pawn_tickets.html', context)
