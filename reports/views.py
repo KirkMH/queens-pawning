@@ -257,11 +257,16 @@ def update_cib_brakedown(request, pk):
 def cash_count(request):
     date = request.GET.get('date')
     is_today = False
+    is_updated = False
     if not date:
         date = timezone.now().date()
         is_today = True
     else:
         date = timezone.datetime.strptime(date, '%Y-%m-%d').date()
+        print(f"Date: {date}")
+        print(f'Today: {timezone.now().date()}')
+        if date == timezone.now().date():
+            is_today = True
     employee = Employee.objects.get(user=request.user)
     branch = employee.branch
     if not branch:
@@ -289,12 +294,14 @@ def cash_count(request):
         cash_count.coins_total = Decimal(
             request.POST.get('coins_total') or '0')
         cash_count.save()
+        is_updated = True
 
     context = {
         'cash_count': cash_count,
         'sel_date': date,
         'selected_branch': branch.name + ' Branch',
-        'is_today': is_today
+        'is_today': is_today,
+        'is_updated': is_updated
     }
     return render(request, 'reports/cash_count.html', context)
 

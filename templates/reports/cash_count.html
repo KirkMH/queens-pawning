@@ -64,89 +64,153 @@
                     <div class="row mb-2">
                         <div class="col-sm-2 text-right">₱</div>
                         <div class="col-sm-1 text-right">1000 X</div>
+                        {% if is_today %}
                         <div class="col-sm-2">
-                            <input class="form-control text-right" type="number" name="one_thousands" id="one_thousands" min="0" value="{{ cash_count.one_thousands }}">
+                            <input class="form-control text-center" type="number" name="one_thousands" id="one_thousands" min="0" value="{{ cash_count.one_thousands }}">                                
                         </div>
+                        {% else %}
+                        <div class="col-sm-2 bottom-border text-center">
+                            {{ cash_count.one_thousands }}
+                        </div>
+                        {% endif %}
+                                
                         =
                         <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_one_thousands|floatformat:"2" }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-2 text-right">₱</div>
                         <div class="col-sm-1 text-right">500 X</div>
+                        {% if is_today %}
                         <div class="col-sm-2">
-                            <input class="form-control text-right" type="number" name="five_hundreds" id="five_hundreds" min="0" value="{{ cash_count.five_hundreds }}">
+                            <input class="form-control text-center" type="number" name="five_hundreds" id="five_hundreds" min="0" value="{{ cash_count.five_hundreds }}">                                
                         </div>
+                        {% else %}
+                        <div class="col-sm-2 bottom-border text-center">
+                            {{ cash_count.five_hundreds }}
+                        </div>
+                        {% endif %}
                         =
                         <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_five_hundreds|floatformat:"2" }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-2 text-right">₱</div>
                         <div class="col-sm-1 text-right">200 X</div>
+                        {% if is_today %}
                         <div class="col-sm-2">
-                            <input class="form-control text-right" type="number" name="two_hundreds" id="two_hundreds" min="0" value="{{ cash_count.two_hundreds }}">
+                            <input class="form-control text-center" type="number" name="two_hundreds" id="two_hundreds" min="0" value="{{ cash_count.two_hundreds }}">                                
                         </div>
+                        {% else %}
+                        <div class="col-sm-2 bottom-border text-center">
+                            {{ cash_count.two_hundreds }}
+                        </div>
+                        {% endif %}
                         =
                         <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_two_hundreds|floatformat:"2" }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-2 text-right">₱</div>
                         <div class="col-sm-1 text-right">100 X</div>
+                        {% if is_today %}
                         <div class="col-sm-2">
-                            <input class="form-control text-right" type="number" name="one_hundreds" id="one_hundreds" min="0" value="{{ cash_count.one_hundreds }}">
+                            <input class="form-control text-center" type="number" name="one_hundreds" id="one_hundreds" min="0" value="{{ cash_count.one_hundreds }}">                                
                         </div>
+                        {% else %}
+                        <div class="col-sm-2 bottom-border text-center">
+                            {{ cash_count.one_hundreds }}
+                        </div>
+                        {% endif %}
                         =
                         <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_one_hundreds|floatformat:"2" }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-2 text-right">₱</div>
                         <div class="col-sm-1 text-right">50 X</div>
+                        {% if is_today %}
                         <div class="col-sm-2">
-                            <input class="form-control text-right" type="number" name="fifties" id="fifties" min="0" value="{{ cash_count.fifties }}">
+                            <input class="form-control text-center" type="number" name="fifties" id="fifties" min="0" value="{{ cash_count.fifties }}">                                
                         </div>
+                        {% else %}
+                        <div class="col-sm-2 bottom-border text-center">
+                            {{ cash_count.fifties }}
+                        </div>
+                        {% endif %}
                         =
                         <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_fifties|floatformat:"2" }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-2 text-right">₱</div>
                         <div class="col-sm-1 text-right">20 X</div>
+                        {% if is_today %}
                         <div class="col-sm-2">
-                            <input class="form-control text-right" type="number" name="twenties" id="twenties" min="0" value="{{ cash_count.twenties }}">
+                            <input class="form-control text-center" type="number" name="twenties" id="twenties" min="0" value="{{ cash_count.twenties }}">                                
                         </div>
+                        {% else %}
+                        <div class="col-sm-2 bottom-border text-center">
+                            {{ cash_count.twenties }}
+                        </div>
+                        {% endif %}
                         =
                         <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_twenties|floatformat:"2" }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-2 text-right">₱</div>
                         <div class="col-sm-1 text-right">10 X</div>
+                        {% if is_today %}
                         <div class="col-sm-2">
-                            <input class="form-control text-right" type="number" name="tens" id="tens" min="0" value="{{ cash_count.tens }}">
+                            <input class="form-control text-center" type="number" name="tens" id="tens" min="0" value="{{ cash_count.tens }}">                                
                         </div>
+                        {% else %}
+                        <div class="col-sm-2 bottom-border text-center">
+                            {{ cash_count.tens }}
+                        </div>
+                        {% endif %}
                         =
                         <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_tens|floatformat:"2" }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-2 text-right">₱</div>
                         <div class="col-sm-1 text-right">5 X</div>
+                        {% if is_today %}
                         <div class="col-sm-2">
-                            <input class="form-control text-right" type="number" name="fives" id="fives" min="0" value="{{ cash_count.fives }}">
+                            <input class="form-control text-center" type="number" name="fives" id="fives" min="0" value="{{ cash_count.fives }}">                                
                         </div>
+                        {% else %}
+                        <div class="col-sm-2 bottom-border text-center">
+                            {{ cash_count.fives }}
+                        </div>
+                        {% endif %}
                         =
                         <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_fives|floatformat:"2" }}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-2 text-right">₱</div>
                         <div class="col-sm-1 text-right">COINS X</div>
+                        {% if is_today %}
                         <div class="col-sm-2">
-                            <input class="form-control text-right" type="number" name="coins" id="coins" min="0" value="{{ cash_count.coins }}">
+                            <input class="form-control text-center" type="number" name="coins" id="coins" min="0" value="{{ cash_count.coins }}">                                
                         </div>
+                        {% else %}
+                        <div class="col-sm-2 bottom-border text-center">
+                            {{ cash_count.coins }}
+                        </div>
+                        {% endif %}
                         =
-                        <div class="col-sm-3 text-right"><input class="form-control text-right" type="number" name="coins_total" id="coins_total" min="0.00" step="0.01" value="{{ cash_count.coins_total }}"></div>
+                            {% if is_today %}
+                            <div class="col-sm-3 text-right">
+                                <input class="form-control text-right" type="number" name="coins_total" id="coins_total" min="0" value="{{ cash_count.coins_total }}">                                
+                            </div>
+                            {% else %}
+                            <div class="col-sm-3 text-right bottom-border">
+                                {{ cash_count.coins_total }}
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-sm-2 text-right mr-1">Total Cash</div>
                         <div class="col-sm-1 text-right"></div>
                         <div class="col-sm-2"></div>
-                        <div class="col-sm-3 bottom-border text-right">{{ cash_count.total_cash|peso }}</div>
+                        <div class="col-sm-3 bottom-border text-right ml-3">{{ cash_count.total_cash|peso }}</div>
                     </div>
                     <div class="row mt-4">
                         <div class="col-sm-2 text-right mr-2">Add:</div>
@@ -172,6 +236,14 @@
                         <div class="col-sm-3 bottom-border text-bold text-right">{{ cash_count.grand_total|peso }}</div>
                     </div>
 
+                    
+                    {% if not is_today or is_updated %}
+                    <div class="row mt-4">
+                        <div class="col-sm-1"></div>
+                        <div class="col-sm-2 text-bold">Remarks: {{ cash_count.remarks }}</div>
+                    </div>
+                    {% endif %}
+                        
                 </div>
             </div>
         </div>

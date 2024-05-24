@@ -185,6 +185,24 @@ class CashCount(models.Model):
     def grand_total(self):
         return self.total_cash() + self.total_others()
 
+    def remarks(self):
+        remark = ''
+        position = DailyCashPosition.objects.filter(
+            branch=self.branch,
+            date=self.date
+        ).first()
+
+        if position:
+            net_total = position.get_net_total()
+            if net_total != self.grand_total():
+                remark = 'Mismatch'
+            else:
+                remark = 'Match'
+        else:
+            remark = 'No Daily Cash Position'
+
+        return remark
+
     def __str__(self):
         return f'{self.date}: {self.grand_total()}'
 
