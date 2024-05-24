@@ -16,6 +16,7 @@ const calculate = async () => {
   if (principal - partial + additionalPrincipal > appraised_value) {
     toastr.error("The total principal must not exceed the appraised value.");
     $("#additionalPrincipal").val("0.00");
+    calculate();
     return;
   }
 

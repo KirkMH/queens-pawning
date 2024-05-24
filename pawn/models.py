@@ -296,7 +296,7 @@ class Pawn(models.Model):
         return 0
 
     def getInterestPlusPenalty(self):
-        return self.getInterest() + self.getPenalty()
+        return self.getInterest() + self.getPenalty() + self.getAdditionalInterest()
 
     def getPrincipalPlusInterest(self):
         return self.principal + self.getInterest()
