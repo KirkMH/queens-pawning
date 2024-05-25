@@ -12,7 +12,7 @@ from decimal import Decimal
 
 from files.models import Branch
 from expense.models import Expense
-from pawn.models import Pawn
+from pawn.models import Pawn, Payment
 from access_hub.models import Employee
 from .models import DailyCashPosition, AddReceipts, LessDisbursements
 from .forms import *
@@ -426,3 +426,69 @@ def new_pawn_tickets(request):
     }
 
     return render(request, 'reports/new_pawn_tickets.html', context)
+
+
+@login_required
+def income_statement(request):
+    # make sure that the logged employee is from a branch ====================
+    employee = Employee.objects.get(user=request.user)
+    branch = employee.branch
+    if not branch:
+        raise Http404("This feature is only available to branches.")
+
+    # determine the report month ============================================
+    selected_month = None
+    interest = 0
+    loans_extended = 0
+    total_expenses = 0
+    expense_summary = None
+    sel_month = request.GET.get('month', None)
+    year = timezone.now().year
+    month = timezone.now().month
+    if sel_month:
+        parts = sel_month.split("-")
+        year = int(parts[0])
+        month = int(parts[1])
+        selected_month = get_month_name(month, year).upper()
+
+        # for the income ========================================================
+        payment_list = Payment.objects.filter(
+            date__year=year,
+            date__month=month,
+            pawn__branch=branch
+        )
+
+        # sum interests (together with advance interest) and service charge
+        for payment in payment_list:
+            interest += payment.paid_interest + payment.advance_interest
+            loans_extended += payment.service_fee
+
+        # for the expenses =======================================================
+        expenses = Expense.objects.filter(
+            date__year=year,
+            date__month=month,
+            branch=branch
+        )
+
+        # Annotate total amount per category
+        expense_summary = expenses.values('category__category').annotate(
+            total_amount=Sum('amount')
+        ).order_by('category__category')
+        print(f"expense_summary:\n{expense_summary}")
+
+        total_expenses = expenses.aggregate(
+            grand_total=Sum('amount'))['grand_total'] or 0
+
+    context = {
+        'branch': "f{branch} Branch",
+        'sel_month': sel_month,
+        'selected_month': selected_month,
+        'interest': interest,
+        'loans_extended': loans_extended,
+        'income': loans_extended + interest,
+        'expense_summary': expense_summary,
+        'total_expenses': total_expenses,
+        'net_income': loans_extended + interest - total_expenses
+    }
+
+    return render(request, 'reports/income_statement.html', context)

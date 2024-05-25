@@ -30,4 +30,6 @@ urlpatterns = [
          views.OtherCashCountCreateView.as_view(), name='add_cash_count'),
 
     path('auction/branch', views.auction_report, name='auction_report'),
+
+    path('income-statement', views.income_statement, name='income_statement'),
 ]
