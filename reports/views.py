@@ -328,9 +328,7 @@ class OtherCashCountCreateView(CreateView):
                 return redirect('cash_count')
 
 
-@login_required
-def auction_report(request):
-    employee = Employee.objects.get(user=request.user)
+def generate_auction_report(employee: Employee):
     branch = employee.branch
     report = Pawn.expired.filter(on_hold=False)
 
@@ -340,6 +338,14 @@ def auction_report(request):
     else:
         report = report.filter(branch=branch)
         branch = branch.name + ' Branch'
+
+    return report, branch
+
+
+@login_required
+def auction_report(request):
+    employee = Employee.objects.get(user=request.user)
+    report, branch = generate_auction_report(employee)
 
     principal_total = report.aggregate(Sum('principal'))['principal__sum']
     interest_total = sum([pawn.getAuctionInterest() for pawn in report])
@@ -358,6 +364,17 @@ def auction_report(request):
         return render(request, 'reports/auction_overall.html', context)
     else:
         return render(request, 'reports/auction_branch.html', context)
+
+
+@login_required
+def add_to_auction(request, pk):
+    employee = Employee.objects.get(user=request.user)
+    report, branch = generate_auction_report(employee)
+    for pawn in report:
+        if pawn.pk == pk:
+            pawn.status = Pawn.AUCTIONED
+            pawn.status_updated_on = timezone.now()
+            pawn.save()
 
 
 @login_required
