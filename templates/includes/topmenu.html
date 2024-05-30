@@ -7,9 +7,9 @@
                 <li id="menu-clients">
                     <a class="dropdown-item" href="{% url 'client_list' %}">Clients</a>
                 </li>
-                <li id="menu-inventory">
-                    <a class="dropdown-item" href="#">Inventory</a>
-                </li>
+                
+                {% if not user.employee.branch %}
+                                        
                 <li id="menu-expense-cat">
                     <a class="dropdown-item" href="{% url 'expense_category_list' %}">Expense Categories</a>
                 </li>
@@ -28,20 +28,25 @@
                 <li id="menu-branches">
                     <a class="dropdown-item" href="{% url 'branch_list' %}">Branches</a>
                 </li>
+
+                {% endif %}
+
             </ul>
         </li>
         <li class="nav-item dropdown my-auto" id="menu-transactions">
             <a id="dropdownTransactions" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="nav-link dropdown-toggle">Transactions</a>
             <ul aria-labelledby="dropdownTransactions" class="dropdown-menu border-0 shadow">
                 <li id="menu-pawn">
-                    <a class="dropdown-item" href="{% url 'pawn_list' %}">Pawn</a>
+                    <a class="dropdown-item" href="{% url 'pawn_list' %}">Pawn Tickets</a>
                 </li>
+                {% if not user.employee.branch %}
                 <li id="menu-discount">
                     <a class="dropdown-item" href="{% url 'discount_list' %}">Discounts</a>
                 </li>
                 <li id="menu-voucher">
                     <a class="dropdown-item" href="{% url 'expense_list' %}">Expenses</a>
                 </li>
+                {% endif %}
             </ul>
         </li>
         <li class="nav-item dropdown my-auto" id="menu-reports">

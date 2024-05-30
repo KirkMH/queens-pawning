@@ -228,7 +228,7 @@ class Pawn(models.Model):
 
     @staticmethod
     def advanceInterestRate(promise_date):
-        elapsed = (promise_date - timezone.now().date()).days
+        elapsed = abs((promise_date - timezone.now().date()).days)
         rate = AdvanceInterestRate.rates.get_rate(abs(elapsed))
         print(
             f"Promise Date: {promise_date}, Elapsed: {elapsed}, Rate: {rate}")
@@ -292,7 +292,7 @@ class Pawn(models.Model):
         if self.hasPenalty():
             daysPenalty = Decimal(
                 str(self.getElapseDays() - TermDuration.get_instance().maturity))
-            return self.principal * (InterestRate.rates.get_max_rate() / 100) * (daysPenalty / 30)
+            return abs(self.principal * (InterestRate.rates.get_max_rate() / 100) * (daysPenalty / 30))
         return 0
 
     def getInterestPlusPenalty(self):

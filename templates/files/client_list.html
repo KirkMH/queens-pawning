@@ -26,9 +26,9 @@
                     <th class="text-center" width="10%">Action</th>
                     <th class="text-center">Name</th>
                     <th class="text-center">Address</th>
-                    <th class="text-center">Identification</th>
                     <th class="text-center">Contact Number</th>
                     <th class="text-center">Date Registered</th>
+                    <th class="text-center">Branch</th>
                     <th class="text-center">Status</th>
                 </tr>
             </thead>
@@ -42,7 +42,7 @@
 {% block js %}
     <script>
         $(document).ready(function() {
-            $("#table").DataTable({
+            const table = $("#table").DataTable({
                 serverSide: true,
                 sAjaxSource: "{% url 'client_dtlist' %}", 
                 columns: [
@@ -68,15 +68,9 @@
                         }
                     },
                     {name: "address", data: 5},
-                    {   
-                        name: 'identification',
-                        data: null,
-                        render: function (data) {
-                            return data[6] + "-" + data[7];
-                        }
-                    },
                     {name: "contact", data: 8},
                     {name: "registered", data: 9},
+                    {name: "branch", data: 11},
                     {
                         name: "status", 
                         data: 10,
@@ -87,6 +81,10 @@
                 ],
                 order: [[1, 'asc']],
             });
+
+            const backoffice = parseInt("{% if user.employee.branch %}0{% else %}1{% endif %}") == 0;
+            if (backoffice)
+                table.column(5).visible(false)
             
             $("#menu-records").addClass("active")
         })

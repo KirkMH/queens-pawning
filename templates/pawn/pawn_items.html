@@ -30,6 +30,7 @@
                     <th class="text-center">Principal</th>
                     <th class="text-center">Client</th>
                     <th class="text-center">Date</th>
+                    <th class="text-center">Branch</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -106,10 +107,15 @@
                             return formatDateMMMddYYYY(data) + " (" + days + " " + unit + " ago)";
                         }
                     },
+                    {name: 'branch', data: 13}
                 ],
                 order: [[1, 'desc']],
             });
             
+            const backoffice = parseInt("{% if user.employee.branch %}0{% else %}1{% endif %}") == 0;
+            if (backoffice)
+                table.column(8).visible(false)
+
             $("#menu-reports").addClass("active")
         })
     </script>

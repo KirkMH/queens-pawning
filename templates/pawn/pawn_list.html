@@ -26,13 +26,13 @@
                 <tr>
                     <th class="text-center">Action</th>
                     <th class="text-center">PTN</th>
-                    <th class="text-center">Type</th>
                     <th class="text-center">Date</th>
                     <th class="text-center">Client</th>
-                    <th class="text-center" width="20%">Description</th>
+                    <th class="text-center">Description</th>
                     <th class="text-center">Principal</th>
                     <th class="text-center">Net Proceeds</th>
                     <th class="text-center">Status</th>
+                    <th class="text-center">Branch</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -47,7 +47,7 @@
 <script src="{% static 'js/date-format.js' %}"></script>
     <script>
         $(document).ready(function() {
-            $("#table").DataTable({
+            const table = $("#table").DataTable({
                 serverSide: true,
                 sAjaxSource: "{% url 'pawn_dtlist' %}", 
                 columns: [
@@ -64,7 +64,7 @@
                             
                             let links = `<a href="/pawn/${data[0]}/detail" title="Detail"><i class="far fa-eye"></i></a>`;
                             if (!is_cashier || (is_cashier && is_pawn_date_today)) {
-                                links += ` | <a href="/pawn/${data[0]}/update" title="Update"><i class="far fa-edit"></i></a>`;
+                                links += ` | <a href="/pawn/${data[0]}/edit" title="Update"><i class="far fa-edit"></i></a>`;
                             }
                             return links;
                         },
@@ -72,14 +72,12 @@
                     },
                     {
                         name: 'ptn',
-                        data: 0,
+                        data: null,
                         render: function (data) {
-                            return String(data).padStart(6, '0');
+                            const ptn = String(data[0]).padStart(6, '0');
+                            const type = data[18] == 'NEW' ? 'N' : 'E';
+                            return `${type}-${ptn}`
                         }
-                    },
-                    {
-                        name: 'type',
-                        data: 18
                     },
                     {
                         name: "date", 
@@ -135,9 +133,14 @@
                             return (data && data[0].toUpperCase() + data.slice(1).toLowerCase()) || "";
                         }
                     },
+                    {name: 'branch', data: 19},
                 ],
                 order: [[1, 'desc']],
             });
+
+            const backoffice = parseInt("{% if user.employee.branch %}0{% else %}1{% endif %}") == 0;
+            if (backoffice)
+                table.column(8).visible(false)
             
             $("#menu-transactions").addClass("active")
         })

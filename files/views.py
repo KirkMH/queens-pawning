@@ -26,11 +26,15 @@ def client_list(request):
 class ClientDTListView(ServerSideDatatableView):
     queryset = Client.objects.all()
     columns = ['pk', 'title', 'last_name', 'first_name', 'middle_name', 'address',
-               'id_link', 'id_number', 'contact_num', 'date_registered', 'status']
+               'id_link', 'id_number', 'contact_num', 'date_registered', 'status', 'branch__name']
 
     def get_queryset(self):
         qs = super().get_queryset()
-        return qs.filter(branch=Employee.objects.get(user=self.request.user).branch)
+        branch = Employee.objects.get(user=self.request.user).branch
+        print(f"branch: {branch}")
+        if branch:
+            qs = qs.filter(branch=branch)
+        return qs
 
 
 @method_decorator(login_required, name='dispatch')

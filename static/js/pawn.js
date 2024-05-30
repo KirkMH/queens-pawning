@@ -55,7 +55,6 @@ const calculate = async () => {
   }
   showToPayAndChange(tendered, toPay);
 };
-calculate();
 $("#tendered").on("keyup", calculate);
 $("#partial").on("keyup", calculate);
 $("#discount").on("change", calculate);
@@ -208,4 +207,4 @@ $("#btnRenew").on("change", function () {
   toggleForm();
 });
 
-toggleForm();
+//toggleForm();

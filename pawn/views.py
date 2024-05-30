@@ -30,12 +30,11 @@ class PawnDTListView(ServerSideDatatableView):
     queryset = Pawn.objects.all()
     columns = ['pk', 'date', 'client', 'quantity', 'carat', 'color', 'item_description', 'description', 'grams',
                'principal', 'service_charge', 'advance_interest', 'net_proceeds', 'status',
-               'client__title', 'client__last_name', 'client__first_name', 'client__middle_name', 'transaction_type']
+               'client__title', 'client__last_name', 'client__first_name', 'client__middle_name', 'transaction_type', 'branch__name']
 
     def get_queryset(self):
-        cur_employee = Employee.objects.filter(user=self.request.user).first()
-        if cur_employee:
-            branch = cur_employee.branch
+        branch = Employee.objects.get(user=self.request.user).branch
+        if branch:
             clients = Client.objects.filter(branch=branch)
             return super().get_queryset().filter(client__in=clients)
         else:
@@ -138,11 +137,12 @@ class PawnedItemsDTListView(ServerSideDatatableView):
     queryset = Pawn.inventory.all()
     columns = ['pk', 'date', 'description', 'principal',
                'client__title', 'client__last_name', 'client__first_name', 'client__middle_name',
-               'quantity', 'carat', 'color', 'item_description', 'grams',]
+               'quantity', 'carat', 'color', 'item_description', 'grams', 'branch__name']
 
     def get_queryset(self):
-        if Employee.objects.filter(user=self.request.user).count() > 0 and Employee.objects.get(user=self.request.user).branch:
-            return super().get_queryset().filter(branch=Employee.objects.get(user=self.request.user).branch)
+        branch = Employee.objects.get(user=self.request.user).branch
+        if branch:
+            return super().get_queryset().filter(branch=branch)
         else:
             return super().get_queryset()
 
