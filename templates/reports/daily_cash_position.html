@@ -280,6 +280,10 @@
                 window.location.href = url
             });
 
+            const backoffice = parseInt("{% if user.employee.branch %}0{% else %}1{% endif %}") == 1;
+            if (backoffice)
+                $('input[type="number"]').prop('disabled', true);
+
             $("#menu-reports").addClass("active")
         })
     </script>
