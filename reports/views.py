@@ -152,7 +152,12 @@ def set_onhold(request, pk, status):
 
 @login_required
 def daily_cash_position(request):
+    employee = Employee.objects.get(user=request.user)
+    branch_employee = employee.branch
+
     date = request.GET.get('date')
+    branch = request.GET.get('branch')
+    print(f"branch: {branch}")
     is_today = True
     if not date:
         date = timezone.now().date()
@@ -160,26 +165,43 @@ def daily_cash_position(request):
         date = timezone.datetime.strptime(date, '%Y-%m-%d').date()
         if date != timezone.now().date():
             is_today = False
-    employee = Employee.objects.get(user=request.user)
-    branch = employee.branch
-    if not branch:
-        raise Http404("This feature is only available to branches.")
-    daily_cash_position, _ = DailyCashPosition.objects.get_or_create(
-        branch=branch,
-        date=date,
-        prepared_by=employee
-    )
-    receipts = daily_cash_position.receipts.all()
-    disbursements = daily_cash_position.disbursements.all()
-    last = daily_cash_position.fill_in_from_yesterday()
+
+    if branch:
+        branch = int(branch)
+        if branch > -1:
+            branch = Branch.objects.get(pk=branch)
+        else:
+            branch = None
+    else:
+        branch = branch_employee
+
+    print(f"branch: {branch}")
+
+    daily_cash_position = None
+    receipts = None
+    disbursements = None
+    last = None
+    if branch:
+        daily_cash_position, created = DailyCashPosition.objects.get_or_create(
+            branch=branch,
+            date=date
+        )
+        if created:
+            daily_cash_position.prepared_by = employee
+            daily_cash_position.save()
+
+        receipts = daily_cash_position.receipts.all()
+        disbursements = daily_cash_position.disbursements.all()
+        last = daily_cash_position.fill_in_from_yesterday()
     context = {
         'cash_position': daily_cash_position,
         'receipts': receipts,
         'disbursements': disbursements,
         'last': last,
         'sel_date': date,
-        'selected_branch': branch.name + ' Branch',
-        'is_today': is_today
+        'selected_branch': branch,
+        'is_today': is_today,
+        'branches': Branch.objects.all(),
     }
     return render(request, 'reports/daily_cash_position.html', context)
 

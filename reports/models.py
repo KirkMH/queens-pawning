@@ -41,7 +41,8 @@ class DailyCashPosition(models.Model):
     prepared_by = models.ForeignKey(
         Employee,
         related_name='daily_cash_positions',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True, blank=True
     )
 
     def __str__(self):
