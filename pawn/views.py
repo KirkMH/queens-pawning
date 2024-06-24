@@ -22,7 +22,11 @@ from .forms import *
 
 @login_required
 def pawn_list(request):
-    return render(request, 'pawn/pawn_list.html')
+    selected_filter = request.GET.get('filter') or 'Active'
+    # capitalize first letter
+    selected_filter = selected_filter[0].upper() + selected_filter[1:]
+    context = {'selected_filter': selected_filter}
+    return render(request, 'pawn/pawn_list.html', context)
 
 
 @method_decorator(login_required, name='dispatch')
@@ -33,12 +37,24 @@ class PawnDTListView(ServerSideDatatableView):
                'client__title', 'client__last_name', 'client__first_name', 'client__middle_name', 'transaction_type', 'branch__name']
 
     def get_queryset(self):
+        print(f'GET: {self.request.GET}')
+        qs = super().get_queryset()
+        filter = self.request.GET.get('filter') or 'Active'
+        if filter == 'active':
+            qs = qs.filter(status='ACTIVE')
+        elif filter == 'renewed':
+            qs = qs.filter(status='RENEWED')
+        elif filter == 'redeemed':
+            qs = qs.filter(status='REDEEMED')
+        elif filter == 'auctioned':
+            qs = qs.filter(status='AUCTIONED')
+
         branch = Employee.objects.get(user=self.request.user).branch
         if branch:
             clients = Client.objects.filter(branch=branch)
-            return super().get_queryset().filter(client__in=clients)
+            return qs.filter(client__in=clients)
         else:
-            return super().get_queryset()
+            return qs
 
 
 @method_decorator(login_required, name='dispatch')

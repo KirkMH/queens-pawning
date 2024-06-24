@@ -14,9 +14,24 @@
     <form method="get">
         <div class="card-header">
             <div class="row">
-            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
-                <a href="{% url 'new_pawn' %}" class="btn btn-primary">New</a>
-            </div>
+                <div class="col-md-6">
+                    <a href="{% url 'new_pawn' %}" class="btn btn-primary">New</a>
+                </div>
+                <div class="col-md-6">
+                    <div class="dropdown show float-right">
+                        <a class="btn btn-outline-info dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+                          Filter: {{ selected_filter}}
+                        </a>
+                      
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                          <a class="dropdown-item" href="{% url 'pawn_list' %}?filter=active">Active</a>
+                          <a class="dropdown-item" href="{% url 'pawn_list' %}?filter=renewed">Renewed</a>
+                          <a class="dropdown-item" href="{% url 'pawn_list' %}?filter=redeemed">Redeemed</a>
+                          <a class="dropdown-item" href="{% url 'pawn_list' %}?filter=auctioned">Auctioned</a>
+                          <a class="dropdown-item" href="{% url 'pawn_list' %}?filter=all">All</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </form>
@@ -47,9 +62,15 @@
 <script src="{% static 'js/date-format.js' %}"></script>
     <script>
         $(document).ready(function() {
+            const selected_filter = "{{ selected_filter }}"
+            const url = selected_filter == "Active" ? "{% url 'pawn_dtlist' %}" + "?filter=active" : 
+                        selected_filter == "Renewed" ? "{% url 'pawn_dtlist' %}" + "?filter=renewed" : 
+                        selected_filter == "Redeemed" ? "{% url 'pawn_dtlist' %}" + "?filter=redeemed" : 
+                        selected_filter == "Auctioned" ? "{% url 'pawn_dtlist' %}" + "?filter=auctioned" : 
+                        "{% url 'pawn_dtlist' %}" + "?filter=all"; 
             const table = $("#table").DataTable({
                 serverSide: true,
-                sAjaxSource: "{% url 'pawn_dtlist' %}", 
+                sAjaxSource: url, 
                 columns: [
                     {   
                         name: 'action',
