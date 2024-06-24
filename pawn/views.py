@@ -28,7 +28,7 @@ def pawn_list(request):
 @method_decorator(login_required, name='dispatch')
 class PawnDTListView(ServerSideDatatableView):
     queryset = Pawn.objects.all()
-    columns = ['pk', 'date', 'client', 'quantity', 'carat', 'color', 'item_description', 'description', 'grams',
+    columns = ['pk', 'date_granted', 'client', 'quantity', 'carat', 'color', 'item_description', 'description', 'grams',
                'principal', 'service_charge', 'advance_interest', 'net_proceeds', 'status',
                'client__title', 'client__last_name', 'client__first_name', 'client__middle_name', 'transaction_type', 'branch__name']
 
@@ -135,7 +135,7 @@ def inventory_list(request):
 @method_decorator(login_required, name='dispatch')
 class PawnedItemsDTListView(ServerSideDatatableView):
     queryset = Pawn.inventory.all()
-    columns = ['pk', 'date', 'description', 'principal',
+    columns = ['pk', 'date_granted', 'description', 'principal',
                'client__title', 'client__last_name', 'client__first_name', 'client__middle_name',
                'quantity', 'carat', 'color', 'item_description', 'grams', 'branch__name']
 

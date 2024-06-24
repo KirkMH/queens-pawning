@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
 from django.utils import timezone
+from datetime import datetime
 from decimal import Decimal
 
 from files.models import Client, Branch, InterestRate, AdvanceInterestRate, TermDuration, OtherFees
@@ -21,7 +22,7 @@ class Expired(models.Manager):
         qs = super().get_queryset()
         expired_today = timezone.now().date(
         ) - timezone.timedelta(days=TermDuration.get_instance().expiration)
-        return qs.filter(status='ACTIVE').filter(date__date__lte=expired_today)
+        return qs.filter(status='ACTIVE').filter(date__lte=expired_today)
 
 
 class Matured(models.Manager):
@@ -29,7 +30,7 @@ class Matured(models.Manager):
         qs = super().get_queryset()
         matured_today = timezone.now().date(
         ) - timezone.timedelta(days=TermDuration.get_instance().maturity)
-        return qs.filter(status='ACTIVE').filter(date__date__lte=matured_today)
+        return qs.filter(status='ACTIVE').filter(date__lte=matured_today)
 
 
 class Pawn(models.Model):
@@ -46,6 +47,7 @@ class Pawn(models.Model):
     CARAT = [
         ('10k', '10k'),
         ('12k', '12k'),
+        ('14k', '14k'),
         ('18k', '18k'),
         ('21k', '21k'),
         ('24k', '24k'),
@@ -80,7 +82,6 @@ class Pawn(models.Model):
         ('EXISTING', _('Existing'))
     ]
 
-    date = models.DateTimeField(auto_now_add=True)
     # NEW = Advance Interest Rate; EXISTING = Interest Rate
     transaction_type = models.CharField(
         _('Transaction Type'),
@@ -88,6 +89,7 @@ class Pawn(models.Model):
         choices=TRANSACTION_TYPE,
         default='NEW',
     )
+    date_granted = models.DateField(_("Date granted"), null=True, blank=True)
     client = models.ForeignKey(
         Client,
         on_delete=models.CASCADE,
@@ -146,7 +148,7 @@ class Pawn(models.Model):
     )
     promised_renewal_date = models.DateField(
         _('Promised Renewal Date'),
-        null=False, blank=False
+        null=True, blank=True
     )
     service_charge = models.DecimalField(
         _('LESS: Service Charge'),
@@ -219,7 +221,7 @@ class Pawn(models.Model):
         if self.transaction_type == 'NEW':
             return (timezone.now().date() - self.promised_renewal_date).days
         else:
-            return (timezone.now().date() - self.date.date()).days
+            return (timezone.now().date() - self.date_granted).days
 
     def getInterestRate(self):
         elapsed = self.getElapseDays()
@@ -250,7 +252,7 @@ class Pawn(models.Model):
         if self.transaction_type == 'NEW':
             interest = self.principal * \
                 Decimal(
-                    str((Pawn.advanceInterestRate(self.date.date()) / 100)))
+                    str((Pawn.advanceInterestRate(self.date_granted) / 100)))
             print(f"Interest: {interest}")
             print(f"Current Advance Interest: {self.advance_interest}")
             if interest > self.advance_interest:
@@ -261,18 +263,18 @@ class Pawn(models.Model):
         return self.principal * Decimal(str((self.getAdvanceInterestRate() / 100)))
 
     def hasMatured(self):
-        elapsed = (timezone.now().date() - self.date.date()).days
+        elapsed = (timezone.now().date() - self.date_granted).days
         return elapsed >= TermDuration.get_instance().maturity
 
     def get_maturity_date(self):
-        return self.date.date() + timezone.timedelta(days=TermDuration.get_instance().maturity)
+        return self.date_granted + timezone.timedelta(days=TermDuration.get_instance().maturity)
 
     def hasExpired(self):
-        elapsed = (timezone.now().date() - self.date.date()).days
+        elapsed = (timezone.now().date() - self.date_granted).days
         return elapsed > TermDuration.get_instance().expiration
 
     def hasPenalty(self):
-        elapsed = (timezone.now().date() - self.date.date()).days
+        elapsed = (timezone.now().date() - self.date_granted).days
         return elapsed > TermDuration.get_instance().maturity
 
     def getStanding(self):
@@ -312,7 +314,7 @@ class Pawn(models.Model):
         service_charge = otherFees.service_fee
         adv_int = 0
         interest = 0
-        if self.transaction_type == 'EXISTING':
+        if self.transaction_type == 'NEw':
             adv_int = self.getAdvanceInterest()
         else:
             interest = self.getInterest()
@@ -397,7 +399,7 @@ class Pawn(models.Model):
     def get_last_renewal_date(self):
         renewal = None
         if self.pawn_renewed_to:
-            renewal = self.date
+            renewal = self.date_granted
         return renewal
 
     def update_receipts(self, cashier, description, amount):

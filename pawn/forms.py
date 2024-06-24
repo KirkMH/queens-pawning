@@ -5,6 +5,7 @@ from django.core.files.base import File
 from django.db.models.base import Model
 from django.forms.utils import ErrorList
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from .models import *
 from files.models import OtherFees
 
@@ -24,6 +25,7 @@ class PawnForm(forms.ModelForm):
         self.request = kwargs.pop('request', None)
         super(PawnForm, self).__init__(*args, **kwargs)
 
+        self.fields['date_granted'].initial = timezone.now().date()
         self.fields['client'].queryset = Client.objects.filter(status='ACTIVE')
         if self.request:
             self.fields['client'].queryset = self.fields['client'].queryset.filter(

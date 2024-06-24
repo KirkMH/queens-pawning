@@ -78,6 +78,7 @@ New Pawn
             $("#id_advance_interest").prop('readonly', true);
             $("#id_net_proceeds").prop('readonly', true);
             $('#id_promised_renewal_date').attr('type', 'date');
+            $('#id_date_granted').attr('type', 'date');
             $("select").addClass("form-select");
 
             function process_transaction_type() {
@@ -86,11 +87,13 @@ New Pawn
                     $("#id_promised_renewal_date").prop('required', true);
                     $("#id_promised_renewal_date").parent().parent().show();
                     $("#id_advance_interest").parent().parent().show();
+                    $("#id_date_granted").parent().parent().hide();
                 } else {
                     $("#id_promised_renewal_date").prop('required', false);
                     $("#id_promised_renewal_date").parent().parent().hide();
                     $("#id_advance_interest").val(0);
                     $("#id_advance_interest").parent().parent().hide();
+                    $("#id_date_granted").parent().parent().show();
                 }
             }
 
