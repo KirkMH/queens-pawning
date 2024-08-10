@@ -22,7 +22,7 @@ class Expired(models.Manager):
         qs = super().get_queryset()
         expired_today = timezone.now().date(
         ) - timezone.timedelta(days=TermDuration.get_instance().expiration)
-        return qs.filter(status='ACTIVE').filter(date__lte=expired_today)
+        return qs.filter(status='ACTIVE').filter(date_granted__lte=expired_today)
 
 
 class Matured(models.Manager):
@@ -30,7 +30,7 @@ class Matured(models.Manager):
         qs = super().get_queryset()
         matured_today = timezone.now().date(
         ) - timezone.timedelta(days=TermDuration.get_instance().maturity)
-        return qs.filter(status='ACTIVE').filter(date__lte=matured_today)
+        return qs.filter(status='ACTIVE').filter(date_granted__lte=matured_today)
 
 
 class Pawn(models.Model):
@@ -203,6 +203,11 @@ class Pawn(models.Model):
         return f"{self.complete_description} by {self.client}"
 
     @property
+    def getPTN(self):
+        '''return the first letter of the transaction_type, followed by a dash, then an 8-digit id number'''
+        return f"{self.transaction_type[0]}-{self.id:08d}"
+
+    @property
     def complete_description(self):
         unit = 'pcs' if self.quantity > 1 else 'pc'
         description = f"{self.quantity}{unit}"
@@ -306,6 +311,9 @@ class Pawn(models.Model):
     def getTotalDue(self):
         return self.getPrincipalPlusInterest() + self.getPenalty() + self.getAdditionalInterest()
 
+    def getMinTotalDue(self):
+        return self.getInterest() + self.getPenalty() + self.getAdditionalInterest()
+
     def getRenewalServiceFee(self):
         return OtherFees.get_instance().service_fee
 
@@ -318,12 +326,12 @@ class Pawn(models.Model):
             adv_int = self.getAdvanceInterest()
         else:
             interest = self.getInterest()
-        return interest + self.getPenalty() + service_charge + adv_int
+        return interest + self.getPenalty() + service_charge + adv_int + self.getAdditionalInterest()
 
     def pay(self, post, cashier):
         amount_paid = Decimal(post.get('amtToPay'))
         otherFees = OtherFees.get_instance()
-        paid_for_principal = Decimal(post.get('partial'))
+        paid_for_principal = Decimal(post.get('partial', '0'))
         interest = self.getInterest()
         penalty = self.getPenalty()
         additional_principal = Decimal(post.get('additionalPrincipal', '0'))
@@ -351,6 +359,8 @@ class Pawn(models.Model):
             new_principal = self.principal - paid_for_principal + additional_principal
             # create a new pawn ticket for the renewed pawn
             new_pawn = Pawn()
+            new_pawn.transaction_type = self.transaction_type
+            new_pawn.date_granted = timezone.now().date()
             new_pawn.client = self.client
             new_pawn.quantity = self.quantity
             new_pawn.carat = self.carat
@@ -463,6 +473,9 @@ class Pawn(models.Model):
         disbursement = self.update_disbursements(
             cashier, description, d_amt)
         return (receipt, disbursement)
+
+    def is_pawned_today(self):
+        return self.date_granted == timezone.now().date()
 
 
 class Payment(models.Model):

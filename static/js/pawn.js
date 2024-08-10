@@ -1,19 +1,31 @@
 const calculate = async () => {
+  const action = $("#action").val();
   const transaction_type = $("#transaction_type").val();
-  const principal = parseFloat($("#principal").val());
-  const additionalPrincipal = parseFloat($("#additionalPrincipal").val());
-  const interestPlusPenalty = parseFloat($("#interestPlusPenalty").val());
-  const appraised_value = parseFloat($("#appraised_value").val());
-  const tendered = parseFloat($("#tendered").val());
+  console.log(`transaction_type: ${transaction_type}`);
+  const principal = parseFloat($("#principal").val()) || 0;
+  console.log(`principal: ${principal}`);
+  const additionalPrincipal = parseFloat($("#additionalPrincipal").val()) || 0;
+  console.log(`additionalPrincipal: ${additionalPrincipal}`);
+  const interestPlusPenalty = parseFloat($("#interestPlusPenalty").val()) || 0;
+  console.log(`interestPlusPenalty: ${interestPlusPenalty}`);
+  const appraised_value = parseFloat($("#appraised_value").val()) || 0;
+  console.log(`appraised_value: ${appraised_value}`);
+  const tendered = parseFloat($("#tendered").val()) || 0;
+  console.log(`tendered: ${tendered}`);
   const advIntUri = $("#advIntUri").val();
+  console.log(`advIntUri: ${advIntUri}`);
   const promisedDate = $("#promised_renewal_date").val();
-  console.log(promisedDate);
+  console.log(`promisedDate: ${promisedDate}`);
 
   let discount = parseFloat($("#discount").val()) || 0;
+  console.log(`discount: ${discount}`);
   let partial = parseFloat($("#partial").val()) || 0;
+  console.log(`partial: ${partial}`);
   let serviceFee = parseFloat($("#serviceFee").val()) || 0;
+  console.log(`serviceFee: ${serviceFee}`);
 
   if (principal - partial + additionalPrincipal > appraised_value) {
+    console.log("The total principal must not exceed the appraised value.");
     toastr.error("The total principal must not exceed the appraised value.");
     $("#additionalPrincipal").val("0.00");
     calculate();
@@ -21,7 +33,7 @@ const calculate = async () => {
   }
 
   let toPay = 0;
-  if ($("#btnRedeem").prop("checked")) {
+  if (action === "Redeem") {
     toPay = interestPlusPenalty - discount + principal;
   } else {
     toPay =
@@ -104,6 +116,11 @@ $("#request-discount").on("click", function () {
 
   if (discount > 0) {
     toastr.error("Discount was already granted.");
+    return;
+  } else if (max_discount == 0) {
+    toastr.warning(
+      "There is no interest or penalty due where the discount will be applied to."
+    );
     return;
   }
 

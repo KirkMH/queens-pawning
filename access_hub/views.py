@@ -14,7 +14,7 @@ def dashboard(request):
     clients = Client.objects.filter(
         date_registered=date.today())
     transactions = Pawn.objects.filter(
-        date=date.today())
+        date_granted=date.today())
     matured = Pawn.matured.all()
     expired = Pawn.expired.all()
     print(f"branch: {request.user.employee.branch}")

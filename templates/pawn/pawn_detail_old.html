@@ -1,0 +1,303 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load humanize %}
+{% load form_tags %}
+
+{% block title %}Pawns{% endblock title %}
+{% block page_title %}Pawn details{% endblock page_title %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'pawn_list' %}">Pawns</a></li>
+    <li class="breadcrumb-item active">Details</li>
+{% endblock breadcrumb %}
+
+{% block main_content %}
+    <div class="card m-4">
+        <div class="card-header">
+            <h3>Pawn Ticket # {{ pawn.id|stringformat:"08d" }}</h3>
+            <hr />
+            <h4>{{ pawn.complete_description }}</h4>
+            <h5 class="card-subtitle mb-2 text-muted">Under {{ pawn.client }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-lg-3 col-sm-12 mb-4">
+                    <p class="card-text"><span class="text-muted h4">Principal: </span><span class="h4">{{ pawn.principal|peso }}</span></p>
+                    <p class="card-text"><span class="text-muted">LESS Service Fee: </span>{{ pawn.service_charge|peso }}</p>
+                    <p class="card-text"><span class="text-muted">LESS Advance Interest: </span>{{ pawn.advance_interest|peso }}</p>
+                    <p class="card-text"><span class="text-muted">NET PROCEEDS: </span><span class="h5">{{ pawn.net_proceeds|peso }}</span></p>
+                </div>
+                <div class="col-lg-3 col-sm-12">
+                    <p class="card-text"><span class="text-muted">Transaction Type: </span>{{ pawn.transaction_type }}</p>
+                    <p class="card-text"><span class="text-muted">Appraised Value: </span>{{ pawn.appraised_value|peso }}</p>
+                    <p class="card-text"><span class="text-muted">Branch: </span>{{ pawn.branch }}</p>
+                    <p class="card-text"><span class="text-muted">Date Pawned: </span>{{ pawn.date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
+                    {% if pawn.transaction_type == 'NEW' %}
+                    <p class="card-text"><span class="text-muted">Promised Renewal Date: </span>{{ pawn.promised_renewal_date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
+                    {% endif %}
+                    <p class="card-text"><span class="text-muted">Status: </span>{{ pawn.status }}</p>
+                    {% if pawn.status == 'RENEWED' and pawn.renewed_to %}
+                    <p class="card-text"><a href="{% url 'pawn_detail' pawn.renewed_to.pk  %}">Pawn Ticket # {{ pawn.renewed_to.pk|stringformat:"08d" }}</a></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-lg-12">
+                    <a href="#" class="btn btn-primary card-link">Print</a>
+                    {% if not pawn.payment_pawn %}
+                    <a href="{% url 'edit_pawn' pawn.pk %}" class="btn btn-warning card-link">Edit</a>
+                    {% endif %}
+                    {% if 'from' in request.GET %}
+                    <a href="{{ request.GET.from }}" class="btn btn-default card-link">Back to list</a>
+                    {% else %}
+                    <a href="{% url 'pawn_list' %}" class="btn btn-default card-link">Back to list</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card m-4">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card card-primary m-2">
+                    <div class="card-header">
+                        <h4>Payment Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-6">Days Elapsed:</div>
+                            <div class="col-6 text-right">{{ pawn.getElapseDays }} day{{pawn.getElapseDays|pluralize}}</div>
+                        </div>
+                        {% if pawn.transaction_type != 'NEW' %}
+                        <div class="row mb-4">
+                            <div class="col-6">Interest Rate:</div>
+                            <div class="col-6 text-right">{{ pawn.getInterestRate }}%</div>
+                        </div>
+                        {% endif %}
+                        <div class="row mb-2">
+                            <div class="col-6">Principal:</div>
+                            <div class="col-6 text-right">{{ pawn.principal|peso }}</div>
+                        </div>
+                        {% if pawn.transaction_type == 'NEW' %}
+                        <div class="row mb-2">
+                            <div class="col-6">Additional Interest Due:</div>
+                            <div class="col-6 text-right">{{ pawn.getAdditionalInterest|peso }}</div>
+                        </div>
+                        {% else %}
+                        <div class="row mb-2">
+                            <div class="col-6">Interest Due:</div>
+                            <div class="col-6 text-right">{{ pawn.getInterest|peso }}</div>
+                        </div>
+                        {% endif %}
+                        {% if pawn.hasPenalty %}
+                        <div class="row mb-2">
+                            <div class="col-6">Penalty:</div>
+                            <div class="col-6 text-right">{{ pawn.getPenalty|peso }}</div>
+                        </div>
+                        {% endif %}
+                        <div class="row mt-4">
+                            <div class="col-6 h5">Total Due:</div>
+                            <div class="col-6 h5 text-right">{{ pawn.getTotalDue|peso }}</div>
+                        </div>
+                        {% if not pawn.payment_pawn %}
+                        <div class="row mt-4">
+                            <div class="col-6 h5">Minimum Payment for Renewal:</div>
+                            <div class="col-6 h5 text-right">
+                                {{ pawn.getMinimumPayment|peso }}
+                                {% if pawn.transaction_type == 'NEW' %}<sup style="color: red;" title="plus advance interest">++</sup>{% endif %}
+                            </div>
+                        </div>
+                        {% if pawn.transaction_type == 'NEW' %}
+                        <div class="row mt-2 ml-5 mr-5 text-muted">
+                            <div class="col-6">Additional Interest Due:</div>
+                            <div class="col-6 text-right">{{ pawn.getAdditionalInterest|peso }}</div>
+                        </div>
+                        {% else %}
+                        <div class="row mt-2 ml-5 mr-5 text-muted">
+                            <div class="col-6">Interest Due:</div>
+                            <div class="col-6 text-right">{{ pawn.getInterest|peso }}</div>
+                        </div>
+                        {% endif %}
+                        <div class="row mt-2 ml-5 mr-5 text-muted">
+                            <div class="col-6">Penalty:</div>
+                            <div class="col-6 text-right">{{ pawn.getPenalty|peso }}</div>
+                        </div>
+                        <div class="row mt-2 ml-5 mr-5 text-muted">
+                            <div class="col-6">Service Fee:</div>
+                            <div class="col-6 text-right">{{ pawn.getRenewalServiceFee|peso }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+
+                {%if not pawn.payment_pawn %}
+                <form id="payment-form" action="{% url 'pawn_payment' pawn.pk %}" method="POST" onsubmit="return validateForm();">
+                    <div class="card card-success m-2">
+                        <div class="card-header d-flex">
+                            <h4>Payment Form</h4>
+                            <div class="btn-group ml-auto" role="group" aria-label="Basic radio toggle button group">
+                                <input type="radio" class="btn-check" name="btnaction" id="btnRedeem" autocomplete="off" checked>
+                                <label class="btn btn-sm btn-outline-light" for="btnRedeem">Redeem</label>
+                                
+                                <input type="radio" class="btn-check" name="btnaction" id="btnRenew" autocomplete="off">
+                                <label class="btn btn-sm btn-outline-light" for="btnRenew">Renew</label>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% csrf_token %}
+                            <input type="hidden" name="pawn_id" id="pawn_id" value="{{ pawn.pk }}" />
+                            <input type="hidden" name="amtToPay" id="amtToPay" />
+                            <input type="hidden" name="appraised_value" id="appraised_value" value="{{ pawn.appraised_value }}" />
+                            <input type="hidden" name="transaction_type" id="transaction_type" value="{{ pawn.transaction_type }}" />
+                            <input type="hidden" name="advIntUri" id="advIntUri" value="{% url 'calculate_advance_interest' %}" />
+                            <div class="form-group row">
+                                <label for="amount" class="col-sm-4 col-form-label">Principal</label>
+                                <div class="col-sm-8">
+                                    <input type="number" step="0.01" class="form-control text-right" id="principal" name="principal" value="{{ pawn.principal|floatformat:2 }}" disabled />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="amount" class="col-sm-4 col-form-label">Interests + Penalties</label>
+                                <div class="col-sm-8">
+                                    <input type="number" step="0.01" class="form-control text-right" id="interestPlusPenalty" name="interestPlusPenalty" value="{{ pawn.getInterestPlusPenalty|floatformat:2 }}" disabled />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="discount" class="col-sm-4 col-form-label">LESS: Discount</label>
+                                <div class="col-sm-8 input-group">
+                                    <div class="input-group-prepend">
+                                        <button type="button" class="btn btn-outline-secondary" id="request-discount">Request...</button>
+                                    </div>
+                                    <input type="number" class="form-control text-right" id="discount" name="discount" value="{{ pawn.discount_requested.amount|floatformat:2 }}" disabled />
+                                </div>
+                            </div>
+                            <div class="form-group row partial-payment">
+                                <label for="amount" class="col-sm-4 col-form-label">Additional Principal</label>
+                                <div class="col-sm-8">
+                                    <input type="number" step="0.01" class="form-control text-right" id="additionalPrincipal" name="additionalPrincipal" value="0.00" />
+                                </div>
+                            </div>
+                            {% if pawn.transaction_type == 'NEW' %}
+                            <div class="form-group row partial-payment">
+                                <label for="amount" class="col-sm-4 col-form-label">Promised Renewal Date <span style="color: red;">*</span></label>
+                                <div class="col-sm-8">
+                                    <input type="date" class="form-control" id="promised_renewal_date" name="promised_renewal_date" />
+                                </div>
+                            </div>
+                            <div class="form-group row partial-payment">
+                                <label for="amount" class="col-sm-4 col-form-label">Advance Interest</label>
+                                <div class="col-sm-8">
+                                    <input type="number" step="0.01" class="form-control text-right" id="advanceInterest" name="advanceInterest" value="0.00" disabled />
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="form-group row partial-payment">
+                                <div class="col-sm-4">
+                                    <label for="serviceFee" class="col-form-label">Service Fee</label>
+                                </div>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control text-right" id="serviceFee" name="serviceFee" value="{{ pawn.getRenewalServiceFee|floatformat:2 }}" disabled />
+                                </div>
+                            </div>
+                            <div class="form-group row partial-payment">
+                                <div class="col-sm-4">
+                                    <label for="partial" class="col-form-label">Partial Payment</label>
+                                </div>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control text-right" id="partial" name="partial" value="0.00" />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="receivable" class="col-sm-4 col-form-label">Receivable</label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control text-right" id="receivable" name="receivable" value="{{ pawn.getTotalDue|floatformat:2 }}" disabled />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tendered" class="col-sm-4 col-form-label">Amount Tendered <span style="color: red;">*</span></label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control text-right" id="tendered" name="tendered" value="0.00" required />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="change" class="col-sm-4 col-form-label">CHANGE</label>
+                                <div class="col-sm-8">
+                                    <input type="number" class="form-control text-right" style="font-size: large;" id="change" name="change" value="0.00" disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-lg btn-success">Pay</button>
+                        </div>
+                    </div>
+                </form>
+        
+                {% else %}
+        
+                <div class="card card-success m-2">
+                    <div class="card-header">
+                        <h4>Payment Details</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-6">Paid Interest:</div>
+                            <div class="col-6 text-right">{{ pawn.payment_pawn.paid_interest|peso }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">Penalty:</div>
+                            <div class="col-6 text-right">{{ pawn.payment_pawn.penalty|peso }}</div>
+                        </div>
+                        {% if pawn.status == 'RENEWED' %}
+                        <div class="row mb-2">
+                            <div class="col-6">Service Fee:</div>
+                            <div class="col-6 text-right">{{ pawn.payment_pawn.service_fee|peso }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">Advance Interest:</div>
+                            <div class="col-6 text-right">{{ pawn.payment_pawn.advance_interest|peso }}</div>
+                        </div>
+                        {% endif %}
+                        <div class="row mb-2">
+                            <div class="col-6">Partial Payment:</div>
+                            <div class="col-6 text-right">{{ pawn.payment_pawn.paid_for_principal|peso }}</div>
+                        </div>
+                        <div class="row mb-2 text-danger">
+                            <div class="col-6">LESS Interest Discount:</div>
+                            <div class="col-6 text-right">{% if pawn.discount_requested and pawn.discount_requested.status == 'APPROVED' %}{{pawn.discount_requested.amount|peso }}{% else %}{{0|peso}}{%endif%}</div>
+                        </div>
+                        <div class="row mb-2 text-success">
+                            <div class="col-6 h5">Amount Paid:</div>
+                            <div class="col-6 h5 text-right">{{ pawn.payment_pawn.amount_paid|peso }}</div>
+                        </div>
+                        <div class="row mb-2 text-success">
+                            <div class="col-6 h5">Payment Date:</div>
+                            <div class="col-6 h5 text-right">{{ pawn.date|date:"F d, Y (D)"|naturalday }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+        {% endif %}
+
+    </div>
+
+{% endblock main_content %}
+
+
+{% block js %}
+    <script src="{% static 'js/pawn.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            $("#menu-transactions").addClass("active")
+        })
+    </script>
+{% endblock js %}

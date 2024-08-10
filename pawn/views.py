@@ -164,6 +164,22 @@ class PawnedItemsDTListView(ServerSideDatatableView):
 
 
 @login_required
+def redeem_pawn(request, pk):
+    context = {
+        'pawn': Pawn.objects.get(pk=pk)
+    }
+    return render(request, 'pawn/pawn_redeem.html', context)
+
+
+@login_required
+def renew_pawn(request, pk):
+    context = {
+        'pawn': Pawn.objects.get(pk=pk)
+    }
+    return render(request, 'pawn/pawn_renew.html', context)
+
+
+@login_required
 def print_inventory_list(request):
     queryset = Pawn.inventory.all()
     selected_branch = 'All Branches'
