@@ -108,9 +108,9 @@ WSGI_APPLICATION = 'queens.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django_queens',
+        'NAME': 'django_queens',  # production database name: queenspawnshopsy$default
         'USER': 'root',
-        'PASSWORD': 'p@$$w0rD',
+        'PASSWORD': 'p@$$w0rD',  # production password: Qp@$$w0rD
         'HOST': 'localhost'
     }
 }
