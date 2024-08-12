@@ -41,7 +41,8 @@
                                 <p class="card-text"><span class="text-muted">Transaction Type: </span>{{ pawn.transaction_type }}</p>
                                 <p class="card-text"><span class="text-muted">Appraised Value: </span>{{ pawn.appraised_value|peso }}</p>
                                 <p class="card-text"><span class="text-muted">Branch: </span>{{ pawn.branch }}</p>
-                                <p class="card-text"><span class="text-muted">Date Pawned: </span>{{ pawn.date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
+                                <p class="card-text"><span class="text-muted">Date Pawned: </span>{{ pawn.date_granted|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
+                                <p class="card-text"><span class="text-muted">Encoded on: </span>{{ pawn.date_encoded|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
                                 {% if pawn.transaction_type == 'NEW' %}
                                 <p class="card-text"><span class="text-muted">Promised Renewal Date: </span>{{ pawn.promised_renewal_date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
                                 {% endif %}

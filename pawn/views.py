@@ -34,7 +34,7 @@ class PawnDTListView(ServerSideDatatableView):
     queryset = Pawn.objects.all()
     columns = ['pk', 'date_granted', 'client', 'quantity', 'carat', 'color', 'item_description', 'description', 'grams',
                'principal', 'service_charge', 'advance_interest', 'net_proceeds', 'status',
-               'client__title', 'client__last_name', 'client__first_name', 'client__middle_name', 'transaction_type', 'branch__name']
+               'client__title', 'client__last_name', 'client__first_name', 'client__middle_name', 'transaction_type', 'branch__name', 'date_encoded']
 
     def get_queryset(self):
         print(f'GET: {self.request.GET}')
@@ -80,7 +80,9 @@ class PawnCreateView(CreateView):
             pawn = form.save(commit=False)
             pawn.branch = employee.branch
             pawn.save()
-            pawn.update_cash_position_new_ticket(employee, 'New pawn ticket'),
+            pawn.update_payment(
+                employee, pawn.service_charge, pawn.advance_interest)
+            pawn.update_cash_position_new_ticket(employee, 'New pawn ticket')
             messages.success(
                 request, f"New pawn ticket for {pawn.client} was created successfully.")
             if "another" in request.POST:

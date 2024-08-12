@@ -89,6 +89,7 @@ class Pawn(models.Model):
         choices=TRANSACTION_TYPE,
         default='NEW',
     )
+    date_encoded = models.DateField(_("Date encoded"), auto_now_add=True)
     date_granted = models.DateField(_("Date granted"), null=True, blank=True)
     client = models.ForeignKey(
         Client,
@@ -385,17 +386,8 @@ class Pawn(models.Model):
         self.status_updated_on = timezone.now()
         self.save()
 
-        payment = Payment()
-        payment.amount_paid = amount_paid
-        payment.pawn = self
-        payment.paid_interest = interest
-        payment.penalty = penalty
-        payment.service_fee = service_fee
-        payment.advance_interest = adv_interest
-        payment.cashier = cashier
-        payment.paid_for_principal = paid_for_principal
-        payment.discount_granted = discounted
-        payment.save()
+        self.update_payment(
+            cashier, service_fee, adv_interest, amount_paid, interest, penalty, paid_for_principal, discounted)
 
         # update daily cash position
         if self.status == 'RENEWED':
@@ -405,6 +397,19 @@ class Pawn(models.Model):
         elif self.status == 'REDEEMED':
             self.update_receipts(
                 cashier, 'Redeemed', amount_paid)
+
+    def update_payment(self, cashier, service_fee, advance_interest, amount_paid=0, paid_interest=0, penalty=0, paid_for_principal=0, discount_granted=0):
+        payment = Payment()
+        payment.amount_paid = amount_paid
+        payment.pawn = self
+        payment.paid_interest = paid_interest
+        payment.penalty = penalty
+        payment.service_fee = service_fee
+        payment.advance_interest = advance_interest
+        payment.cashier = cashier
+        payment.paid_for_principal = paid_for_principal
+        payment.discount_granted = discount_granted
+        payment.save()
 
     def get_last_renewal_date(self):
         renewal = None

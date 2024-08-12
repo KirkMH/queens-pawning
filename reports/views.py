@@ -499,6 +499,12 @@ def income_statement(request):
 
         # sum interests (together with advance interest) and service charge
         for payment in payment_list:
+            print(f"PTN: {payment.pawn.getPTN}")
+            print(f"Interest: {payment.paid_interest}")
+            print(f"Advance Interest: {payment.advance_interest}")
+            print(f"Service Fee: {payment.service_fee}")
+            print(
+                f"Total: {payment.paid_interest + payment.advance_interest + payment.service_fee}\n")
             interest += payment.paid_interest + payment.advance_interest
             loans_extended += payment.service_fee
 
@@ -519,7 +525,7 @@ def income_statement(request):
             grand_total=Sum('amount'))['grand_total'] or 0
 
     context = {
-        'branch': "f{branch} Branch",
+        'branch': f"{branch} Branch",
         'sel_month': sel_month,
         'selected_month': selected_month,
         'interest': interest,
