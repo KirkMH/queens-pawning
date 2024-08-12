@@ -47,7 +47,7 @@
     {% csrf_token %}
     <div class="card m-4" id="report">
         <div class="card-header text-center">
-            <h5>V.B. Queen's Jewelry and Pawnshop</h5>
+            <h5>Queen's Jewelry and Pawnshop Co.</h5>
             <h6>{{ selected_branch }}</h6>
             <br>
             <h5>CASH COUNT</h5>
@@ -197,7 +197,7 @@
                         =
                             {% if is_today %}
                             <div class="col-sm-3 text-right">
-                                <input class="form-control text-right" type="number" name="coins_total" id="coins_total" min="0" value="{{ cash_count.coins_total }}">                                
+                                <input class="form-control text-right" type="number" name="coins_total" id="coins_total" min="0" step="0.01" value="{{ cash_count.coins_total }}">                                
                             </div>
                             {% else %}
                             <div class="col-sm-3 text-right bottom-border">
@@ -240,7 +240,7 @@
                     {% if not is_today or is_updated %}
                     <div class="row mt-4">
                         <div class="col-sm-1"></div>
-                        <div class="col-sm-2 text-bold">Remarks: {{ cash_count.remarks }}</div>
+                        <div class="col-sm-2 text-bold {% if cash_count.remarks == 'Cash shortage' %}text-danger{% endif  %}">Remarks: {{ cash_count.remarks }}</div>
                     </div>
                     {% endif %}
                         

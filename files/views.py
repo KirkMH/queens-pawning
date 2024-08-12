@@ -12,6 +12,7 @@ from decimal import Decimal
 from .models import *
 from .forms import *
 from access_hub.models import Employee
+from pawn.models import Pawn
 
 
 ###############################################################################################
@@ -50,10 +51,7 @@ class ClientCreateView(CreateView):
             saved.branch = Employee.objects.get(user=request.user).branch
             saved.save()
             messages.success(request, f"{saved} was created successfully.")
-            if "another" in request.POST:
-                return redirect('new_client')
-            else:
-                return redirect('client_list')
+            return redirect('client_detail', pk=saved.pk)
 
         else:
             return render(request, 'files/client_form.html', {'form': form})
@@ -75,6 +73,12 @@ class ClientDetailView(DetailView):
     model = Client
     template_name = "files/client_detail.html"
     context_object_name = 'client'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        client = Client.objects.get(pk=self.kwargs['pk'])
+        context["pawns"] = Pawn.objects.filter(client=client)
+        return context
 
 
 ###############################################################################################

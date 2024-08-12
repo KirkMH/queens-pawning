@@ -478,7 +478,8 @@ def income_statement(request):
     # determine the report month ============================================
     selected_month = None
     interest = 0
-    loans_extended = 0
+    adv_interest = 0
+    service_charge = 0
     total_expenses = 0
     expense_summary = None
     sel_month = request.GET.get('month', None)
@@ -505,8 +506,9 @@ def income_statement(request):
             print(f"Service Fee: {payment.service_fee}")
             print(
                 f"Total: {payment.paid_interest + payment.advance_interest + payment.service_fee}\n")
-            interest += payment.paid_interest + payment.advance_interest
-            loans_extended += payment.service_fee
+            interest += payment.paid_interest
+            adv_interest += payment.advance_interest
+            service_charge += payment.service_fee
 
         # for the expenses =======================================================
         expenses = Expense.objects.filter(
@@ -524,16 +526,19 @@ def income_statement(request):
         total_expenses = expenses.aggregate(
             grand_total=Sum('amount'))['grand_total'] or 0
 
+    income = service_charge + interest + adv_interest
+
     context = {
         'branch': f"{branch} Branch",
         'sel_month': sel_month,
         'selected_month': selected_month,
         'interest': interest,
-        'loans_extended': loans_extended,
-        'income': loans_extended + interest,
+        'adv_interest': adv_interest,
+        'service_charge': service_charge,
+        'income': income,
         'expense_summary': expense_summary,
         'total_expenses': total_expenses,
-        'net_income': loans_extended + interest - total_expenses
+        'net_income': income - total_expenses
     }
 
     return render(request, 'reports/income_statement.html', context)

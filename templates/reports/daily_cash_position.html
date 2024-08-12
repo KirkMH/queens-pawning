@@ -60,7 +60,7 @@
     {% if cash_position != None %}
     <div class="card m-4" id="report">
         <div class="card-header text-center">
-            <h5>V.B. Queen's Jewelry and Pawnshop</h5>
+            <h5>Queen's Jewelry and Pawnshop Co.</h5>
             <h6>{{ selected_branch }} Branch</h6>
             <br>
             <h5>DAILY CASH POSITION REPORT</h5>
@@ -72,22 +72,24 @@
                         <div class="col-md-12">
                             <div class="card-text text-right">Date: {{ cash_position.date|date:"F d, Y" }}</div>
                             <div>No. <u>{{ cash_position.pk|stringformat:"06d" }}</u></div>
-                            <div class="ml-2">Balance as of {% if last %}<u>{{ last.date|date:"F d, Y" }}</u>{% endif %}</div>
+                            <div class="ml-2">Balance as of 
+                                <u>
+                                    {% if last %}
+                                        {{ last.date|date:"F d, Y" }}
+                                    {% else %}
+                                        {{ cash_position.date|date:"F d, Y" }}
+                                    {% endif %}
+                                </u>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-1"></div>
                         <div class="col-md-2">Cash on Hand</div>
                         <div class="col-md-1"></div>
-                        <div class="col-md-3 text-right bottom-border">{{ cash_position.balance_coh|peso|default_if_none:"" }}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-1"></div>
-                        <div class="col-md-2">Cash in Bank</div>
-                        <div class="col-md-1"></div>
-                        <div class="col-md-3 text-right bottom-border">{{ cash_position.balance_cib|peso|default_if_none:"" }}</div>
+                        <div class="col-md-3 text-right"></div>
                         <div class="col-md-2"></div>
-                        <div class="col-md-3 text-right bottom-border">{{ cash_position.get_total_balance|peso|default_if_none:"" }}</div>
+                        <div class="col-md-3 text-right bottom-border">{{ cash_position.balance_coh|peso|default_if_none:"" }}</div>
                     </div>
                     <div class="row bottom-border-3 mt-4">
                         <div class="col-md-12">

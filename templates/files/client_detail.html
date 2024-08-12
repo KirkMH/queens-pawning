@@ -54,15 +54,35 @@
     
     <div class="card m-4">
         <div class="card-header">
-            <h4>Client Ledger</h3>
+            <h4>Pawn Transactions<span class="float-end"><a href="{% url 'new_pawn' %}?client={{ client.pk }}" class="btn btn-primary float-end">New</a></span></h4>
         </div>
         <div class="card-body">
             <div class="row mb-2">
                 <div class="col-12">
-                    <p class="card-text"><span class="text-muted">This feature is yet to be implemented.</span>
-                       <div class="ml-4 mr-4">
-                       </div>
-                    </p>
+                    <table class="table" id="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">PTN</th>
+                                <th scope="col">Date Granted</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Principal</th>
+                                <th scope="col">Net Proceeds</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pawn in pawns %}
+                            <tr>
+                                <td>{{ pawn.getPTN }}</td>
+                                <td>{{ pawn.date_granted|date:"F d, Y" }}</td>
+                                <td>{{ pawn.complete_description }}</td>
+                                <td class="text-right">{{ pawn.principal|peso }}</td>
+                                <td class="text-right">{{ pawn.net_proceeds|peso }}</td>
+                                <td>{{ pawn.status }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -74,7 +94,8 @@
 {% block js %}
     <script>
         $(document).ready(function() {
-            $("#menu_records").addClass("active")
+            $("#menu_records").addClass("active");
+            $("#table").DataTable();
         })
     </script>
 {% endblock js %}

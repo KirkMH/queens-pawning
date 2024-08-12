@@ -195,10 +195,12 @@ class CashCount(models.Model):
 
         if position:
             net_total = position.get_net_total()
-            if net_total != self.grand_total():
-                remark = 'Mismatch'
+            if net_total > self.grand_total():
+                remark = 'Cash shortage'
+            elif net_total < self.grand_total():
+                remark = 'Cash over'
             else:
-                remark = 'Match'
+                remark = '---'
         else:
             remark = 'No Daily Cash Position'
 

@@ -32,7 +32,7 @@ def pawn_list(request):
 @method_decorator(login_required, name='dispatch')
 class PawnDTListView(ServerSideDatatableView):
     queryset = Pawn.objects.all()
-    columns = ['pk', 'date_granted', 'client', 'quantity', 'carat', 'color', 'item_description', 'description', 'grams',
+    columns = ['pk', 'date_granted', 'client__contact_num', 'quantity', 'carat', 'color', 'item_description', 'description', 'grams',
                'principal', 'service_charge', 'advance_interest', 'net_proceeds', 'status',
                'client__title', 'client__last_name', 'client__first_name', 'client__middle_name', 'transaction_type', 'branch__name', 'date_encoded']
 
@@ -64,6 +64,11 @@ class PawnCreateView(CreateView):
     form_class = PawnForm
 
     def get_context_data(self, **kwargs):
+        print(f"self.request.GET: {self.request.GET}")
+        client_pk = self.request.GET.get('client', None)
+        if client_pk:
+            client = Client.objects.get(pk=client_pk)
+            self.initial['client'] = client
         context = super().get_context_data(**kwargs)
         context['otherFees'] = OtherFees.get_instance()
         return context
@@ -80,15 +85,14 @@ class PawnCreateView(CreateView):
             pawn = form.save(commit=False)
             pawn.branch = employee.branch
             pawn.save()
-            pawn.update_payment(
-                employee, pawn.service_charge, pawn.advance_interest)
-            pawn.update_cash_position_new_ticket(employee, 'New pawn ticket')
+            if pawn.transaction_type == 'NEW':
+                pawn.update_payment(
+                    employee, pawn.service_charge, pawn.advance_interest)
+                pawn.update_cash_position_new_ticket(
+                    employee, 'New pawn ticket')
             messages.success(
                 request, f"New pawn ticket for {pawn.client} was created successfully.")
-            if "another" in request.POST:
-                return redirect('new_pawn')
-            else:
-                return redirect('pawn_detail', pk=pawn.pk)
+            return redirect('pawn_detail', pk=pawn.pk)
 
         else:
             return render(request, 'pawn/pawn_form.html', {'form': form})

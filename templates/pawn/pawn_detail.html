@@ -33,7 +33,7 @@
                         <div class="row mb-2">
                             <div class="col-lg-6 col-md-12">
                                 <p class="card-text"><span class="text-muted h4">Principal: </span><span class="h4">{{ pawn.principal|peso }}</span></p>
-                                <p class="card-text"><span class="text-muted">LESS Service Fee: </span>{{ pawn.service_charge|peso }}</p>
+                                <p class="card-text"><span class="text-muted">LESS Service Charge: </span>{{ pawn.service_charge|peso }}</p>
                                 <p class="card-text"><span class="text-muted">LESS Advance Interest: </span>{{ pawn.advance_interest|peso }}</p>
                                 <p class="card-text"><span class="text-muted">NET PROCEEDS: </span><span class="h5">{{ pawn.net_proceeds|peso }}</span></p>
                             </div>
@@ -73,9 +73,9 @@
             <div class="col-lg-6 col-md-12">
                 <div class="card card-success m-4">
                     <div class="card-header">
-                        <h4>Payment {%if not pawn.payment_pawn %}Information{%else%}Details{%endif%}</h4>
+                        <h4>Payment {%if pawn.status == 'ACTIVE' %}Information{%else%}Details{%endif%}</h4>
                     </div>
-                    {%if not pawn.payment_pawn %}
+                    {%if pawn.status == 'ACTIVE' %}
                         <div class="card-body">
                             <div class="row mb-2">
                                 <div class="col-6">Days Elapsed:</div>
@@ -112,7 +112,7 @@
                                 <div class="col-6 h5">Total Due:</div>
                                 <div class="col-6 h5 text-right">{{ pawn.getTotalDue|peso }}</div>
                             </div>
-                            {% if not pawn.payment_pawn %}
+                            {% if pawn.status == 'ACTIVE' %}
                             <div class="row mt-4">
                                 <div class="col-6 h5">Minimum Payment for Renewal:</div>
                                 <div class="col-6 h5 text-right">
@@ -136,7 +136,7 @@
                                 <div class="col-6 text-right">{{ pawn.getPenalty|peso }}</div>
                             </div>
                             <div class="row mt-2 ml-5 mr-5 text-muted">
-                                <div class="col-6">Service Fee:</div>
+                                <div class="col-6">Service Charge:</div>
                                 <div class="col-6 text-right">{{ pawn.getRenewalServiceFee|peso }}</div>
                             </div>
                             {% endif %}
@@ -165,7 +165,7 @@
                             </div>
                             {% if pawn.status == 'RENEWED' %}
                             <div class="row mb-2">
-                                <div class="col-6">Service Fee:</div>
+                                <div class="col-6">Service Charge:</div>
                                 <div class="col-6 text-right">{{ pawn.payment_pawn.service_fee|peso }}</div>
                             </div>
                             <div class="row mb-2">

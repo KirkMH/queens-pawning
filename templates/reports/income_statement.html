@@ -42,7 +42,7 @@
     {% if selected_month != None %}
     <div class="card m-4" id="report">
         <div class="card-header text-center">
-            <h5>V.B. Queen's Jewelry and Pawnshop Co.</h5>
+            <h5>Queen's Jewelry and Pawnshop Co.</h5>
             <h6>{{ branch }}</h6>
             <br>
             <h5>TOTAL EXPENSES FOR THE MONTH ENDED {{ selected_month }}</h5>
@@ -60,7 +60,11 @@
                         <div class="col-sm-2 bottom-border text-right">{{ interest|currency }}</div>
                     </div>
                     <div class="row">
-                        <div class="col-sm-4 ml-4">Loans Extended</div>
+                        <div class="col-sm-4 ml-4">Advance Interest <span class="float-right">₱</span></div>
+                        <div class="col-sm-2 bottom-border text-right">{{ adv_interest|currency }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4 ml-4">Service Charge <span class="float-right">₱</span></div>
                         <div class="col-sm-2 bottom-border text-right">{{ loans_extended|currency }}</div>
                         <div class="col-sm-2 bottom-border text-right">{{ income|peso }}</div>
                     </div>
@@ -72,7 +76,7 @@
                     {% if expense_summary.count == 0 %}
                         <div class="row">
                             <div class="col-sm-6 ml-4"></div>
-                            <div class="col-sm-2 bottom-border text-right">({{ 0|currency }})</div>
+                            <div class="col-sm-2 bottom-border text-right">({{ 0|peso }})</div>
                         </div>
                     {% endif %}
                         
@@ -82,8 +86,9 @@
                         <div class="col-sm-4 ml-4">
                             {{ expense.category__category }}
                             {% if forloop.first %}
-                                <span class="float-right">₱</span></div>
+                                <span class="float-right">₱</span>
                             {% endif %}
+                        </div>
                         <div class="col-sm-2 bottom-border text-right">{{ expense.total_amount|currency }}</div>
                         
                         {% if forloop.last %}
@@ -93,8 +98,8 @@
                     {% endfor %}
 
                     <div class="row mt-4">
-                        <div class="col-sm-4 text-bold">NET INCOME</div>
-                        <div class="col-sm-4 ml-4 text-bold text-right">{{ net_income|peso }}</div>
+                        <div class="col-sm-4 text-bold {% if net_income < 0 %}text-danger{% endif %}">NET {% if net_income >= 0%}INCOME{% else %}LOSS{% endif %}</div>
+                        <div class="col-sm-4 ml-4 text-bold text-right {% if net_income < 0 %}text-danger{% endif %}">{% if net_income < 0 %}({% endif %}{{ net_income|peso }}{% if net_income < 0 %}){% endif %}</div>
                     </div>
                 </div>
             </div>

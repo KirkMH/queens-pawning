@@ -55,11 +55,6 @@ New Pawn
             </div>
             
             <div class="card-footer">
-                
-                {% if not pawn %}
-                <button type="submit" class="btn btn-primary" name="another">Save and add another</button>
-                {% endif %}
-                    
                 <button type="submit" class="btn btn-success" name="save">Save</button>
                 <a href="{% url 'pawn_list' %}" class="btn btn-default">Cancel</a>
             </div>
