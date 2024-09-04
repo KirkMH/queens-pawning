@@ -7,3 +7,4 @@
 .vercel
 .env
 db.sqlite3
+queens/settings.py

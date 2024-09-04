@@ -109,8 +109,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'django_queens',  # production database name: queenspawnshopsy$default
-        'USER': 'root',
-        'PASSWORD': 'p@$$w0rD',  # production password: Qp@$$w0rD
+        'USER': 'root',           # production username: queenspawnshopsy
+        'PASSWORD': 'p@$$w0rD',   # production password: Qp@$$w0rD
+        # production host: queenspawnshopsystem.mysql.pythonanywhere-services.com
         'HOST': 'localhost'
     }
 }

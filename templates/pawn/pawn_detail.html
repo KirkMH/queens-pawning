@@ -78,6 +78,10 @@
                     {%if pawn.status == 'ACTIVE' %}
                         <div class="card-body">
                             <div class="row mb-2">
+                                <div class="col-6">Renew/Redeem Date:</div>
+                                <div class="col-6 text-right">{{ pawn.renew_redeem_date|date:"F d, Y (D)"|naturalday }}</div>
+                            </div>
+                            <div class="row mb-2">
                                 <div class="col-6">Days Elapsed:</div>
                                 <div class="col-6 text-right">{{ pawn.getElapseDays }} day{{pawn.getElapseDays|pluralize}}</div>
                             </div>

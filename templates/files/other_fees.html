@@ -68,6 +68,14 @@
                     <p class="card-text"><button id="service_fee_val" class="btn btn-link btn-lg" onclick="openModal('service_fee')" >{{ service_fee|peso }}</button></p>
                 </div>
             </div>
+            <div class="row mb-2">
+                <div class="col-md-2 col-sm-4">
+                    <p class="card-text">Penalty Rate (in percent):</p>
+                </div>
+                <div class="col-md-10 col-sm-8">
+                    <p class="card-text"><button id="penalty_rate_val" class="btn btn-link btn-lg" onclick="openModal('penalty_rate')" >{{ penalty_rate|default:0 }} %</button></p>
+                </div>
+            </div>
         </div>
     </div>
 

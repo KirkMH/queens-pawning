@@ -13,6 +13,8 @@ urlpatterns = [
     path('<int:pk>/redeem', views.redeem_pawn, name='redeem_pawn'),
     path('<int:pk>/renew', views.renew_pawn, name='renew_pawn'),
     path('<int:pk>/payment', views.pawn_payment, name='pawn_payment'),
+    path('<int:pk>/update_renew_redeem_date',
+         views.update_renew_redeem_date, name='update_renew_redeem_date'),
     path('advance_interest', views.calculate_advance_interest,
          name='calculate_advance_interest'),
 

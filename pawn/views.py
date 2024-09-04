@@ -127,9 +127,37 @@ class PawnDetailView(DetailView):
     context_object_name = 'pawn'
 
     def get_context_data(self, **kwargs):
+        self.get_object().update_renew_redeem_date()
         context = super().get_context_data(**kwargs)
         context['otherFees'] = OtherFees.get_instance()
         return context
+
+
+@login_required
+def update_renew_redeem_date(request, pk):
+    error = None
+    status = 'success'
+    if request.method == 'POST':
+        print(request.POST)
+        renew_redeem_post = request.POST.get('renew_redeem_date')
+        try:
+            if renew_redeem_post:
+                # convert renew_redeem_post to a date
+                renew_redeem_date = datetime.strptime(
+                    renew_redeem_post, '%Y-%m-%d').date()
+                pawn = Pawn.objects.get(pk=pk)
+                if renew_redeem_date < pawn.date_granted:
+                    status = 'error'
+                    error = 'Date should not be less than the grant date.'
+                else:
+                    pawn.update_renew_redeem_date(
+                        request.POST.get('renew_redeem_date'))
+        except Exception as e:
+            print(e)
+            error = str(e)
+            status = 'error'
+
+    return JsonResponse({'status': status, 'error': error})
 
 
 @login_required

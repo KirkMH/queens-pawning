@@ -91,6 +91,10 @@ class Pawn(models.Model):
     )
     date_encoded = models.DateField(_("Date encoded"), auto_now_add=True)
     date_granted = models.DateField(_("Date granted"), null=True, blank=True)
+    renew_redeem_date = models.DateField(
+        _("Renew/Redeem Date"),
+        null=True, blank=True
+    )
     client = models.ForeignKey(
         Client,
         on_delete=models.CASCADE,
@@ -224,10 +228,18 @@ class Pawn(models.Model):
         return description
 
     def getElapseDays(self):
-        if self.transaction_type == 'NEW':
-            return (timezone.now().date() - self.promised_renewal_date).days
+        if self.renew_redeem_date == None:
+            self.update_renew_redeem_date()
+        rrd = None
+        if hasattr(self.renew_redeem_date, 'date'):
+            rrd = self.renew_redeem_date.date
         else:
-            return (timezone.now().date() - self.date_granted).days
+            rrd = self.renew_redeem_date
+
+        if self.transaction_type == 'NEW':
+            return (rrd - self.promised_renewal_date).days
+        else:
+            return (rrd - self.date_granted).days
 
     def getInterestRate(self):
         elapsed = self.getElapseDays()
@@ -280,7 +292,7 @@ class Pawn(models.Model):
         return elapsed > TermDuration.get_instance().expiration
 
     def hasPenalty(self):
-        elapsed = (timezone.now().date() - self.date_granted).days
+        elapsed = (self.renew_redeem_date - self.date_granted).days
         return elapsed > TermDuration.get_instance().maturity
 
     def getStanding(self):
@@ -300,7 +312,14 @@ class Pawn(models.Model):
         if self.hasPenalty():
             daysPenalty = Decimal(
                 str(self.getElapseDays() - TermDuration.get_instance().maturity))
-            return abs(self.principal * (InterestRate.rates.get_max_rate() / 100) * (daysPenalty / 30))
+            print(f"Days Penalty: {daysPenalty}")
+            other_fees = OtherFees.get_instance()
+            deferred_fields = other_fees.get_deferred_fields()
+            if 'penalty_rate' in deferred_fields:
+                other_fees.refresh_from_db(fields=['penalty_rate'])
+            penalty_rate = other_fees.penalty_rate
+
+            return abs(self.principal * Decimal(penalty_rate / 100) * Decimal(daysPenalty / 30))
         return 0
 
     def getInterestPlusPenalty(self):
@@ -361,7 +380,7 @@ class Pawn(models.Model):
             # create a new pawn ticket for the renewed pawn
             new_pawn = Pawn()
             new_pawn.transaction_type = self.transaction_type
-            new_pawn.date_granted = timezone.now().date()
+            new_pawn.date_granted = self.renew_redeem_date
             new_pawn.client = self.client
             new_pawn.quantity = self.quantity
             new_pawn.carat = self.carat
@@ -481,6 +500,11 @@ class Pawn(models.Model):
 
     def is_pawned_today(self):
         return self.date_granted == timezone.now().date()
+
+    def update_renew_redeem_date(self, date=None):
+        if self.status == 'ACTIVE':
+            self.renew_redeem_date = date if date else timezone.now()
+            self.save()
 
 
 class Payment(models.Model):

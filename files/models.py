@@ -200,6 +200,10 @@ class OtherFees(models.Model):
         decimal_places=2,
         default=0
     )
+    penalty_rate = models.PositiveSmallIntegerField(
+        _('Penalty Rate'),
+        default=0
+    )
 
     @classmethod
     def get_instance(self):
@@ -208,7 +212,7 @@ class OtherFees(models.Model):
         return instance
 
     def __str__(self):
-        return f'Service Fee: {self.service_fee}'
+        return f'Service Fee: {self.service_fee}\nPenalty Rate: {self.penalty_rate}%'
 
 
 class TermDuration(models.Model):

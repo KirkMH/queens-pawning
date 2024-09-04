@@ -188,19 +188,24 @@ def other_fees(request):
         # get the form data
         fee_type = request.POST.get('fee_type')
         value = request.POST.get('fee_value')
+        print(f"Fee Type: {fee_type} | Value: {value}")
 
         # check if the values are valid
         if value:
             # update the values
             if fee_type == 'service_fee':
                 other_fees.service_fee = Decimal(value)
+            elif fee_type == 'penalty_rate':
+                other_fees.penalty_rate = int(value)
             other_fees.save()
+            print(f"Other Fees: {other_fees}")
 
             # return to other fees page with success message
             messages.success(request, "Other fees were updated successfully.")
 
     context = {
-        'service_fee': other_fees.service_fee
+        'service_fee': other_fees.service_fee,
+        'penalty_rate': other_fees.penalty_rate
     }
     return render(request, 'files/other_fees.html', context)
 
