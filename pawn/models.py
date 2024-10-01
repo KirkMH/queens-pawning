@@ -249,13 +249,7 @@ class Pawn(models.Model):
         return description
 
     def getElapseDays(self):
-<<<<<<< HEAD
-        if self.renew_redeem_date == None:
-            self.update_renew_redeem_date()
-=======
-        # if self.renew_redeem_date == None:
         self.update_renew_redeem_date()
->>>>>>> 4f8c7ed32eb5092a52295c0bb940b3c2d3298b3f
         rrd = to_date(self.renew_redeem_date)
 
         if self.transaction_type == 'NEW':
@@ -314,12 +308,8 @@ class Pawn(models.Model):
         return elapsed > TermDuration.get_instance().expiration
 
     def hasPenalty(self):
-<<<<<<< HEAD
-        elapsed = (to_date(self.renew_redeem_date) - to_date(self.date_granted)).days
-=======
         elapsed = (to_date(self.renew_redeem_date) -
                    to_date(self.date_granted)).days
->>>>>>> 4f8c7ed32eb5092a52295c0bb940b3c2d3298b3f
         return elapsed > TermDuration.get_instance().maturity
 
     def getStanding(self):
