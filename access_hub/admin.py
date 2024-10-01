@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
 from .models import Employee
+from pawn.models import Pawn
 
 
 admin.site.site_header = "Queen's Jewelry and Pawnshop"
@@ -36,3 +37,19 @@ class UserAdmin(BaseUserAdmin):
 # Re-register UserAdmin
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+
+# register Pawn in a tabular format
+
+
+class PawnAdmin(admin.ModelAdmin):
+    list_display = ('PTN', 'date_granted', 'client', 'complete_description',
+                    'principal', 'net_proceeds', 'status', 'branch')  # display columns
+
+    def PTN(self, pawn):
+        return pawn.getPTN
+
+    def complete_description(self, pawn):
+        return pawn.complete_description
+
+
+admin.site.register(Pawn, PawnAdmin)

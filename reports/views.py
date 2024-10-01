@@ -194,8 +194,10 @@ def daily_cash_position(request):
             daily_cash_position.prepared_by = employee
             daily_cash_position.save()
         else:
-            daily_cash_position = daily_cash_position.order_by('-id')[0]
-
+            first_position = daily_cash_position.order_by('-id')[0]
+            # delete the rest of the positions if they exist
+            daily_cash_position.exclude(id=first_position.id).delete()
+            daily_cash_position = first_position
 
         receipts = daily_cash_position.receipts.all()
         disbursements = daily_cash_position.disbursements.all()

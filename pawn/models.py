@@ -53,11 +53,13 @@ class Pawn(models.Model):
     RENEWED = 'RENEWED'
     REDEEMED = 'REDEEMED'
     AUCTIONED = 'AUCTIONED'
+    CANCELLED = 'CANCELLED'
     STATUS = [
         (ACTIVE, _('Active')),
         (RENEWED, _('Renewed')),
         (REDEEMED, _('Redeemed')),
-        (AUCTIONED, _('Auctioned'))
+        (AUCTIONED, _('Auctioned')),
+        (CANCELLED, _('Cancelled'))
     ]
     CARAT = [
         ('10k', '10k'),
@@ -105,7 +107,11 @@ class Pawn(models.Model):
         default='NEW',
     )
     date_encoded = models.DateField(_("Date encoded"), auto_now_add=True)
-    date_granted = models.DateField(_("Date granted"), null=True, blank=True, validators=[validate_date_granted])
+    date_granted = models.DateField(
+        _("Date granted"),
+        null=True, blank=True,
+        validators=[validate_date_granted]
+    )
     renew_redeem_date = models.DateField(
         _("Renew/Redeem Date"),
         null=True, blank=True
@@ -243,8 +249,13 @@ class Pawn(models.Model):
         return description
 
     def getElapseDays(self):
+<<<<<<< HEAD
         if self.renew_redeem_date == None:
             self.update_renew_redeem_date()
+=======
+        # if self.renew_redeem_date == None:
+        self.update_renew_redeem_date()
+>>>>>>> 4f8c7ed32eb5092a52295c0bb940b3c2d3298b3f
         rrd = to_date(self.renew_redeem_date)
 
         if self.transaction_type == 'NEW':
@@ -303,7 +314,12 @@ class Pawn(models.Model):
         return elapsed > TermDuration.get_instance().expiration
 
     def hasPenalty(self):
+<<<<<<< HEAD
         elapsed = (to_date(self.renew_redeem_date) - to_date(self.date_granted)).days
+=======
+        elapsed = (to_date(self.renew_redeem_date) -
+                   to_date(self.date_granted)).days
+>>>>>>> 4f8c7ed32eb5092a52295c0bb940b3c2d3298b3f
         return elapsed > TermDuration.get_instance().maturity
 
     def getStanding(self):

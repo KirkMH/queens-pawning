@@ -50,6 +50,7 @@ class PawnDTListView(ServerSideDatatableView):
             qs = qs.filter(status='AUCTIONED')
 
         branch = Employee.objects.get(user=self.request.user).branch
+        print(f"branch: {branch}")
         if branch:
             clients = Client.objects.filter(branch=branch)
             return qs.filter(client__in=clients)
