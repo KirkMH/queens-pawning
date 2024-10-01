@@ -182,13 +182,20 @@ def daily_cash_position(request):
     disbursements = None
     last = None
     if branch:
-        daily_cash_position, created = DailyCashPosition.objects.get_or_create(
+        daily_cash_position = DailyCashPosition.objects.filter(
             branch=branch,
             date=date
         )
-        if created:
+        if daily_cash_position.count() == 0:
+            daily_cash_position = DailyCashPosition.objects.create(
+                branch=branch,
+                date=date
+            )
             daily_cash_position.prepared_by = employee
             daily_cash_position.save()
+        else:
+            daily_cash_position = daily_cash_position.order_by('-id')[0]
+
 
         receipts = daily_cash_position.receipts.all()
         disbursements = daily_cash_position.disbursements.all()

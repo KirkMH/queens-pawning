@@ -116,7 +116,9 @@ class PawnUpdateView(SuccessMessageMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         pawn = self.get_object()
         employee = Employee.objects.get(user=request.user)
-        pawn.update_disbursements(employee, 'Pawn ticket')
+        if pawn.transaction_type == 'NEW':
+            pawn.update_cash_position_new_ticket(
+                employee, 'Updated new pawn ticket')
         return super().post(request, *args, **kwargs)
 
 
@@ -235,7 +237,7 @@ def print_inventory_list(request):
 
 @login_required
 def request_discount(request, pk):
-    ''' 
+    '''
     The cashier requests for a discount for the pawn ticket.
     pk -> pawn.pk
     '''
@@ -258,8 +260,8 @@ def request_discount(request, pk):
 
 @login_required
 def cancel_request_discount(request, pk):
-    ''' 
-    The cashier cancels the discount request. 
+    '''
+    The cashier cancels the discount request.
     pk -> pawn.pk
     '''
     success = True
@@ -276,8 +278,8 @@ def cancel_request_discount(request, pk):
 
 @login_required
 def request_discount_status(request, pk):
-    ''' 
-    The frontend repeatedly requests for the status of the discount request until either approved or cancelled. 
+    '''
+    The frontend repeatedly requests for the status of the discount request until either approved or cancelled.
     pk -> pawn.pk
     '''
     discount = DiscountRequests.objects.get(pawn=Pawn.objects.get(pk=pk))
@@ -286,8 +288,8 @@ def request_discount_status(request, pk):
 
 @login_required
 def approve_discount(request, pk):
-    ''' 
-    The manager approves the discount request. 
+    '''
+    The manager approves the discount request.
     pk -> discount.pk
     '''
     success = True
@@ -304,8 +306,8 @@ def approve_discount(request, pk):
 
 @login_required
 def reject_discount(request, pk):
-    ''' 
-    The manager rejects the discount request. 
+    '''
+    The manager rejects the discount request.
     pk -> discount.pk
     '''
     success = True
@@ -341,8 +343,8 @@ class DiscountRequestsDTListView(ServerSideDatatableView):
 
 @login_required
 def calculate_advance_interest(request):
-    ''' 
-    Calculate the advance interest of the pawn ticket. 
+    '''
+    Calculate the advance interest of the pawn ticket.
     '''
     success = True
     error = None
