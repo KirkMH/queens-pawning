@@ -1,15 +1,30 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 
 from files.models import Client, Branch, InterestRate, AdvanceInterestRate, TermDuration, OtherFees
 from access_hub.models import Employee
 from reports.models import AddReceipts, DailyCashPosition, LessDisbursements
+
+
+def to_date(value):
+    if isinstance(value, datetime):
+        return value.date()  # Convert datetime to date
+    elif isinstance(value, date):
+        return value  # It's already a date
+    else:
+        raise ValueError("Input must be a datetime or date object.")
+
+
+def validate_date_granted(value):
+    if value > timezone.now().date():
+        raise ValidationError(_('Date granted cannot be in the future.'))
 
 
 class Inventory(models.Manager):
@@ -38,11 +53,13 @@ class Pawn(models.Model):
     RENEWED = 'RENEWED'
     REDEEMED = 'REDEEMED'
     AUCTIONED = 'AUCTIONED'
+    CANCELLED = 'CANCELLED'
     STATUS = [
         (ACTIVE, _('Active')),
         (RENEWED, _('Renewed')),
         (REDEEMED, _('Redeemed')),
-        (AUCTIONED, _('Auctioned'))
+        (AUCTIONED, _('Auctioned')),
+        (CANCELLED, _('Cancelled'))
     ]
     CARAT = [
         ('10k', '10k'),
@@ -90,7 +107,8 @@ class Pawn(models.Model):
         default='NEW',
     )
     date_encoded = models.DateField(_("Date encoded"), auto_now_add=True)
-    date_granted = models.DateField(_("Date granted"), null=True, blank=True)
+    date_granted = models.DateField(
+        _("Date granted"), null=True, blank=True, validators=[validate_date_granted])
     renew_redeem_date = models.DateField(
         _("Renew/Redeem Date"),
         null=True, blank=True
@@ -228,18 +246,14 @@ class Pawn(models.Model):
         return description
 
     def getElapseDays(self):
-        if self.renew_redeem_date == None:
-            self.update_renew_redeem_date()
-        rrd = None
-        if hasattr(self.renew_redeem_date, 'date'):
-            rrd = self.renew_redeem_date.date
-        else:
-            rrd = self.renew_redeem_date
+        # if self.renew_redeem_date == None:
+        self.update_renew_redeem_date()
+        rrd = to_date(self.renew_redeem_date)
 
         if self.transaction_type == 'NEW':
-            return (rrd - self.promised_renewal_date).days
+            return (rrd - to_date(self.promised_renewal_date)).days
         else:
-            return (rrd - self.date_granted).days
+            return (rrd - to_date(self.date_granted)).days
 
     def getInterestRate(self):
         elapsed = self.getElapseDays()
@@ -292,7 +306,8 @@ class Pawn(models.Model):
         return elapsed > TermDuration.get_instance().expiration
 
     def hasPenalty(self):
-        elapsed = (self.renew_redeem_date - self.date_granted).days
+        elapsed = (to_date(self.renew_redeem_date) -
+                   to_date(self.date_granted)).days
         return elapsed > TermDuration.get_instance().maturity
 
     def getStanding(self):

@@ -50,6 +50,7 @@ class PawnDTListView(ServerSideDatatableView):
             qs = qs.filter(status='AUCTIONED')
 
         branch = Employee.objects.get(user=self.request.user).branch
+        print(f"branch: {branch}")
         if branch:
             clients = Client.objects.filter(branch=branch)
             return qs.filter(client__in=clients)
@@ -116,7 +117,9 @@ class PawnUpdateView(SuccessMessageMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         pawn = self.get_object()
         employee = Employee.objects.get(user=request.user)
-        pawn.update_disbursements(employee, 'Pawn ticket')
+        if pawn.transaction_type == 'NEW':
+            pawn.update_cash_position_new_ticket(
+                employee, 'Updated new pawn ticket')
         return super().post(request, *args, **kwargs)
 
 

@@ -27,7 +27,7 @@ def client_list(request):
 class ClientDTListView(ServerSideDatatableView):
     queryset = Client.objects.all()
     columns = ['pk', 'title', 'last_name', 'first_name', 'middle_name', 'address',
-               'id_link', 'id_number', 'contact_num', 'date_registered', 'status', 'branch__name']
+               'id_link__type', 'id_number', 'contact_num', 'date_registered', 'status', 'branch__name']
 
     def get_queryset(self):
         qs = super().get_queryset()
