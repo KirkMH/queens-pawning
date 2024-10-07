@@ -97,7 +97,7 @@ class Pawn(models.Model):
     TRANSACTION_TYPE = [
         ('NEW', _('New')),
         ('EXISTING', _('Existing'))
-        ]
+    ]
 
     # NEW = Advance Interest Rate; EXISTING = Interest Rate
     transaction_type = models.CharField(
@@ -507,7 +507,7 @@ class Pawn(models.Model):
         else:
             total_interest = self.getInterest()
 
-        r_amt = new_ticket.principal + total_interest
+        r_amt = self.principal + total_interest + self.getPenalty()
         receipt = self.update_receipts(
             cashier, description, r_amt)
         d_amt = new_ticket.principal - new_ticket.service_charge
