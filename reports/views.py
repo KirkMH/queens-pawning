@@ -334,7 +334,7 @@ def cash_count(request):
         'is_today': is_today,
         'is_updated': is_updated
     }
-    return render(request, 'reports/cash_count.html', context)
+    return render(request, f'reports/cash_count.html', context)
 
 
 @method_decorator(login_required, name='dispatch')
@@ -345,6 +345,7 @@ class OtherCashCountCreateView(CreateView):
 
     def post(self, request, *args, **kwargs):
         form = OtherCashCountForm(request.POST)
+        date = request.GET.get('date')
         if form.is_valid():
             pk = kwargs.get('pk')
             cash_count = CashCount.objects.get(pk=pk)
@@ -354,9 +355,28 @@ class OtherCashCountCreateView(CreateView):
             messages.success(
                 request, f"New item on cash count was added successfully.")
             if "another" in request.POST:
-                return redirect('add_cash_count', pk=pk)
+                return redirect(reverse('add_cash_count', kwargs={'pk': pk}) + '?date=' + date)
             else:
-                return redirect('cash_count')
+                return redirect(reverse('cash_count') + '?date=' + date)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['date'] = self.request.GET.get(
+            'date', str(timezone.now().date()))
+        return context
+
+
+def remove_other_cash_count(request, pk):
+    date = request.GET.get('date', str(timezone.now().date()))
+    try:
+        other = OtherCashCount.objects.get(pk=pk)
+        other.delete()
+        messages.success(
+            request, f"Item on cash count was deleted successfully.")
+    except:
+        messages.error(
+            request, f"Unkown item on cash count cannot be deleted.")
+    return redirect(reverse('cash_count') + '?date=' + date)
 
 
 def generate_auction_report(employee: Employee):
