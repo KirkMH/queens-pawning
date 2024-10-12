@@ -25,6 +25,20 @@
 {% block main_content %}
     <div class="card m-4 no-print">
         <div class="card-body">
+            {% if not user.employee.branch %}
+            <div class="row mb-2">
+                <div class="col-md-2">
+                    <p class="card-text text-muted">Branch:</p>
+                </div>
+                <div class="col-md-4">
+                    <select name="branch" id="branch" class="form-select">
+                        {% for branch in branches %}
+                        <option value="{{ branch.pk }}" {% if branch.pk == selected_branch.pk %}selected{% endif %}>{{ branch }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>            
+            {% endif %}
             <div class="row mb-2">
                 <div class="col-md-2">
                     <p class="card-text text-muted">Date:</p>
@@ -43,12 +57,13 @@
         </div>
     </div>
 
+    {% if cash_count %}
     <form method="post">
     {% csrf_token %}
     <div class="card m-4" id="report">
         <div class="card-header text-center">
             <h5>Queen's Jewelry and Pawnshop Co.</h5>
-            <h6>{{ selected_branch }}</h6>
+            <h6>{{ selected_branch.name }} Branch</h6>
             <br>
             <h5>CASH COUNT</h5>
             <h5>{{ cash_count.date|date:"F d, Y" }}</h5>
@@ -154,7 +169,7 @@
                     <div class="row mt-4">
                         <div class="col-sm-2 text-right mr-2">Add:</div>
                         <div class="col-sm-1">
-                            <a href="{% url 'add_cash_count' cash_count.pk %}?date={{ sel_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline-success no-print">New</a>
+                            <a href="{% url 'add_cash_count' cash_count.pk %}?date={{ sel_date|date:'Y-m-d' }}&branch={{ selected_branch.pk }}" class="btn btn-sm btn-outline-success no-print">New</a>
                         </div>
                     </div>
 
@@ -162,7 +177,7 @@
                     <div class="row">
                         <div class="col-sm-3"></div>
                         <div class="col-sm-2">
-                            <a href="{% url 'remove_other_cash_count' other.pk %}?date={{ sel_date|date:'Y-m-d' }}" title="Remove"><i class="fas fa-times text-danger"></i></a>
+                            <a href="{% url 'remove_other_cash_count' other.pk %}?date={{ sel_date|date:'Y-m-d' }}&branch={{ selected_branch.pk }}" title="Remove"><i class="fas fa-times text-danger"></i></a>
                             &nbsp;{{ other.particulars }}
                         </div>
                         <div class="col-sm-3 bottom-border text-right">{{ other.amount|peso }}</div>
@@ -197,6 +212,7 @@
         </div>
     </div>
     </form>
+    {% endif %}
 
 {% endblock main_content %}
 
@@ -206,8 +222,9 @@
         $(document).ready(function() {
             $("#btn_set").click(function() {
                 const date = $("#date").val()
+                const branch = $("#branch").val()
                 console.log(date)
-                window.location.href = "{% url 'cash_count' %}?date=" + date
+                window.location.href = "{% url 'cash_count' %}?date=" + date + "&branch=" + branch
             });
 
             $("#menu-reports").addClass("active")

@@ -58,11 +58,9 @@
                 <li id="menu-cash-flow">
                     <a class="dropdown-item" href="{% url 'daily_cash_position' %}">Daily Cash Position</a>
                 </li>
-                {% if user.employee.branch %}
                 <li id="menu-cash-count">
                     <a class="dropdown-item" href="{% url 'cash_count' %}">Cash Count</a>
                 </li>
-                {% endif %}
                 {% if not user.employee.branch %}
                 <li id="menu-expenses-itemized">
                     <a class="dropdown-item" href="{% url 'expense_report' 'itemized' %}">Itemized Expenses</a>
@@ -81,6 +79,8 @@
                 <li id="menu-auction">
                     <a class="dropdown-item" href="{% url 'auction_report' %}">Items for Auction</a>
                 </li>
+                {% endif %}
+                {% if not user.employee.branch %}
                 <li id="income-statement">
                     <a class="dropdown-item" href="{% url 'income_statement' %}">Income Statement</a>
                 </li>

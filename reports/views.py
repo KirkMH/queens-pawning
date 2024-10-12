@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-from django.db.models import Sum, F, DecimalField, ExpressionWrapper
+from django.db.models import Sum, F, DecimalField, ExpressionWrapper, Value, fields
+from django.db.models.functions import Now
 from django.http import Http404
 from django.views.generic import CreateView
 from django.contrib import messages
@@ -10,7 +11,7 @@ from django.urls import reverse
 from urllib.parse import urlencode
 from decimal import Decimal
 
-from files.models import Branch
+from files.models import Branch, TermDuration
 from expense.models import Expense
 from pawn.models import Pawn, Payment
 from access_hub.models import Employee
@@ -301,36 +302,47 @@ def cash_count(request):
     employee = Employee.objects.get(user=request.user)
     branch = employee.branch
     if not branch:
-        raise Http404("This feature is only available to branches.")
+        # try to get it from the GET request
+        sel_branch = request.GET.get('branch', None)
+        if sel_branch:
+            branch = get_object_or_404(Branch, pk=sel_branch)
     print(f"Branch: {branch}")
     print(f"Date: {date}")
-    cash_count, _ = CashCount.objects.get_or_create(
-        branch=branch,
-        date=date,
-        prepared_by=employee
-    )
 
-    if request.method == 'POST':
-        cash_count.one_thousands = int(
-            request.POST.get('one_thousands') or '0')
-        cash_count.five_hundreds = int(
-            request.POST.get('five_hundreds') or '0')
-        cash_count.two_hundreds = int(request.POST.get('two_hundreds') or '0')
-        cash_count.one_hundreds = int(request.POST.get('one_hundreds') or '0')
-        cash_count.fifties = int(request.POST.get('fifties') or '0')
-        cash_count.twenties = int(request.POST.get('twenties') or '0')
-        cash_count.tens = int(request.POST.get('tens') or '0')
-        cash_count.fives = int(request.POST.get('fives') or '0')
-        cash_count.coins = int(request.POST.get('coins') or '0')
-        cash_count.coins_total = Decimal(
-            request.POST.get('coins_total') or '0')
-        cash_count.save()
-        is_updated = True
+    cash_count = None
+    if branch and date:
+        cash_count, created = CashCount.objects.get_or_create(
+            branch=branch,
+            date=date
+        )
+        if created:
+            cash_count.prepared_by = employee
+            cash_count.save()
+
+        if request.method == 'POST':
+            cash_count.one_thousands = int(
+                request.POST.get('one_thousands') or '0')
+            cash_count.five_hundreds = int(
+                request.POST.get('five_hundreds') or '0')
+            cash_count.two_hundreds = int(
+                request.POST.get('two_hundreds') or '0')
+            cash_count.one_hundreds = int(
+                request.POST.get('one_hundreds') or '0')
+            cash_count.fifties = int(request.POST.get('fifties') or '0')
+            cash_count.twenties = int(request.POST.get('twenties') or '0')
+            cash_count.tens = int(request.POST.get('tens') or '0')
+            cash_count.fives = int(request.POST.get('fives') or '0')
+            cash_count.coins = int(request.POST.get('coins') or '0')
+            cash_count.coins_total = Decimal(
+                request.POST.get('coins_total') or '0')
+            cash_count.save()
+            is_updated = True
 
     context = {
+        'branches': Branch.objects.all(),
         'cash_count': cash_count,
         'sel_date': date,
-        'selected_branch': branch.name + ' Branch',
+        'selected_branch': branch,
         'is_today': is_today,
         'is_updated': is_updated
     }
@@ -355,14 +367,15 @@ class OtherCashCountCreateView(CreateView):
             messages.success(
                 request, f"New item on cash count was added successfully.")
             if "another" in request.POST:
-                return redirect(reverse('add_cash_count', kwargs={'pk': pk}) + '?date=' + date)
+                return redirect(reverse('add_cash_count', kwargs={'pk': pk}) + '?date=' + date + '&branch=' + str(cash_count.branch.pk))
             else:
-                return redirect(reverse('cash_count') + '?date=' + date)
+                return redirect(reverse('cash_count') + '?date=' + date + '&branch=' + str(cash_count.branch.pk))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['date'] = self.request.GET.get(
             'date', str(timezone.now().date()))
+        context['branch'] = self.request.GET.get('branch', None)
         return context
 
 
@@ -376,12 +389,27 @@ def remove_other_cash_count(request, pk):
     except:
         messages.error(
             request, f"Unkown item on cash count cannot be deleted.")
-    return redirect(reverse('cash_count') + '?date=' + date)
+    return redirect(reverse('cash_count') + '?date=' + date + '&branch=' + str(other.cash_count.branch.pk))
 
 
 def generate_auction_report(employee: Employee):
     branch = employee.branch
-    report = Pawn.expired.filter(on_hold=False)
+    expiration_days = TermDuration.get_instance().expiration
+    expiration_delta = timezone.timedelta(days=expiration_days)
+
+    report = Pawn.objects.annotate(
+        expiration_date=ExpressionWrapper(
+            F('date_granted') + Value(expiration_delta),
+            output_field=fields.DateField()
+        )
+    ).filter(
+        expiration_date__gte=timezone.now().date(),
+        expiration_date__month=timezone.now().month,
+        on_hold=False
+    )
+    # get the pk of report and filter by it
+    pks = report.values_list('pk', flat=True)
+    report = Pawn.objects.filter(pk__in=pks)
 
     if not branch:
         branch = 'All Branches'
@@ -397,9 +425,9 @@ def generate_auction_report(employee: Employee):
 def auction_report(request):
     employee = Employee.objects.get(user=request.user)
     report, branch = generate_auction_report(employee)
-
+    print(report)
     principal_total = report.aggregate(Sum('principal'))['principal__sum']
-    interest_total = sum([pawn.getAuctionInterest() for pawn in report])
+    interest_total = 0  # sum([pawn.getAuctionInterest() for pawn in report])
     grand_total = principal_total + interest_total
 
     context = {
@@ -501,8 +529,14 @@ def income_statement(request):
     # make sure that the logged employee is from a branch ====================
     employee = Employee.objects.get(user=request.user)
     branch = employee.branch
+    branches = Branch.objects.all()
     if not branch:
-        raise Http404("This feature is only available to branches.")
+        # try to get it from the GET request
+        sel_branch = request.GET.get('branch', None)
+        print("Selected branch: ", sel_branch)
+        if sel_branch:
+            branch = get_object_or_404(Branch, pk=sel_branch)
+    print("BRANCH: ", branch)
 
     # determine the report month ============================================
     selected_month = None
@@ -514,7 +548,8 @@ def income_statement(request):
     sel_month = request.GET.get('month', None)
     year = timezone.now().year
     month = timezone.now().month
-    if sel_month:
+    print("MONTH: ", month)
+    if sel_month and branch:
         parts = sel_month.split("-")
         year = int(parts[0])
         month = int(parts[1])
@@ -558,6 +593,7 @@ def income_statement(request):
     income = service_charge + interest + adv_interest
 
     context = {
+        'branches': branches,
         'branch': f"{branch} Branch",
         'sel_month': sel_month,
         'selected_month': selected_month,

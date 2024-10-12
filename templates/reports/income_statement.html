@@ -21,6 +21,20 @@
 {% block main_content %}
     <div class="card m-4 no-print">
         <div class="card-body">
+            {% if not user.employee.branch %}
+            <div class="row mb-2">
+                <div class="col-md-2">
+                    <p class="card-text text-muted">Branch:</p>
+                </div>
+                <div class="col-md-4">
+                    <select name="branch" id="branch" class="form-select">
+                        {% for branch in branches %}
+                        <option value="{{ branch.pk }}" {% if branch.pk == selected_branch.pk %}selected{% endif %}>{{ branch }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>            
+            {% endif %}
             <div class="row mb-2">
                 <div class="col-sm-2">
                     <p class="card-text text-muted">Month:</p>
@@ -123,13 +137,14 @@
         $(document).ready(function() {
             $("#btn_generate").click(function() {
                 const month = $("#month").val()
+                const branch = $("#branch").val()
 
                 if (month == "") {
                     toastr.error("Please select a month.")
                     return
                 }
                 else {
-                    window.location.href = "{% url 'income_statement' %}?month=" + month
+                    window.location.href = "{% url 'income_statement' %}?month=" + month + "&branch=" + branch
                 }
             });
 

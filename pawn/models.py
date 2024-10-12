@@ -248,6 +248,11 @@ class Pawn(models.Model):
         description += f" {self.grams}g"
         return description
 
+    @property
+    def expiration_date(self):
+        expiration_days = TermDuration.get_instance().expiration
+        return self.date_granted + timezone.timedelta(days=expiration_days)
+
     def getElapseDays(self):
         self.update_renew_redeem_date()
         rrd = to_date(self.renew_redeem_date)
