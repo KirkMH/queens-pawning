@@ -136,7 +136,8 @@ class CashCount(models.Model):
     prepared_by = models.ForeignKey(
         Employee,
         related_name='cash_counts',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True, blank=True
     )
     one_thousands = models.IntegerField(default=0)
     five_hundreds = models.IntegerField(default=0)
