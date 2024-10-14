@@ -427,7 +427,7 @@ def auction_report(request):
     report, branch = generate_auction_report(employee)
     print(report)
     principal_total = report.aggregate(Sum('principal'))['principal__sum']
-    interest_total = 0  # sum([pawn.getAuctionInterest() for pawn in report])
+    interest_total = sum([pawn.getAuctionInterest() for pawn in report])
     grand_total = principal_total + interest_total
 
     context = {
