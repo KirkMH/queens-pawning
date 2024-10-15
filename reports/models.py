@@ -1,5 +1,4 @@
 from django.db import models
-
 from django.utils import timezone
 
 from files.models import Branch
@@ -92,6 +91,12 @@ class AddReceipts(models.Model):
         related_name='receipts',
         on_delete=models.CASCADE
     )
+    pawn = models.ForeignKey(
+        "pawn.Pawn",
+        related_name='receipts',
+        on_delete=models.CASCADE,
+        null=True, blank=True
+    )
     reference_number = models.CharField(max_length=20, blank=True, null=True)
     received_from = models.CharField(max_length=50, blank=True, null=True)
     particulars = models.CharField(max_length=50, blank=True, null=True)
@@ -103,7 +108,14 @@ class AddReceipts(models.Model):
     automated = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.particulars} - {self.amount}'
+        ref = ""
+        if self.reference_number:
+            ref = f"PTN {self.reference_number}: "
+        return f'{ref}{self.particulars} - {self.amount}'
+
+    class Meta:
+        verbose_name_plural = 'Add Receipts'
+        verbose_name = 'Add Receipt'
 
 
 class LessDisbursements(models.Model):
@@ -111,6 +123,12 @@ class LessDisbursements(models.Model):
         DailyCashPosition,
         related_name='disbursements',
         on_delete=models.CASCADE
+    )
+    pawn = models.ForeignKey(
+        "pawn.Pawn",
+        related_name='disbursements',
+        on_delete=models.CASCADE,
+        null=True, blank=True
     )
     reference_number = models.CharField(max_length=20, blank=True, null=True)
     payee = models.CharField(max_length=50, blank=True, null=True)
@@ -123,7 +141,14 @@ class LessDisbursements(models.Model):
     automated = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.particulars} - {self.amount}'
+        ref = ""
+        if self.reference_number:
+            ref = f"PTN {self.reference_number}: "
+        return f'{ref}{self.particulars} - {self.amount}'
+
+    class Meta:
+        verbose_name_plural = 'Less Disbursements'
+        verbose_name = 'Less Disbursement'
 
 
 class CashCount(models.Model):

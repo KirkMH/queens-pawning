@@ -466,7 +466,8 @@ class Pawn(models.Model):
         )
         receipt, _ = AddReceipts.objects.get_or_create(
             daily_cash_position=cash_position,
-            reference_number=self.pk
+            reference_number=self.pk,
+            pawn=self
         )
         receipt.received_from = self.client.full_name
         receipt.particulars = description
@@ -483,7 +484,8 @@ class Pawn(models.Model):
         )
         disbursement, _ = LessDisbursements.objects.get_or_create(
             daily_cash_position=cash_position,
-            reference_number=self.pk
+            reference_number=self.pk,
+            pawn=self
         )
         disbursement.payee = self.client.full_name
         disbursement.particulars = description

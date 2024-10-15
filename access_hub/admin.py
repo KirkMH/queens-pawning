@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 from .models import Employee
 from pawn.models import Pawn
+from reports.models import LessDisbursements, AddReceipts
 
 
 admin.site.site_header = "Queen's Jewelry and Pawnshop"
@@ -53,3 +54,43 @@ class PawnAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Pawn, PawnAdmin)
+
+
+class LessDisbursementsAdmin(admin.ModelAdmin):
+    list_display = ('PTN', 'date_granted', 'client', 'complete_description',
+                    'payee', 'particulars', 'amount')  # display columns
+
+    def date_granted(self, less_disbursements):
+        return less_disbursements.pawn.date_granted if less_disbursements.pawn else None
+
+    def client(self, less_disbursements):
+        return less_disbursements.pawn.client if less_disbursements.pawn else None
+
+    def PTN(self, less_disbursements):
+        return less_disbursements.pawn.getPTN if less_disbursements.pawn else f" Ref: {less_disbursements.reference_number}" if less_disbursements.reference_number else "(None)"
+
+    def complete_description(self, less_disbursements):
+        return less_disbursements.pawn.complete_description if less_disbursements.pawn else None
+
+
+admin.site.register(LessDisbursements, LessDisbursementsAdmin)
+
+
+class AddReceiptsAdmin(admin.ModelAdmin):
+    list_display = ('PTN', 'date_granted', 'client', 'complete_description',
+                    'received_from', 'particulars', 'amount')  # display columns
+
+    def date_granted(self, add_receipts):
+        return add_receipts.pawn.date_granted if add_receipts.pawn else None
+
+    def client(self, add_receipts):
+        return add_receipts.pawn.client if add_receipts.pawn else None
+
+    def PTN(self, add_receipts):
+        return add_receipts.pawn.getPTN if add_receipts.pawn else f" Ref: {add_receipts.reference_number}" if add_receipts.reference_number else "(None)"
+
+    def complete_description(self, add_receipts):
+        return add_receipts.pawn.complete_description if add_receipts.pawn else None
+
+
+admin.site.register(AddReceipts, AddReceiptsAdmin)
