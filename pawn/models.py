@@ -215,7 +215,7 @@ class Pawn(models.Model):
     renewed_to = models.OneToOneField(
         'self',
         related_name='pawn_renewed_to',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True, blank=True
     )
 
@@ -226,7 +226,7 @@ class Pawn(models.Model):
     expired = Expired()
 
     def __str__(self):
-        return f"{self.complete_description} by {self.client}"
+        return f"{self.getPTN}: {self.client} - {self.complete_description}"
 
     @property
     def getPTN(self):
