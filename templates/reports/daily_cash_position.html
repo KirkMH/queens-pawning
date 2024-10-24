@@ -116,8 +116,7 @@
                             <div class="col-sm-2 ml-3 bottom-border">{{ receipt.received_from|default_if_none:""|title }}</div>
                             <div class="col-sm-3 ml-3 bottom-border">{{ receipt.particulars|default_if_none:"" }}</div>
                             <div class="col-sm-2 ml-3 bottom-border">
-                                
-                                {% if is_today and not receipt.automated %}
+                                {% if is_today and not receipt.automated and not user.employee.branch %}
                                 <a href="{% url 'delete_receipt' receipt.pk%}" title="Remove"><i class="fa fa-minus-square-o text-danger no-print" aria-hidden="true"></i>&nbsp;</a>
                                 {% endif %}
                                     
@@ -166,7 +165,7 @@
                             <div class="col-sm-3 ml-3 bottom-border">{{ disbursement.particulars|default_if_none:"" }}</div>
                             <div class="col-sm-2 ml-3 bottom-border">
                                 
-                                {% if is_today and not disbursement.automated %}
+                                {% if is_today and not disbursement.automated and not user.employee.branch %}
                                 <a href="{% url 'delete_disbursement' disbursement.pk%}" title="Remove"><i class="fa fa-minus-square-o text-danger no-print" aria-hidden="true"></i>&nbsp;</a>
                                 {% endif %}
                                     
