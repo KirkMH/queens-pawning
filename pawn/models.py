@@ -437,7 +437,7 @@ class Pawn(models.Model):
             )
         elif self.status == 'REDEEMED':
             self.update_receipts(
-                cashier, 'Redeemed', amount_paid)
+                cashier, 'Redeemed', self.principal)
 
     def update_payment(self, cashier, service_fee, advance_interest, amount_paid=0, paid_interest=0, penalty=0, paid_for_principal=0, discount_granted=0):
         payment = Payment()
