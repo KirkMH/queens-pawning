@@ -437,12 +437,13 @@ class Pawn(models.Model):
             )
         elif self.status == 'REDEEMED':
             self.update_receipts(
-                cashier, 'Redeemed', self.principal)
+                cashier, 'Redeemed', amount_paid)
 
     def update_payment(self, cashier, service_fee, advance_interest, amount_paid=0, paid_interest=0, penalty=0, paid_for_principal=0, discount_granted=0):
-        payment = Payment()
+        payment, created = Payment.objects.get_or_create(
+            pawn=self, cashier=cashier)
+
         payment.amount_paid = amount_paid
-        payment.pawn = self
         payment.paid_interest = paid_interest
         payment.penalty = penalty
         payment.service_fee = service_fee
@@ -451,6 +452,8 @@ class Pawn(models.Model):
         payment.paid_for_principal = paid_for_principal
         payment.discount_granted = discount_granted
         payment.save()
+        stat = 'created' if created else 'updated'
+        print(f'payment record {stat}: {payment}')
 
     def get_last_renewal_date(self):
         renewal = None
@@ -543,43 +546,42 @@ class Payment(models.Model):
         _('Paid Interest'),
         max_digits=10,
         decimal_places=2,
-        null=False, blank=False
+        default=0
     )
     penalty = models.DecimalField(
         _('Penalty'),
         max_digits=10,
         decimal_places=2,
-        null=False, blank=False
+        default=0
     )
     service_fee = models.DecimalField(
         _('Service Fee'),
         max_digits=10,
         decimal_places=2,
-        null=False, blank=False
+        default=0
     )
     advance_interest = models.DecimalField(
         _('Advance Interest'),
         max_digits=10,
         decimal_places=2,
-        null=False, blank=False
+        default=0
     )
     amount_paid = models.DecimalField(
         _('Amount Paid'),
         max_digits=10,
         decimal_places=2,
-        null=False, blank=False
+        default=0
     )
     paid_for_principal = models.DecimalField(
         _('Paid for Principal'),
         max_digits=10,
         decimal_places=2,
-        null=False, blank=False
+        default=0
     )
     discount_granted = models.DecimalField(
         _('Discount Granted'),
         max_digits=10,
         decimal_places=2,
-        null=False, blank=False,
         default=0
     )
     cashier = models.ForeignKey(
