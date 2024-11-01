@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
 from .models import Employee
-from pawn.models import Pawn
+from pawn.models import Pawn, Payment
 from reports.models import LessDisbursements, AddReceipts
 
 
@@ -54,6 +54,24 @@ class PawnAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Pawn, PawnAdmin)
+
+
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('PTN', 'client', 'complete_description',
+                    'paid_interest', 'penalty', 'service_fee', 'advance_interest',
+                    'amount_paid', 'paid_for_principal', 'discount_granted')  # display columns
+
+    def PTN(self, payment):
+        return payment.pawn.getPTN
+
+    def client(self, payment):
+        return payment.pawn.client
+
+    def complete_description(self, payment):
+        return payment.pawn.complete_description
+
+
+admin.site.register(Payment, PaymentAdmin)
 
 
 class LessDisbursementsAdmin(admin.ModelAdmin):
