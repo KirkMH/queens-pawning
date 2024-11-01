@@ -594,6 +594,9 @@ class Payment(models.Model):
     def __str__(self):
         return f"{self.pawn} - {self.amount_paid} by {self.cashier} on {self.date}"
 
+    class Meta:
+        ordering = ['-pawn__pk']
+
 
 class DiscountRequests(models.Model):
     STATUS = [
