@@ -254,7 +254,7 @@ class Pawn(models.Model):
         return self.date_granted + timezone.timedelta(days=expiration_days)
 
     def getElapseDays(self):
-        self.update_renew_redeem_date()
+        # self.update_renew_redeem_date()
         rrd = to_date(self.renew_redeem_date)
 
         if self.transaction_type == 'NEW':
@@ -532,6 +532,7 @@ class Pawn(models.Model):
         if self.status == 'ACTIVE':
             self.renew_redeem_date = date if date else timezone.now()
             self.save()
+            print(f'updated renew_redeem_date: {self.renew_redeem_date}')
 
 
 class Payment(models.Model):

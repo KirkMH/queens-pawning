@@ -131,7 +131,9 @@ class PawnDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         self.get_object().update_renew_redeem_date()
+        print('renew_redeem_date: ', self.get_object().renew_redeem_date)
         context = super().get_context_data(**kwargs)
+        context['pawn'] = self.get_object()
         context['otherFees'] = OtherFees.get_instance()
         return context
 
@@ -140,11 +142,14 @@ class PawnDetailView(DetailView):
 def update_renew_redeem_date(request, pk):
     error = None
     status = 'success'
+    print("updating...")
     if request.method == 'POST':
         print(request.POST)
         renew_redeem_post = request.POST.get('renew_redeem_date')
+        print(f'renew_redeem_post: {renew_redeem_post}')
         try:
             if renew_redeem_post:
+                print('processing')
                 # convert renew_redeem_post to a date
                 renew_redeem_date = datetime.strptime(
                     renew_redeem_post, '%Y-%m-%d').date()
@@ -153,8 +158,11 @@ def update_renew_redeem_date(request, pk):
                     status = 'error'
                     error = 'Date should not be less than the grant date.'
                 else:
-                    pawn.update_renew_redeem_date(
-                        request.POST.get('renew_redeem_date'))
+                    pawn.update_renew_redeem_date(renew_redeem_date)
+                print(f'Interest: {pawn.getInterest()}')
+                print(f'Advance Interest: {pawn.getAdvanceInterest()}')
+                print(f'Penalty: {pawn.getPenalty()}')
+                print(f'Interest + Penalty: {pawn.getInterestPlusPenalty()}')
         except Exception as e:
             print(e)
             error = str(e)
