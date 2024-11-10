@@ -269,7 +269,9 @@ class Pawn(models.Model):
 
     @staticmethod
     def advanceInterestRate(promise_date):
-        elapsed = abs((promise_date - timezone.now().date()).days)
+        elapsed = 0
+        if promise_date:
+            elapsed = abs((promise_date - timezone.now().date()).days)
         rate = AdvanceInterestRate.rates.get_rate(abs(elapsed))
         print(
             f"Promise Date: {promise_date}, Elapsed: {elapsed}, Rate: {rate}")
