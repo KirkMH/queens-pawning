@@ -334,8 +334,10 @@ class Pawn(models.Model):
 
     def getPenalty(self):
         if self.hasPenalty():
-            daysPenalty = Decimal(
-                str(self.getElapseDays() - TermDuration.get_instance().maturity))
+            daysPenalty = self.getElapseDays()
+            if self.transaction_type == 'EXISTING':
+                daysPenalty = Decimal(
+                    str(self.getElapseDays() - TermDuration.get_instance().maturity))
             print(f"Days Penalty: {daysPenalty}")
             other_fees = OtherFees.get_instance()
             deferred_fields = other_fees.get_deferred_fields()
