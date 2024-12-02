@@ -106,6 +106,10 @@ class Pawn(models.Model):
         choices=TRANSACTION_TYPE,
         default='NEW',
     )
+    pawn_ticket_number = models.PositiveBigIntegerField(
+        _('Pawn Ticket Number'),
+        null=True, blank=True
+    )
     date_encoded = models.DateField(_("Date encoded"), auto_now_add=True)
     date_granted = models.DateField(
         _("Date granted"),
@@ -230,8 +234,10 @@ class Pawn(models.Model):
 
     @property
     def getPTN(self):
-        '''return the first letter of the transaction_type, followed by a dash, then an 8-digit id number'''
-        return f"{self.transaction_type[0]}-{self.id:08d}"
+        if self.pawn_ticket_number:
+            return f"{self.pawn_ticket_number:06d} ({self.transaction_type[0]})"
+        else:
+            return f"{self.transaction_type[0]}-{self.id:06d}"
 
     @property
     def complete_description(self):

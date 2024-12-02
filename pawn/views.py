@@ -34,7 +34,8 @@ class PawnDTListView(ServerSideDatatableView):
     queryset = Pawn.objects.all()
     columns = ['pk', 'date_granted', 'client__contact_num', 'quantity', 'carat', 'color', 'item_description', 'description', 'grams',
                'principal', 'service_charge', 'advance_interest', 'net_proceeds', 'status',
-               'client__title', 'client__last_name', 'client__first_name', 'client__middle_name', 'transaction_type', 'branch__name', 'date_encoded']
+               'client__title', 'client__last_name', 'client__first_name', 'client__middle_name', 'transaction_type', 'branch__name',
+               'date_encoded', 'pawn_ticket_number']
 
     def get_queryset(self):
         print(f'GET: {self.request.GET}')
@@ -70,6 +71,7 @@ class PawnCreateView(CreateView):
         if client_pk:
             client = Client.objects.get(pk=client_pk)
             self.initial['client'] = client
+            print(f'client: {client}')
         context = super().get_context_data(**kwargs)
         context['otherFees'] = OtherFees.get_instance()
         return context

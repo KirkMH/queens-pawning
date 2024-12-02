@@ -95,9 +95,11 @@
                         name: 'ptn',
                         data: null,
                         render: function (data) {
-                            const ptn = String(data[0]).padStart(6, '0');
                             const type = data[18] == 'NEW' ? 'N' : 'E';
-                            return `${type}-${ptn}`
+                            let ptn = `${type}-${String(data[0]).padStart(6, '0')}`;
+                            if (data[21])
+                                ptn = `${String(data[21]).padStart(6, '0')} (${type})`;
+                            return ptn
                         }
                     },
                     {

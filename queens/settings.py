@@ -108,10 +108,14 @@ WSGI_APPLICATION = 'queens.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'queenspawnshopsy$default',
-        'USER': 'queenspawnshopsy',
-        'PASSWORD': 'Qp@$$w0rD',
-        'HOST': 'queenspawnshopsystem.mysql.pythonanywhere-services.com'
+        'NAME': 'django_queens',
+        'USER': 'root',
+        'PASSWORD': 'p@$$w0rD',
+        'HOST': 'localhost'
+        # 'NAME': 'queenspawnshopsy$default',
+        # 'USER': 'queenspawnshopsy',
+        # 'PASSWORD': 'Qp@$$w0rD',
+        # 'HOST': 'queenspawnshopsystem.mysql.pythonanywhere-services.com'
     }
 }
 

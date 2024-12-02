@@ -28,5 +28,7 @@ class PawnForm(forms.ModelForm):
         self.fields['date_granted'].initial = timezone.now().date()
         self.fields['client'].queryset = Client.objects.filter(status='ACTIVE')
         if self.request:
-            self.fields['client'].queryset = self.fields['client'].queryset.filter(
-                branch=Employee.objects.get(user=self.request.user).branch)
+            branch = Employee.objects.get(user=self.request.user).branch
+            if branch:
+                self.fields['client'].queryset = self.fields['client'].queryset.filter(
+                    branch=Employee.objects.get(user=self.request.user).branch)
