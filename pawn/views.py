@@ -73,7 +73,8 @@ class PawnCreateView(CreateView):
             self.initial['client'] = client
             print(f'client: {client}')
         context = super().get_context_data(**kwargs)
-        context['otherFees'] = OtherFees.get_instance()
+        # context['otherFees'] = OtherFees.get_instance()
+        # print(f'context: {context}')
         return context
 
     def get_form_kwargs(self):
@@ -86,18 +87,22 @@ class PawnCreateView(CreateView):
         if form.is_valid():
             employee = Employee.objects.get(user=request.user)
             pawn = form.save(commit=False)
+            if pawn.transaction_type == 'EXISTING':
+                self.promised_renewal_date = None
             pawn.branch = employee.branch
             pawn.save()
-            if pawn.transaction_type == 'NEW':
-                pawn.update_payment(
-                    employee, pawn.service_charge, pawn.advance_interest)
-                pawn.update_cash_position_new_ticket(
-                    employee, 'New pawn ticket')
+            pawn.update_renew_redeem_date()
+            # if pawn.transaction_type == 'NEW':
+            pawn.update_payment(
+                employee, pawn.service_charge, pawn.advance_interest)
+            pawn.update_cash_position_new_ticket(
+                employee, 'New pawn ticket')
             messages.success(
                 request, f"New pawn ticket for {pawn.client} was created successfully.")
             return redirect('pawn_detail', pk=pawn.pk)
 
         else:
+            # form['otherFees'] = OtherFees.get_instance()
             return render(request, 'pawn/pawn_form.html', {'form': form})
 
 
@@ -119,9 +124,10 @@ class PawnUpdateView(SuccessMessageMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         pawn = self.get_object()
         employee = Employee.objects.get(user=request.user)
-        if pawn.transaction_type == 'NEW':
-            pawn.update_cash_position_new_ticket(
-                employee, 'Updated new pawn ticket')
+        # if pawn.transaction_type == 'NEW':
+        # TODO: will need to update the reports too. Check if it exists in the report. If yes, update. Otherwise, create a new one.
+        pawn.update_cash_position_new_ticket(
+            employee, 'Updated pawn ticket', False)
         return super().post(request, *args, **kwargs)
 
 

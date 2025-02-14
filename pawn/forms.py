@@ -26,7 +26,12 @@ class PawnForm(forms.ModelForm):
         super(PawnForm, self).__init__(*args, **kwargs)
 
         self.fields['date_granted'].initial = timezone.now().date()
+        self.fields['promised_renewal_date'].initial = timezone.now().date()
+        self.fields['service_charge'].initial = OtherFees.get_instance().service_fee
+        print(
+            f'service charge via forms: {OtherFees.get_instance().service_fee}')
         self.fields['client'].queryset = Client.objects.filter(status='ACTIVE')
+        self.fields['promised_renewal_date'].required = True
         if self.request:
             branch = Employee.objects.get(user=self.request.user).branch
             if branch:

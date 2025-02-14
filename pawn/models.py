@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
+from django.db.models import Q
 from simple_history.models import HistoricalRecords
 
 from django.utils import timezone
@@ -260,11 +261,11 @@ class Pawn(models.Model):
         return self.date_granted + timezone.timedelta(days=expiration_days)
 
     def getElapseDays(self):
-        # self.update_renew_redeem_date()
+        self.update_renew_redeem_date()
         rrd = to_date(self.renew_redeem_date)
 
         if self.transaction_type == 'NEW':
-            return (rrd - to_date(self.promised_renewal_date)).days
+            return (rrd - to_date(self.promised_renewal_date)).days if self.promised_renewal_date else 0
         else:
             return (rrd - to_date(self.date_granted)).days
 
@@ -381,6 +382,7 @@ class Pawn(models.Model):
         return interest + self.getPenalty() + service_charge + adv_int + self.getAdditionalInterest()
 
     def pay(self, post, cashier):
+        new_ptn = post.get('new_ptn')
         amount_paid = Decimal(post.get('amtToPay'))
         otherFees = OtherFees.get_instance()
         paid_for_principal = Decimal(post.get('partial', '0'))
@@ -414,6 +416,7 @@ class Pawn(models.Model):
             new_pawn.transaction_type = self.transaction_type
             new_pawn.date_granted = self.renew_redeem_date
             new_pawn.client = self.client
+            new_pawn.pawn_ticket_number = new_ptn
             new_pawn.quantity = self.quantity
             new_pawn.carat = self.carat
             new_pawn.color = self.color
@@ -450,8 +453,11 @@ class Pawn(models.Model):
                 cashier, 'Redeemed', amount_paid)
 
     def update_payment(self, cashier, service_fee, advance_interest, amount_paid=0, paid_interest=0, penalty=0, paid_for_principal=0, discount_granted=0):
-        payment, created = Payment.objects.get_or_create(
-            pawn=self, cashier=cashier)
+        created = False
+        payment = Payment.objects.filter(pawn=self).first()
+        if (payment is None):
+            payment, created = Payment.objects.get_or_create(
+                pawn=self, cashier=cashier)
 
         payment.amount_paid = amount_paid
         payment.paid_interest = paid_interest
@@ -471,68 +477,109 @@ class Pawn(models.Model):
             renewal = self.date_granted
         return renewal
 
-    def update_receipts(self, cashier, description, amount):
-        cash_position, _ = DailyCashPosition.objects.get_or_create(
+    def update_receipts(self, cashier, description, amount, new_entry=True, ticket=None):
+        ticket = self if ticket is None else ticket
+        receipt = None
+        date = timezone.now().date() if new_entry else self.date_granted
+        print(f'new entry? {new_entry}')
+        print(f'date: {date}')
+        cash_position, created = DailyCashPosition.objects.get_or_create(
             branch=self.branch,
-            date=timezone.now().date(),
-            prepared_by=cashier
+            date=date
         )
-        receipt, _ = AddReceipts.objects.get_or_create(
+        print(f'cash position created? {created}')
+        print(f'cash position: {cash_position}')
+        receipts = AddReceipts.objects.filter(
             daily_cash_position=cash_position,
-            reference_number=self.pk,
             pawn=self
         )
+        if receipts.exists():
+            receipts.delete()
+        receipt, created = AddReceipts.objects.get_or_create(
+            daily_cash_position=cash_position,
+            pawn=self
+        )
+        print(f'receipt created? {created}')
+        print(f'receipt: {receipt}')
+        if new_entry:
+            cash_position.prepared_by = cashier
+            cash_position.save()
+
+        receipt.reference_number = ticket.getPTN
         receipt.received_from = self.client.full_name
         receipt.particulars = description
         receipt.amount = amount
         receipt.automated = True
         receipt.save()
+        print(f'Receipt amount set to: {receipt.amount}')
         return receipt
 
-    def update_disbursements(self, cashier, description, amount):
-        cash_position, _ = DailyCashPosition.objects.get_or_create(
+    def update_disbursements(self, cashier, description, amount, new_entry=True, ticket=None):
+        ticket = self if ticket is None else ticket
+        disbursement = None
+        date = timezone.now().date() if new_entry else self.date_granted
+        cash_position, created = DailyCashPosition.objects.get_or_create(
             branch=self.branch,
-            date=timezone.now().date(),
-            prepared_by=cashier
+            date=date
         )
-        disbursement, _ = LessDisbursements.objects.get_or_create(
+        print(f'cash position created? {created}')
+        print(f'cash position: {cash_position}')
+        disbursements = LessDisbursements.objects.filter(
             daily_cash_position=cash_position,
-            reference_number=self.pk,
             pawn=self
         )
+        if disbursements.exists():
+            disbursements.delete()
+        disbursement, created = LessDisbursements.objects.get_or_create(
+            daily_cash_position=cash_position,
+            pawn=self
+        )
+        print(f'disbursement created? {created}')
+        print(f'disbursement: {disbursement}')
+        if new_entry:
+            cash_position.prepared_by = cashier
+            cash_position.save()
+
+        disbursement.reference_number = ticket.getPTN
         disbursement.payee = self.client.full_name
         disbursement.particulars = description
         disbursement.amount = amount
         disbursement.automated = True
         disbursement.save()
+        print(f'Disbursement amount set to: {disbursement.amount}')
         return disbursement
 
-    def update_cash_position_new_ticket(self, cashier, description):
-        receipt = None
-        disbursement = None
-        if self.transaction_type == 'NEW':
-            receipt = self.update_receipts(
-                cashier, description, self.advance_interest)
-            d_amt = self.principal - self.service_charge
-            disbursement = self.update_disbursements(
-                cashier, description, d_amt)
-        return (receipt, disbursement)
+    def update_cash_position_new_ticket(self, cashier, description, new_entry=True):
+        # receipt = None
+        # disbursement = None
+        # # if self.transaction_type == 'NEW':
+        # receipt = self.update_receipts(
+        #     cashier, description, self.advance_interest)
+        # d_amt = self.principal - self.service_charge
+        # disbursement = self.update_disbursements(
+        #     cashier, description, d_amt)
+        # return (receipt, disbursement)
+        return self.update_cash_position_renew_ticket(cashier, description, self, new_entry)
 
-    def update_cash_position_renew_ticket(self, cashier, description, new_ticket):
+    def update_cash_position_renew_ticket(self, cashier, description, new_ticket, new_entry=True):
         receipt = None
         disbursement = None
         total_interest = 0
         if self.transaction_type == 'NEW':
-            total_interest = new_ticket.advance_interest
+            total_interest = new_ticket.advance_interest  # avd interest must be deducted
         else:
             total_interest = self.getInterest()
 
-        r_amt = self.principal + total_interest + self.getPenalty()
+        # RECEIPT: new -- interest only; renew -- old principal + interest + penalty
+        if self.renewed_to:
+            r_amt = self.principal + total_interest + self.getPenalty()
+        else:
+            r_amt = total_interest
         receipt = self.update_receipts(
-            cashier, description, r_amt)
+            cashier, description, r_amt, new_entry)
         d_amt = new_ticket.principal - new_ticket.service_charge
         disbursement = self.update_disbursements(
-            cashier, description, d_amt)
+            cashier, description, d_amt, new_entry)
         return (receipt, disbursement)
 
     def is_pawned_today(self):

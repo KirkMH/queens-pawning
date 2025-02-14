@@ -68,6 +68,7 @@ New Pawn
         $(document).ready(function() {
             const id = "{{ client.id }}" || null;
             const serviceCharge = parseFloat("{{ otherFees.service_fee }}") || 0;
+            console.log(`serviceCharge: ${serviceCharge}`);
 
             $("#id_service_charge").prop('readonly', true);
             $("#id_advance_interest").prop('readonly', true);
@@ -78,6 +79,7 @@ New Pawn
 
             function process_transaction_type() {
                 const transactionType = $("#id_transaction_type").val();
+                console.log(`transactionType: ${transactionType}`);
                 if (transactionType === "NEW") {
                     $("#id_promised_renewal_date").prop('required', true);
                     $("#id_promised_renewal_date").parent().parent().show();
@@ -123,7 +125,8 @@ New Pawn
             process_transaction_type();
 
             // set the service charge and advance interest
-            $("#id_service_charge").val(serviceCharge.toFixed(2));
+            console.log(`serviceCharge: ${serviceCharge.toFixed(2)}`);
+            // $("#id_service_charge").val(serviceCharge.toFixed(2));
 
             function computeNetProceeds() {
                 const principal = parseFloat($("#id_principal").val()) || 0;
