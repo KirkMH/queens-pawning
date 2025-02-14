@@ -31,7 +31,7 @@ class PawnForm(forms.ModelForm):
         print(
             f'service charge via forms: {OtherFees.get_instance().service_fee}')
         self.fields['client'].queryset = Client.objects.filter(status='ACTIVE')
-        self.fields['promised_renewal_date'].required = True
+        # self.fields['promised_renewal_date'].required = True
         if self.request:
             branch = Employee.objects.get(user=self.request.user).branch
             if branch:

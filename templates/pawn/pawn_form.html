@@ -81,13 +81,13 @@ New Pawn
                 const transactionType = $("#id_transaction_type").val();
                 console.log(`transactionType: ${transactionType}`);
                 if (transactionType === "NEW") {
-                    $("#id_promised_renewal_date").prop('required', true);
                     $("#id_promised_renewal_date").parent().parent().show();
+                    $("#id_promised_renewal_date").prop('required', true);
                     $("#id_advance_interest").parent().parent().show();
                     $("#id_date_granted").parent().parent().hide();
                 } else {
                     $("#id_promised_renewal_date").prop('required', false);
-                    $("#id_promised_renewal_date").parent().parent().hide();
+                    // $("#id_promised_renewal_date").parent().parent().hide();
                     $("#id_advance_interest").val(0);
                     $("#id_advance_interest").parent().parent().hide();
                     $("#id_date_granted").parent().parent().show();
