@@ -22,7 +22,7 @@ from .forms import *
 
 @login_required
 def pawn_list(request):
-    selected_filter = request.GET.get('filter') or 'Active'
+    selected_filter = request.GET.get('filter') or 'All'
     # capitalize first letter
     selected_filter = selected_filter[0].upper() + selected_filter[1:]
     context = {'selected_filter': selected_filter}
