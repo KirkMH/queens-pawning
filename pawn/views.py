@@ -400,10 +400,13 @@ def calculate_advance_interest(request):
     advance_interest_rate = 0
     try:
         print(f'Calculating advance interest for {request.GET}')
+        date_granted = datetime.strptime(
+            request.GET['date_granted'], '%Y-%m-%d').date()
         promised_date = datetime.strptime(
             request.GET['promised_date'], '%Y-%m-%d').date()
         principal = float(request.GET['principal'])
-        advance_interest_rate = Pawn.advanceInterestRate(promised_date)
+        advance_interest_rate = Pawn.advanceInterestRate(
+            promised_date, date_granted)
         advance_interest = principal * (advance_interest_rate / 100)
     except Exception as e:
         print(e)

@@ -277,10 +277,11 @@ class Pawn(models.Model):
         return rate if rate else 0
 
     @staticmethod
-    def advanceInterestRate(promise_date):
+    def advanceInterestRate(promise_date, date_granted=None):
         elapsed = 0
+        date_granted = timezone.now().date() if date_granted is None else date_granted
         if promise_date:
-            elapsed = abs((promise_date - timezone.now().date()).days)
+            elapsed = abs((promise_date - date_granted).days)
         rate = AdvanceInterestRate.rates.get_rate(abs(elapsed))
         print(
             f"Promise Date: {promise_date}, Elapsed: {elapsed}, Rate: {rate}")
@@ -483,7 +484,7 @@ class Pawn(models.Model):
     def update_receipts(self, cashier, description, amount, new_entry=True, ticket=None):
         ticket = self if ticket is None else ticket
         receipt = None
-        date = timezone.now().date() if new_entry else ticket.date_granted
+        date = ticket.date_granted
         if description == "Redeemed" and self.renew_redeem_date is not None:
             date = self.renew_redeem_date
         print(f'new entry? {new_entry}')
@@ -523,7 +524,7 @@ class Pawn(models.Model):
     def update_disbursements(self, cashier, description, amount, new_entry=True, ticket=None):
         ticket = self if ticket is None else ticket
         disbursement = None
-        date = timezone.now().date() if new_entry else ticket.date_granted
+        date = ticket.date_granted
         cash_position, created = DailyCashPosition.objects.get_or_create(
             branch=self.branch,
             date=date

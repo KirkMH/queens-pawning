@@ -16,6 +16,8 @@ const calculate = async () => {
   console.log(`advIntUri: ${advIntUri}`);
   const promisedDate = $("#promised_renewal_date").val();
   console.log(`promisedDate: ${promisedDate}`);
+  const date_granted = $("#date_granted").val();
+  console.log(`date_granted: ${date_granted}`);
 
   let discount = parseFloat($("#discount").val()) || 0;
   console.log(`discount: ${discount}`);
@@ -50,7 +52,9 @@ const calculate = async () => {
           "?principal=" +
           newPrincipal +
           "&promised_date=" +
-          promisedDate
+          promisedDate +
+          "&date_granted=" +
+          date_granted
       );
       if (!response.ok) {
         $("#advanceInterest").val("0.00");

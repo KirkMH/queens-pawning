@@ -67,7 +67,7 @@ New Pawn
     <script>
         $(document).ready(function() {
             const id = "{{ client.id }}" || null;
-            const serviceCharge = parseFloat("{{ otherFees.service_fee }}") || 0;
+            const serviceCharge = parseFloat($("#id_service_charge").val()) || 0;
             console.log(`serviceCharge: ${serviceCharge}`);
 
             $("#id_service_charge").prop('readonly', true);
@@ -84,13 +84,10 @@ New Pawn
                     $("#id_promised_renewal_date").parent().parent().show();
                     $("#id_promised_renewal_date").prop('required', true);
                     $("#id_advance_interest").parent().parent().show();
-                    $("#id_date_granted").parent().parent().hide();
                 } else {
                     $("#id_promised_renewal_date").prop('required', false);
-                    // $("#id_promised_renewal_date").parent().parent().hide();
                     $("#id_advance_interest").val(0);
                     $("#id_advance_interest").parent().parent().hide();
-                    $("#id_date_granted").parent().parent().show();
                 }
             }
 
@@ -99,13 +96,14 @@ New Pawn
                 const transactionType = $("#id_transaction_type").val();
                 const principal = parseFloat($("#id_principal").val()) || 0;
                 const promised_date = $("#id_promised_renewal_date").val();
+                const date_granted = $("#id_date_granted").val();
                 let advInt = 0;
                 console.log(`transactionType: ${transactionType}`);
                 console.log(`principal: ${principal}`);
                 console.log(`promised_date: ${promised_date}`);
                 if (transactionType === "NEW" && promised_date) {
                     console.log("Fetching advance interest");
-                    fetch("{% url 'calculate_advance_interest' %}?principal=" + principal + "&promised_date=" + promised_date)
+                    fetch("{% url 'calculate_advance_interest' %}?principal=" + principal + "&promised_date=" + promised_date + "&date_granted=" + date_granted)
                         .then(response => response.json())
                         .then(data => {
                             console.log(`result: ${JSON.stringify(data)}`)
@@ -132,6 +130,7 @@ New Pawn
                 const principal = parseFloat($("#id_principal").val()) || 0;
                 const advInt = $("#id_advance_interest").val() || 0;
                 const netProceeds = principal - serviceCharge - advInt;
+                console.log(`principal: ${principal}, advInt: ${advInt}, serviceCharge: ${serviceCharge}, netProceeds: ${netProceeds}`);
                 $("#id_net_proceeds").val(netProceeds.toFixed(2));
             }
             // call computeNetProceeds() when principal is changed
