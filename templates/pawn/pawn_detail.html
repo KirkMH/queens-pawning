@@ -57,7 +57,7 @@
                         <div class="row">
                             <div class="col-lg-12">
                                 <a href="#" class="btn btn-primary card-link">Print</a>
-                                {% if not pawn.payment_pawn and pawn.is_pawned_today %}
+                                {% if not pawn.payment_pawn and not user.employee.branch or pawn.is_encoded_today %}
                                 <a href="{% url 'edit_pawn' pawn.pk %}" class="btn btn-warning card-link">Edit</a>
                                 {% endif %}
                                 {% if 'from' in request.GET %}

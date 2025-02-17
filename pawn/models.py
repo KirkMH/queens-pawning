@@ -564,6 +564,12 @@ class Pawn(models.Model):
         else:
             total_interest = self.getInterest()
 
+        # check if this is a renewed ticket
+        mother_ticket = Pawn.objects.filter(
+            id=self.pawn_renewed_to).first()
+        if mother_ticket:
+            total_interest += mother_ticket.getInterest()
+
         # RECEIPT: new -- interest only; renew -- old principal + interest + penalty
         if self.renewed_to:
             r_amt = self.principal + total_interest + self.getPenalty()
@@ -578,6 +584,9 @@ class Pawn(models.Model):
 
     def is_pawned_today(self):
         return self.date_granted == timezone.now().date()
+
+    def is_encoded_today(self):
+        return self.date_encoded == timezone.now().date()
 
     def update_renew_redeem_date(self, date=None):
         if self.status == 'ACTIVE':

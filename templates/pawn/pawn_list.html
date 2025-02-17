@@ -81,10 +81,10 @@
                             pawnDate.setHours(0, 0, 0, 0);
                             const today = new Date();
                             today.setHours(0, 0, 0, 0);
-                            const is_pawn_date_today = pawnDate.getTime() === today.getTime();
+                            const is_encoded_today = pawnDate.getTime() === today.getTime();
                             
                             let links = `<a href="/pawn/${data[0]}/detail" title="Detail"><i class="far fa-eye"></i></a>`;
-                            if (!is_cashier || (is_cashier && is_pawn_date_today)) {
+                            if (!is_cashier || (is_cashier && is_encoded_today)) {
                                 links += ` | <a href="/pawn/${data[0]}/edit" title="Update"><i class="far fa-edit"></i></a>`;
                             }
                             return links;

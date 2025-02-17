@@ -124,8 +124,6 @@ class PawnUpdateView(SuccessMessageMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         pawn = self.get_object()
         employee = Employee.objects.get(user=request.user)
-        # if pawn.transaction_type == 'NEW':
-        # TODO: will need to update the reports too. Check if it exists in the report. If yes, update. Otherwise, create a new one.
         pawn.update_cash_position_new_ticket(
             employee, 'Updated pawn ticket', False)
         return super().post(request, *args, **kwargs)
