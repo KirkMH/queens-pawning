@@ -487,20 +487,20 @@ class Pawn(models.Model):
         print(f'new entry? {new_entry}')
         print(f'date: {date}')
         cash_position, created = DailyCashPosition.objects.get_or_create(
-            branch=self.branch,
+            branch=ticket.branch,
             date=date
         )
         print(f'cash position created? {created}')
         print(f'cash position: {cash_position}')
         receipts = AddReceipts.objects.filter(
             daily_cash_position=cash_position,
-            pawn=self
+            pawn=ticket
         )
         if receipts.exists():
             receipts.delete()
         receipt, created = AddReceipts.objects.get_or_create(
             daily_cash_position=cash_position,
-            pawn=self
+            pawn=ticket
         )
         print(f'receipt created? {created}')
         print(f'receipt: {receipt}')
@@ -509,7 +509,7 @@ class Pawn(models.Model):
             cash_position.save()
 
         receipt.reference_number = ticket.getPTN
-        receipt.received_from = self.client.full_name
+        receipt.received_from = ticket.client.full_name
         receipt.particulars = description
         receipt.amount = amount
         receipt.automated = True
@@ -529,13 +529,13 @@ class Pawn(models.Model):
         print(f'cash position: {cash_position}')
         disbursements = LessDisbursements.objects.filter(
             daily_cash_position=cash_position,
-            pawn=self
+            pawn=ticket
         )
         if disbursements.exists():
             disbursements.delete()
         disbursement, created = LessDisbursements.objects.get_or_create(
             daily_cash_position=cash_position,
-            pawn=self
+            pawn=ticket
         )
         print(f'disbursement created? {created}')
         print(f'disbursement: {disbursement}')
@@ -544,7 +544,7 @@ class Pawn(models.Model):
             cash_position.save()
 
         disbursement.reference_number = ticket.getPTN
-        disbursement.payee = self.client.full_name
+        disbursement.payee = ticket.client.full_name
         disbursement.particulars = description
         disbursement.amount = amount
         disbursement.automated = True
@@ -564,11 +564,11 @@ class Pawn(models.Model):
         else:
             total_interest = self.getInterest()
 
-        # check if this is a renewed ticket
-        mother_ticket = Pawn.objects.filter(
-            id=self.pawn_renewed_to).first()
-        if mother_ticket:
-            total_interest += mother_ticket.getInterest()
+        # # check if this is a renewed ticket
+        # mother_ticket = Pawn.objects.filter(
+        #     id=self.pawn_renewed_to).first()
+        # if mother_ticket:
+        #     total_interest += mother_ticket.getInterest()
 
         # RECEIPT: new -- interest only; renew -- old principal + interest + penalty
         if self.renewed_to:
@@ -587,6 +587,17 @@ class Pawn(models.Model):
 
     def is_encoded_today(self):
         return self.date_encoded == timezone.now().date()
+
+    def renewed_from(self):
+        mother = Pawn.objects.filter(
+            renewed_to=self).first()
+        print(f"Mother ticket: {mother}")
+        return mother
+
+    def is_pawn_edittable(self):
+        return self.renewed_from is None and self.payment_pawn is None and (
+            self.request.user.employee.branch is None or self.is_encoded_today()
+        )
 
     def update_renew_redeem_date(self, date=None):
         if self.status == 'ACTIVE':

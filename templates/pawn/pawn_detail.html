@@ -27,6 +27,9 @@
                             <div class="col-lg-12">                                
                                 <h4>{{ pawn.complete_description }}</h4>
                                 <h5 class="card-subtitle mb-2 text-muted">Under {{ pawn.client }}</h5>
+                                {% if pawn.renewed_from %}
+                                <p class="card-text">Renewed from <a href="{% url 'pawn_detail' pawn.renewed_from.pk  %}">Pawn Ticket # {{ pawn.renewed_from.getPTN }}</a></p>
+                                {% endif %}
                                 <hr />
                             </div>
                         </div>
@@ -57,9 +60,14 @@
                         <div class="row">
                             <div class="col-lg-12">
                                 <a href="#" class="btn btn-primary card-link">Print</a>
-                                {% if not pawn.payment_pawn and not user.employee.branch or pawn.is_encoded_today %}
+                                {% if pawn.is_edittable %}
                                 <a href="{% url 'edit_pawn' pawn.pk %}" class="btn btn-warning card-link">Edit</a>
                                 {% endif %}
+                                {% if not pawn.payment_pawn and not user.employee.branch %}
+                                <button id="delete_pawn" type="button" class="btn btn-danger card-link">Delete</button>
+                                <form id="delete-form" action="{% url 'delete_pawn' pawn.pk %}" method="POST" style="display: none;">{% csrf_token %}</form>
+                                {% endif %}
+                                &nbsp;&nbsp;&nbsp;
                                 {% if 'from' in request.GET %}
                                 <a href="{{ request.GET.from }}" class="btn btn-default card-link">Back to list</a>
                                 {% else %}
@@ -209,6 +217,27 @@
     <script src="{% static 'js/pawn.js' %}"></script>
     <script>
         $(document).ready(function() {
+            
+            $("#delete_pawn").click(function() {
+                bootbox.confirm({
+                    message: "Are you sure you want to delete this ticket?",
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-danger'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-default'
+                        }
+                    },
+                    callback: function (result) {
+                        if (!result) return;
+                        $("#delete-form").submit();
+                    }
+                });
+            });
+
             $("#menu-transactions").addClass("active")
         })
     </script>

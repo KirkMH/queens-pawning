@@ -145,6 +145,39 @@ class PawnDetailView(DetailView):
 
 
 @login_required
+def delete_pawn(request, pk):
+    pawn = Pawn.objects.get(pk=pk)
+
+    # update the mother ticket, if exists
+    mother = pawn.renewed_from()
+    print(f'mother: {type(mother)}')
+    if mother:
+        # delete payment from mother ticket
+        payment = Payment.objects.filter(pawn=mother.pk).first()
+        payment.delete()
+
+        # reset the status of the mother ticket
+        mother.renewed_to = None
+        mother.renew_redeem_date = None
+        mother.status = 'ACTIVE'
+        mother.status_updated_on = timezone.now()
+        mother.save()
+
+    # delete from receipts of cash position
+    pawn.receipts.all().delete()
+
+    # delete from disbursements of cash position
+    pawn.disbursements.all().delete()
+
+    # delete this pawn
+    pawn.delete()
+
+    messages.success(
+        request, f"Pawn ticket for {pawn.client} was successfully deleted.")
+    return redirect('pawn_detail', pk=mother.pk)
+
+
+@login_required
 def update_renew_redeem_date(request, pk):
     error = None
     status = 'success'
