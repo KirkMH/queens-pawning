@@ -452,7 +452,7 @@ class Pawn(models.Model):
             )
         elif self.status == 'REDEEMED':
             self.update_receipts(
-                cashier, 'Redeemed', amount_paid, new_entry=False)
+                cashier, 'Redeemed', amount_paid, new_entry=True)
 
     def update_payment(self, cashier, service_fee, advance_interest, amount_paid=0, paid_interest=0, penalty=0, paid_for_principal=0, discount_granted=0):
         created = False
@@ -484,8 +484,11 @@ class Pawn(models.Model):
         ticket = self if ticket is None else ticket
         receipt = None
         date = timezone.now().date() if new_entry else ticket.date_granted
+        if description == "Redeemed" and self.renew_redeem_date is not None:
+            date = self.renew_redeem_date
         print(f'new entry? {new_entry}')
         print(f'date: {date}')
+        print(f'ticket: {ticket}')
         cash_position, created = DailyCashPosition.objects.get_or_create(
             branch=ticket.branch,
             date=date
@@ -493,7 +496,7 @@ class Pawn(models.Model):
         print(f'cash position created? {created}')
         print(f'cash position: {cash_position}')
         receipts = AddReceipts.objects.filter(
-            daily_cash_position=cash_position,
+            # daily_cash_position=cash_position,
             pawn=ticket
         )
         if receipts.exists():
@@ -528,7 +531,7 @@ class Pawn(models.Model):
         print(f'cash position created? {created}')
         print(f'cash position: {cash_position}')
         disbursements = LessDisbursements.objects.filter(
-            daily_cash_position=cash_position,
+            # daily_cash_position=cash_position,
             pawn=ticket
         )
         if disbursements.exists():
