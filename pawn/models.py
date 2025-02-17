@@ -20,7 +20,8 @@ def to_date(value):
     elif isinstance(value, date):
         return value  # It's already a date
     else:
-        raise ValueError("Input must be a datetime or date object.")
+        raise ValueError(
+            "Input must be a datetime or date object. Received: '{}'".format(value))
 
 
 def validate_date_granted(value):
@@ -107,8 +108,9 @@ class Pawn(models.Model):
         choices=TRANSACTION_TYPE,
         default='NEW',
     )
-    pawn_ticket_number = models.PositiveBigIntegerField(
+    pawn_ticket_number = models.CharField(
         _('Pawn Ticket Number'),
+        max_length=20,
         null=True, blank=True
     )
     date_encoded = models.DateField(_("Date encoded"), auto_now_add=True)
@@ -236,7 +238,7 @@ class Pawn(models.Model):
     @property
     def getPTN(self):
         if self.pawn_ticket_number:
-            return f"{self.pawn_ticket_number:06d} ({self.transaction_type[0]})"
+            return f"{self.pawn_ticket_number} ({self.transaction_type[0]})"
         else:
             return f"{self.transaction_type[0]}-{self.id:06d}"
 
@@ -446,11 +448,11 @@ class Pawn(models.Model):
         # update daily cash position
         if self.status == 'RENEWED':
             self.update_cash_position_renew_ticket(
-                cashier, 'Renewed pawn ticket', new_pawn
+                cashier, 'Renewed pawn ticket', new_pawn, new_entry=False
             )
         elif self.status == 'REDEEMED':
             self.update_receipts(
-                cashier, 'Redeemed', amount_paid)
+                cashier, 'Redeemed', amount_paid, new_entry=False)
 
     def update_payment(self, cashier, service_fee, advance_interest, amount_paid=0, paid_interest=0, penalty=0, paid_for_principal=0, discount_granted=0):
         created = False
@@ -459,6 +461,7 @@ class Pawn(models.Model):
             payment, created = Payment.objects.get_or_create(
                 pawn=self, cashier=cashier)
 
+        payment.payment_date = self.renew_redeem_date
         payment.amount_paid = amount_paid
         payment.paid_interest = paid_interest
         payment.penalty = penalty
@@ -480,7 +483,7 @@ class Pawn(models.Model):
     def update_receipts(self, cashier, description, amount, new_entry=True, ticket=None):
         ticket = self if ticket is None else ticket
         receipt = None
-        date = timezone.now().date() if new_entry else self.date_granted
+        date = timezone.now().date() if new_entry else ticket.date_granted
         print(f'new entry? {new_entry}')
         print(f'date: {date}')
         cash_position, created = DailyCashPosition.objects.get_or_create(
@@ -517,7 +520,7 @@ class Pawn(models.Model):
     def update_disbursements(self, cashier, description, amount, new_entry=True, ticket=None):
         ticket = self if ticket is None else ticket
         disbursement = None
-        date = timezone.now().date() if new_entry else self.date_granted
+        date = timezone.now().date() if new_entry else ticket.date_granted
         cash_position, created = DailyCashPosition.objects.get_or_create(
             branch=self.branch,
             date=date
@@ -550,15 +553,6 @@ class Pawn(models.Model):
         return disbursement
 
     def update_cash_position_new_ticket(self, cashier, description, new_entry=True):
-        # receipt = None
-        # disbursement = None
-        # # if self.transaction_type == 'NEW':
-        # receipt = self.update_receipts(
-        #     cashier, description, self.advance_interest)
-        # d_amt = self.principal - self.service_charge
-        # disbursement = self.update_disbursements(
-        #     cashier, description, d_amt)
-        # return (receipt, disbursement)
         return self.update_cash_position_renew_ticket(cashier, description, self, new_entry)
 
     def update_cash_position_renew_ticket(self, cashier, description, new_ticket, new_entry=True):
@@ -576,10 +570,10 @@ class Pawn(models.Model):
         else:
             r_amt = total_interest
         receipt = self.update_receipts(
-            cashier, description, r_amt, new_entry)
+            cashier, description, r_amt, new_entry, new_ticket)
         d_amt = new_ticket.principal - new_ticket.service_charge
         disbursement = self.update_disbursements(
-            cashier, description, d_amt, new_entry)
+            cashier, description, d_amt, new_entry, new_ticket)
         return (receipt, disbursement)
 
     def is_pawned_today(self):
@@ -587,13 +581,17 @@ class Pawn(models.Model):
 
     def update_renew_redeem_date(self, date=None):
         if self.status == 'ACTIVE':
-            self.renew_redeem_date = date if date else timezone.now()
+            if date is not None:
+                self.renew_redeem_date = date
+            elif self.renew_redeem_date is None:
+                self.renew_redeem_date = timezone.now()
             self.save()
             print(f'updated renew_redeem_date: {self.renew_redeem_date}')
 
 
 class Payment(models.Model):
     date = models.DateTimeField(auto_now_add=True)
+    payment_date = models.DateField(null=True, blank=True)
     pawn = models.OneToOneField(
         Pawn,
         on_delete=models.CASCADE,
