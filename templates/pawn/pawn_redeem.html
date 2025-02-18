@@ -91,7 +91,7 @@
 
 
 {% block js %}
-    <script src="{% static 'js/pawn.js' %}"></script>
+    <script src="{% static 'js/pawn.js' %}?v={{ now|date:'U'}}"></script>
     <script>
         $(document).ready(function() {
             const origDate = "{{ pawn.renew_redeem_date|date:'Y-m-d' }}";

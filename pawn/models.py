@@ -288,13 +288,15 @@ class Pawn(models.Model):
         return rate if rate else 0
 
     def getAdvanceInterestRate(self):
-        return Pawn.advanceInterestRate(self.promised_renewal_date)
+        return Pawn.advanceInterestRate(self.promised_renewal_date, self.date_granted)
 
     def getInterest(self):
-        interest = 0
-        if self.transaction_type == 'EXISTING':
-            interest = self.principal * \
-                Decimal(str((self.getInterestRate() / 100)))
+        # interest = 0
+        # if self.transaction_type == 'EXISTING':
+        interest = self.principal * \
+            Decimal(str((self.getInterestRate() / 100)))
+        if self.transaction_type == 'NEW' and interest >= self.advance_interest:
+            interest = 0
         return interest
 
     def getAdditionalInterest(self):
@@ -303,7 +305,7 @@ class Pawn(models.Model):
         if self.transaction_type == 'NEW':
             interest = self.principal * \
                 Decimal(
-                    str((Pawn.advanceInterestRate(self.date_granted) / 100)))
+                    str((Pawn.advanceInterestRate(self.promised_renewal_date, self.date_granted) / 100)))
             print(f"Interest: {interest}")
             print(f"Current Advance Interest: {self.advance_interest}")
             if interest > self.advance_interest:
@@ -398,7 +400,8 @@ class Pawn(models.Model):
         if post.get('promised_renewal_date'):
             promised_date = timezone.datetime.strptime(
                 post.get('promised_renewal_date'), '%Y-%m-%d').date()
-            adv_interest_rate = Pawn.advanceInterestRate(promised_date)
+            adv_interest_rate = Pawn.advanceInterestRate(
+                promised_date, self.date_granted)
             adv_interest = (self.principal - paid_for_principal +
                             additional_principal) * Decimal(adv_interest_rate / 100)
         service_fee = 0

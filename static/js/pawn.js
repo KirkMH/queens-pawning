@@ -16,8 +16,12 @@ const calculate = async () => {
   console.log(`advIntUri: ${advIntUri}`);
   const promisedDate = $("#promised_renewal_date").val();
   console.log(`promisedDate: ${promisedDate}`);
-  const date_granted = $("#date_granted").val();
+  let date_granted = $("#date_granted").val();
+  const renew_date = $("#renew").val();
   console.log(`date_granted: ${date_granted}`);
+  console.log(`renew_date: ${renew_date}`);
+
+  if (renew_date) date_granted = renew_date;
 
   let discount = parseFloat($("#discount").val()) || 0;
   console.log(`discount: ${discount}`);
