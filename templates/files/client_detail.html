@@ -73,7 +73,7 @@
                         <tbody>
                             {% for pawn in pawns %}
                             <tr>
-                                <td>{{ pawn.getPTN }}</td>
+                                <td><a href="{% url 'pawn_detail' pawn.pk %}">{{ pawn.getPTN }}</a></td>
                                 <td>{{ pawn.date_granted|date:"F d, Y" }}</td>
                                 <td>{{ pawn.complete_description }}</td>
                                 <td class="text-right">{{ pawn.principal|peso }}</td>
