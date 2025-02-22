@@ -295,7 +295,7 @@ class Pawn(models.Model):
         # if self.transaction_type == 'EXISTING':
         interest = self.principal * \
             Decimal(str((self.getInterestRate() / 100)))
-        if self.transaction_type == 'NEW' and interest >= self.advance_interest:
+        if self.transaction_type == 'NEW':  # and interest >= self.advance_interest:
             interest = 0
         return interest
 
