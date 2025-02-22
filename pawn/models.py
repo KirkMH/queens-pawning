@@ -356,12 +356,22 @@ class Pawn(models.Model):
             if 'penalty_rate' in deferred_fields:
                 other_fees.refresh_from_db(fields=['penalty_rate'])
             penalty_rate = other_fees.penalty_rate
+            penalty = abs(self.principal * Decimal(penalty_rate / 100)
+                          * Decimal(daysPenalty / 30))
 
-            return abs(self.principal * Decimal(penalty_rate / 100) * Decimal(daysPenalty / 30))
+            print(f"Penalty Rate: {penalty_rate}")
+            print(f"Penalty: {penalty}")
+
+            return penalty
         return 0
 
     def getInterestPlusPenalty(self):
-        return self.getInterest() + self.getPenalty() + self.getAdditionalInterest()
+        interest = self.getInterest()
+        penalty = self.getPenalty()
+        addInt = self.getAdditionalInterest()
+        print(
+            f"Interest: {interest}, Penalty: {penalty}, Additional Interest: {addInt}")
+        return interest + penalty + addInt
 
     def getPrincipalPlusInterest(self):
         return self.principal + self.getInterest()
