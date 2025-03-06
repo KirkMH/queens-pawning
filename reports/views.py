@@ -394,28 +394,23 @@ def remove_other_cash_count(request, pk):
 
 def generate_auction_report(employee: Employee):
     branch = employee.branch
-    expiration_days = TermDuration.get_instance().expiration
-    expiration_delta = timezone.timedelta(days=expiration_days)
 
-    report = Pawn.objects.annotate(
-        expiration_date=ExpressionWrapper(
-            F('date_granted') + Value(expiration_delta),
-            output_field=fields.DateField()
-        )
-    ).filter(
-        expiration_date__gte=timezone.now().date(),
-        expiration_date__month=timezone.now().month,
-        on_hold=False
+    filtered = Pawn.objects.filter(
+        on_hold=False,
+        status='ACTIVE'
     )
-    # get the pk of report and filter by it
-    pks = report.values_list('pk', flat=True)
-    report = Pawn.objects.filter(pk__in=pks)
-
+    report = []
+    for r in filtered:
+        print(
+            f'PTN: {r.getPTN}, {r.date_granted}, {r.expiration_date}, {r.on_hold}, {r.status}, {r.branch}')
+        if r.status == 'ACTIVE' and r.hasExpired() and not r.on_hold and (branch and r.branch == branch):
+            report.append(r)
+            print('...added')
+    print(f'Report: {report}')
+    print(f'Branch: {branch}')
     if not branch:
         branch = 'All Branches'
-        report = report.all()
     else:
-        report = report.filter(branch=branch)
         branch = branch.name + ' Branch'
 
     return report, branch
@@ -426,7 +421,7 @@ def auction_report(request):
     employee = Employee.objects.get(user=request.user)
     report, branch = generate_auction_report(employee)
     print(report)
-    principal_total = report.aggregate(Sum('principal'))['principal__sum']
+    principal_total = sum([pawn.principal for pawn in report])
     interest_total = sum([pawn.getAuctionInterest() for pawn in report])
     grand_total = principal_total + interest_total
 
@@ -443,6 +438,16 @@ def auction_report(request):
         return render(request, 'reports/auction_overall.html', context)
     else:
         return render(request, 'reports/auction_branch.html', context)
+
+
+def auction_now(request):
+    employee = Employee.objects.get(user=request.user)
+    report, branch = generate_auction_report(employee)
+    for pawn in report:
+        pawn.auction()
+    messages.success(
+        request, f"Items were set to auction successfully.")
+    return redirect('auction_report')
 
 
 @login_required

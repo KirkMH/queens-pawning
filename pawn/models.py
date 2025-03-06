@@ -324,6 +324,7 @@ class Pawn(models.Model):
 
     def hasExpired(self):
         elapsed = (timezone.now().date() - self.date_granted).days
+        print(f"Elapsed: {elapsed}")
         return elapsed > TermDuration.get_instance().expiration
 
     def hasPenalty(self):
@@ -332,11 +333,12 @@ class Pawn(models.Model):
         return elapsed > TermDuration.get_instance().maturity
 
     def getStanding(self):
-        if self.hasExpired():
-            return 'EXPIRED'
-        if self.hasMatured():
-            return 'MATURED'
-        return 'ACTIVE'
+        if self.status == 'ACTIVE':
+            if self.hasExpired():
+                return 'EXPIRED'
+            if self.hasMatured():
+                return 'MATURED'
+        return self.status
 
     def getAuctionInterest(self):
         return self.principal * Decimal(4 * 0.04)
@@ -624,6 +626,11 @@ class Pawn(models.Model):
                 self.renew_redeem_date = timezone.now()
             self.save()
             print(f'updated renew_redeem_date: {self.renew_redeem_date}')
+
+    def auction(self):
+        self.status = 'AUCTIONED'
+        self.status_updated_on = timezone.now()
+        self.save()
 
 
 class Payment(models.Model):

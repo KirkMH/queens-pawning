@@ -34,6 +34,7 @@ urlpatterns = [
          views.remove_other_cash_count, name='remove_other_cash_count'),
 
     path('auction/branch', views.auction_report, name='auction_report'),
+    path('auction/branch/go', views.auction_now, name='auction_now'),
 
     path('income-statement', views.income_statement, name='income_statement'),
 ]

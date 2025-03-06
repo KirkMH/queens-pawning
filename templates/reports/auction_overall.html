@@ -42,7 +42,7 @@
                         {% endif %}
                         {% for item in report %}
                         <tr>
-                            <td class="text-center">{{ item.pk|stringformat:"05d" }}</td>
+                            <td class="text-center"><a href="{% url 'pawn_detail' item.pk %}">{{ item.pk|stringformat:"05d" }}</a></td>
                             <td>{{ item.client.first_name }} {{ item.client.last_name }}</td>
                             <td>{{ item.complete_description }}</td>
                             <td>{{ item.date|date:"d-M-y" }}</td>
@@ -54,7 +54,7 @@
                         </tr>
                         {% endfor %}
                         <tr style="border-top: 1pt solid gray;">
-                            <td colspan="6">{{ report.count }} item{{ report.count|pluralize }}</td>
+                            <td colspan="6">{{ report|length }} item{{ report|length|pluralize }}</td>
                             <td class="text-right text-bold">{{ principal_total|peso }}</td>
                             <td class="text-right text-bold">{{ interest_total|peso }}</td>
                             <td class="text-right text-bold" style="background-color: orange;">{{ grand_total|peso }}</td>

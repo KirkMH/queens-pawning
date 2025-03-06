@@ -41,7 +41,7 @@
                         {% endif %}
                         {% for item in report %}
                         <tr>
-                            <td class="text-center">{{ item.pk|stringformat:"05d" }}</td>
+                            <td class="text-center"><a href="{% url 'pawn_detail' item.pk %}">{{ item.pk|stringformat:"05d" }}</a></td>
                             <td>{{ item.client.first_name }} {{ item.client.last_name }}</td>
                             <td>{{ item.complete_description }}</td>
                             <td>{{ item.date|date:"d-M-y" }}</td>
@@ -53,7 +53,7 @@
                         </tr>
                         {% endfor %}
                         <tr style="border-top: 1pt solid gray;">
-                            <td colspan="6">{{ report.count }} item{{ report.count|pluralize }}</td>
+                            <td colspan="6">{{ report|length }} item{{ report|length|pluralize }}</td>
                             <td class="text-right text-bold">{{ principal_total|peso }}</td>
                             <td class="text-right text-bold">{{ interest_total|peso }}</td>
                             <td class="text-right text-bold" style="background-color: orange;">{{ grand_total|peso }}</td>
@@ -65,7 +65,7 @@
         <div class="card-footer no-print">
             <div class="row">
                 <div class="col-lg-12">
-                    <button class="btn btn-warning">Auction</button>
+                    <button class="btn btn-warning" id="btn_auction">Auction</button>
                     <button class="btn btn-primary" id="btn_print" onclick="window.print();">Print</button>
                 </div>
             </div>
@@ -78,6 +78,25 @@
 {% block js %}
     <script>
         $(document).ready(function() {
+            $("#btn_auction").click(function() {
+                bootbox.confirm({
+                    message: "Are you sure you want to auction these items?",
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-danger'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-default'
+                        }
+                    },
+                    callback: function (result) {
+                        if (!result) return;
+                        location.href = "{% url 'auction_now' %}";
+                    }
+                });
+            })
             $("#menu-reports").addClass("active")
         })
     </script>
