@@ -618,6 +618,9 @@ class Pawn(models.Model):
             self.request.user.employee.branch is None or self.is_encoded_today()
         )
 
+    def is_voidable(self):
+        return self.status in ['REDEEMED', 'AUCTIONED']
+
     def update_renew_redeem_date(self, date=None):
         if self.status == 'ACTIVE':
             if date is not None:
@@ -629,6 +632,13 @@ class Pawn(models.Model):
 
     def auction(self):
         self.status = 'AUCTIONED'
+        self.status_updated_on = timezone.now()
+        self.save()
+
+    def reset_status(self):
+        self.renewed_to = None
+        self.renew_redeem_date = None
+        self.status = 'ACTIVE'
         self.status_updated_on = timezone.now()
         self.save()
 

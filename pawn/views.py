@@ -155,26 +155,39 @@ def delete_pawn(request, pk):
         # delete payment from mother ticket
         payment = Payment.objects.filter(pawn=mother.pk).first()
         payment.delete()
-
         # reset the status of the mother ticket
-        mother.renewed_to = None
-        mother.renew_redeem_date = None
-        mother.status = 'ACTIVE'
-        mother.status_updated_on = timezone.now()
-        mother.save()
+        mother.reset_status()
 
     # delete from receipts of cash position
     pawn.receipts.all().delete()
-
     # delete from disbursements of cash position
     pawn.disbursements.all().delete()
-
     # delete this pawn
     pawn.delete()
 
     messages.success(
         request, f"Pawn ticket for {pawn.client} was successfully deleted.")
     return redirect('pawn_detail', pk=mother.pk)
+
+
+@login_required
+def void_pawn(request, pk):
+    pawn = Pawn.objects.get(pk=pk)
+
+    # delete payment from mother ticket
+    payment = Payment.objects.filter(pawn=pawn.pk).first()
+    payment.delete()
+
+    # reset the status of the ticket
+    pawn.reset_status()
+    # delete from receipts of cash position
+    pawn.receipts.all().delete()
+    # delete from disbursements of cash position
+    pawn.disbursements.all().delete()
+
+    messages.success(
+        request, f"The transaction for this pawn ticket was successfully voided.")
+    return redirect('pawn_detail', pk=pawn.pk)
 
 
 @login_required

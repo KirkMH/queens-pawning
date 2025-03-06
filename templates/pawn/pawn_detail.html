@@ -66,8 +66,13 @@
                                 {% if not pawn.payment_pawn and not user.employee.branch %}
                                 <button id="delete_pawn" type="button" class="btn btn-danger card-link">Delete</button>
                                 <form id="delete-form" action="{% url 'delete_pawn' pawn.pk %}" method="POST" style="display: none;">{% csrf_token %}</form>
-                                {% endif %}
                                 &nbsp;&nbsp;&nbsp;
+                                {% endif %}
+                                {% if pawn.is_voidable and not user.employee.branch %}
+                                <button id="void_pawn" type="button" class="btn btn-danger card-link">Void {{ pawn.status|title|slice:"-2" }}</button>
+                                <form id="void-form" action="{% url 'void_pawn' pawn.pk %}" method="POST" style="display: none;">{% csrf_token %}</form>
+                                &nbsp;&nbsp;&nbsp;
+                                {% endif %}
                                 {% if 'from' in request.GET %}
                                 <a href="{{ request.GET.from }}" class="btn btn-default card-link">Back to list</a>
                                 {% else %}
@@ -234,6 +239,26 @@
                     callback: function (result) {
                         if (!result) return;
                         $("#delete-form").submit();
+                    }
+                });
+            });
+
+            $("#void_pawn").click(function() {
+                bootbox.confirm({
+                    message: "Are you sure you want to void the transaction of this ticket?",
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-danger'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-default'
+                        }
+                    },
+                    callback: function (result) {
+                        if (!result) return;
+                        $("#void-form").submit();
                     }
                 });
             });

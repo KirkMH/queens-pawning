@@ -12,6 +12,9 @@ urlpatterns = [
          views.PawnDetailView.as_view(), name='pawn_detail'),
     path('<int:pk>/delete',
          views.delete_pawn, name='delete_pawn'),
+    path('<int:pk>/void',
+         views.void_pawn, name='void_pawn'),
+
     path('<int:pk>/redeem', views.redeem_pawn, name='redeem_pawn'),
     path('<int:pk>/renew', views.renew_pawn, name='renew_pawn'),
     path('<int:pk>/payment', views.pawn_payment, name='pawn_payment'),
