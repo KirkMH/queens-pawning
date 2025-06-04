@@ -238,9 +238,9 @@ class Pawn(models.Model):
     @property
     def getPTN(self):
         if self.pawn_ticket_number:
-            return f"{self.pawn_ticket_number} ({self.transaction_type[0]})"
+            return f"{self.pawn_ticket_number}"
         else:
-            return f"{self.transaction_type[0]}-{self.id:06d}"
+            return f"{self.id:06d}"
 
     @property
     def complete_description(self):
@@ -266,10 +266,10 @@ class Pawn(models.Model):
         self.update_renew_redeem_date()
         rrd = to_date(self.renew_redeem_date)
 
-        if self.transaction_type == 'NEW':
-            return (rrd - to_date(self.promised_renewal_date)).days if self.promised_renewal_date else 0
-        else:
-            return (rrd - to_date(self.date_granted)).days
+        # if self.transaction_type == 'NEW':
+        #     return (rrd - to_date(self.promised_renewal_date)).days if self.promised_renewal_date else 0
+        # else:
+        return (rrd - to_date(self.date_granted)).days
 
     def getInterestRate(self):
         elapsed = self.getElapseDays()
@@ -295,21 +295,21 @@ class Pawn(models.Model):
         # if self.transaction_type == 'EXISTING':
         interest = self.principal * \
             Decimal(str((self.getInterestRate() / 100)))
-        if self.transaction_type == 'NEW':  # and interest >= self.advance_interest:
-            interest = 0
+        # if self.transaction_type == 'NEW':  # and interest >= self.advance_interest:
+        #     interest = 0
         return interest
 
     def getAdditionalInterest(self):
         ''' the additional interest is calculated when the pawn is renewed past the promised renewal date '''
         additional_interest = 0
-        if self.transaction_type == 'NEW':
-            interest = self.principal * \
-                Decimal(
-                    str((Pawn.advanceInterestRate(self.promised_renewal_date, self.date_granted) / 100)))
-            print(f"Interest: {interest}")
-            print(f"Current Advance Interest: {self.advance_interest}")
-            if interest > self.advance_interest:
-                additional_interest = interest - self.advance_interest
+        # if self.transaction_type == 'NEW':
+        #     interest = self.principal * \
+        #         Decimal(
+        #             str((Pawn.advanceInterestRate(self.promised_renewal_date, self.date_granted) / 100)))
+        #     print(f"Interest: {interest}")
+        #     print(f"Current Advance Interest: {self.advance_interest}")
+        #     if interest > self.advance_interest:
+        #         additional_interest = interest - self.advance_interest
         return additional_interest
 
     def getAdvanceInterest(self):
@@ -392,10 +392,10 @@ class Pawn(models.Model):
         service_charge = otherFees.service_fee
         adv_int = 0
         interest = 0
-        if self.transaction_type == 'NEw':
-            adv_int = self.getAdvanceInterest()
-        else:
-            interest = self.getInterest()
+        # if self.transaction_type == 'NEw':
+        #     adv_int = self.getAdvanceInterest()
+        # else:
+        interest = self.getInterest()
         return interest + self.getPenalty() + service_charge + adv_int + self.getAdditionalInterest()
 
     def pay(self, post, cashier):
@@ -577,17 +577,7 @@ class Pawn(models.Model):
     def update_cash_position_renew_ticket(self, cashier, description, new_ticket, new_entry=True):
         receipt = None
         disbursement = None
-        total_interest = 0
-        if self.transaction_type == 'NEW':
-            total_interest = new_ticket.advance_interest  # avd interest must be deducted
-        else:
-            total_interest = self.getInterest()
-
-        # # check if this is a renewed ticket
-        # mother_ticket = Pawn.objects.filter(
-        #     id=self.pawn_renewed_to).first()
-        # if mother_ticket:
-        #     total_interest += mother_ticket.getInterest()
+        total_interest = self.getInterest()
 
         # RECEIPT: new -- interest only; renew -- old principal + interest + penalty
         if self.renewed_to:

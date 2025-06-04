@@ -43,9 +43,15 @@ class ClientCreateView(CreateView):
     model = Client
     form_class = ClientForm
     template_name = 'files/client_form.html'
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Pass the logged-in user to the form
+        return kwargs
+
 
     def post(self, request, *args, **kwargs):
-        form = ClientForm(request.POST)
+        form = ClientForm(request.POST, user=request.user)
         if form.is_valid():
             saved = form.save()
             saved.branch = Employee.objects.get(user=request.user).branch
@@ -66,6 +72,11 @@ class ClientUpdateView(SuccessMessageMixin, UpdateView):
     pk_url_kwarg = 'pk'
     success_url = reverse_lazy('client_list')
     success_message = "The client's record was updated successfully."
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Pass the logged-in user to the form
+        return kwargs
 
 
 @method_decorator(login_required, name='dispatch')

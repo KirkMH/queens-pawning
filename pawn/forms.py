@@ -18,15 +18,15 @@ class PawnForm(forms.ModelForm):
 
     class Meta:
         model = Pawn
-        exclude = ('status', 'on_hold', 'status_updated_on',
-                   'branch', 'renewed_to', 'additional_principal', 'renew_redeem_date')
+        exclude = ('transaction_type', 'status', 'on_hold', 'status_updated_on',
+                   'branch', 'renewed_to', 'additional_principal', 'renew_redeem_date'
+                   'promised_renewal_date', 'advance_interest')
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(PawnForm, self).__init__(*args, **kwargs)
 
         self.fields['date_granted'].initial = timezone.now().date()
-        self.fields['promised_renewal_date'].initial = timezone.now().date()
         self.fields['service_charge'].initial = OtherFees.get_instance().service_fee
         print(
             f'service charge via forms: {OtherFees.get_instance().service_fee}')
@@ -36,4 +36,4 @@ class PawnForm(forms.ModelForm):
             branch = Employee.objects.get(user=self.request.user).branch
             if branch:
                 self.fields['client'].queryset = self.fields['client'].queryset.filter(
-                    branch=Employee.objects.get(user=self.request.user).branch)
+                    branch=branch)

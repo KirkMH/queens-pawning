@@ -110,7 +110,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'django_queens',
         'USER': 'root',
-        'PASSWORD': 'p@$$w0rD',
+        'PASSWORD': 'p@$$dB',
         'HOST': 'localhost'
         # 'NAME': 'queenspawnshopsy$default',
         # 'USER': 'queenspawnshopsy',

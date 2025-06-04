@@ -87,12 +87,13 @@ class PawnCreateView(CreateView):
         if form.is_valid():
             employee = Employee.objects.get(user=request.user)
             pawn = form.save(commit=False)
-            if pawn.transaction_type == 'EXISTING':
-                self.promised_renewal_date = None
+            pawn.promised_renewal_date = None
+            pawn.advance_interest = 0
             pawn.branch = employee.branch
+            print(f'employee: {employee}')
+            print(f'employee.branch: {employee.branch}')
             pawn.save()
             pawn.update_renew_redeem_date()
-            # if pawn.transaction_type == 'NEW':
             pawn.update_payment(
                 employee, pawn.service_charge, pawn.advance_interest)
             pawn.update_cash_position_new_ticket(
@@ -201,7 +202,6 @@ def update_renew_redeem_date(request, pk):
         print(f'renew_redeem_post: {renew_redeem_post}')
         try:
             if renew_redeem_post:
-                print('processing')
                 # convert renew_redeem_post to a date
                 renew_redeem_date = datetime.strptime(
                     renew_redeem_post, '%Y-%m-%d').date()

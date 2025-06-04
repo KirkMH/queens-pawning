@@ -15,7 +15,9 @@
         <div class="card-header">
             <div class="row">
                 <div class="col-md-6">
+                    {% if user.employee.branch %}
                     <a href="{% url 'new_pawn' %}" class="btn btn-primary">New</a>
+                    {% endif %}
                 </div>
                 <div class="col-md-6 text-right d-flex align-items-center justify-content-end gap-1">
 
@@ -104,10 +106,9 @@
                         name: 'ptn',
                         data: null,
                         render: function (data) {
-                            const type = data[18] == 'NEW' ? 'N' : 'E';
-                            let ptn = `${type}-${String(data[0]).padStart(6, '0')}`;
+                            let ptn = `${String(data[0]).padStart(6, '0')}`;
                             if (data[21])
-                                ptn = `${String(data[21]).padStart(6, '0')} (${type})`;
+                                ptn = `${String(data[21]).padStart(6, '0')}`;
                             return ptn
                         }
                     },

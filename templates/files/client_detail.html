@@ -54,7 +54,11 @@
     
     <div class="card m-4">
         <div class="card-header">
-            <h4>Pawn Transactions<span class="float-end"><a href="{% url 'new_pawn' %}?client={{ client.pk }}" class="btn btn-primary float-end">New</a></span></h4>
+            <h4>Pawn Transactions
+                {% if user.employee.branch %}
+                <span class="float-end"><a href="{% url 'new_pawn' %}?client={{ client.pk }}" class="btn btn-primary float-end">New</a></span>
+                {% endif %}
+            </h4>
         </div>
         <div class="card-body">
             <div class="row mb-2">
