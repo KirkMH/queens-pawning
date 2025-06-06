@@ -265,6 +265,7 @@ class Pawn(models.Model):
     def getElapseDays(self):
         self.update_renew_redeem_date()
         rrd = to_date(self.renew_redeem_date)
+        
 
         # if self.transaction_type == 'NEW':
         #     return (rrd - to_date(self.promised_renewal_date)).days if self.promised_renewal_date else 0
@@ -274,6 +275,7 @@ class Pawn(models.Model):
     def getInterestRate(self):
         elapsed = self.getElapseDays()
         rate = InterestRate.rates.get_rate(elapsed)
+        print(f"Elapsed: {elapsed}, Rate: {rate}")
         return rate if rate else 0
 
     @staticmethod
@@ -313,7 +315,7 @@ class Pawn(models.Model):
         return additional_interest
 
     def getAdvanceInterest(self):
-        return self.principal * Decimal(str((self.getAdvanceInterestRate() / 100)))
+        return 0 #self.principal * Decimal(str((self.getAdvanceInterestRate() / 100)))
 
     def hasMatured(self):
         elapsed = (timezone.now().date() - self.date_granted).days
@@ -505,18 +507,19 @@ class Pawn(models.Model):
         print(f'new entry? {new_entry}')
         print(f'date: {date}')
         print(f'ticket: {ticket}')
+        
+        receipts = AddReceipts.objects.filter(
+            pawn=ticket
+        )
+        if receipts.exists():
+            receipts.delete()
+        
         cash_position, created = DailyCashPosition.objects.get_or_create(
             branch=ticket.branch,
             date=date
         )
         print(f'cash position created? {created}')
         print(f'cash position: {cash_position}')
-        receipts = AddReceipts.objects.filter(
-            # daily_cash_position=cash_position,
-            pawn=ticket
-        )
-        if receipts.exists():
-            receipts.delete()
         receipt, created = AddReceipts.objects.get_or_create(
             daily_cash_position=cash_position,
             pawn=ticket
@@ -540,18 +543,20 @@ class Pawn(models.Model):
         ticket = self if ticket is None else ticket
         disbursement = None
         date = ticket.date_granted
-        cash_position, created = DailyCashPosition.objects.get_or_create(
-            branch=self.branch,
-            date=date
-        )
-        print(f'cash position created? {created}')
-        print(f'cash position: {cash_position}')
         disbursements = LessDisbursements.objects.filter(
-            # daily_cash_position=cash_position,
             pawn=ticket
         )
         if disbursements.exists():
             disbursements.delete()
+        cash_position, created = DailyCashPosition.objects.get_or_create(
+            branch=self.branch,
+            date=date
+        )
+        print(f'disbursement new entry? {new_entry}')
+        print(f'date: {date}')
+        print(f'ticket: {ticket}')
+        print(f'cash position created? {created}')
+        print(f'cash position: {cash_position}')
         disbursement, created = LessDisbursements.objects.get_or_create(
             daily_cash_position=cash_position,
             pawn=ticket
@@ -583,7 +588,7 @@ class Pawn(models.Model):
         if self.renewed_to:
             r_amt = self.principal + total_interest + self.getPenalty()
         else:
-            r_amt = total_interest
+            r_amt = self.service_charge # total_interest
         receipt = self.update_receipts(
             cashier, description, r_amt, new_entry, new_ticket)
         d_amt = new_ticket.principal - new_ticket.service_charge

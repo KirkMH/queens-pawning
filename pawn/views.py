@@ -114,20 +114,19 @@ class PawnUpdateView(SuccessMessageMixin, UpdateView):
     form_class = PawnForm
     template_name = "pawn/pawn_form.html"
     pk_url_kwarg = 'pk'
-    success_url = reverse_lazy('pawn_list')
     success_message = "The Pawn's record was updated successfully."
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['otherFees'] = OtherFees.get_instance()
         return context
-
-    def post(self, request, *args, **kwargs):
+    
+    def get_success_url(self):
         pawn = self.get_object()
-        employee = Employee.objects.get(user=request.user)
+        employee = Employee.objects.get(user=self.request.user)
         pawn.update_cash_position_new_ticket(
             employee, 'Updated pawn ticket', False)
-        return super().post(request, *args, **kwargs)
+        return reverse_lazy('pawn_detail', kwargs={'pk': self.kwargs['pk']})
 
 
 @method_decorator(login_required, name='dispatch')
@@ -137,7 +136,8 @@ class PawnDetailView(DetailView):
     context_object_name = 'pawn'
 
     def get_context_data(self, **kwargs):
-        self.get_object().update_renew_redeem_date()
+        today = timezone.now().date()
+        self.get_object().update_renew_redeem_date(today)
         print('renew_redeem_date: ', self.get_object().renew_redeem_date)
         context = super().get_context_data(**kwargs)
         context['pawn'] = self.get_object()
@@ -411,20 +411,20 @@ def calculate_advance_interest(request):
     error = None
     advance_interest = 0
     advance_interest_rate = 0
-    try:
-        print(f'Calculating advance interest for {request.GET}')
-        date_granted = datetime.strptime(
-            request.GET['date_granted'], '%Y-%m-%d').date()
-        promised_date = datetime.strptime(
-            request.GET['promised_date'], '%Y-%m-%d').date()
-        principal = float(request.GET['principal'])
-        advance_interest_rate = Pawn.advanceInterestRate(
-            promised_date, date_granted)
-        advance_interest = principal * (advance_interest_rate / 100)
-    except Exception as e:
-        print(e)
-        success = False
-        error = str(e)
+    # try:
+    #     print(f'Calculating advance interest for {request.GET}')
+    #     date_granted = datetime.strptime(
+    #         request.GET['date_granted'], '%Y-%m-%d').date()
+    #     promised_date = datetime.strptime(
+    #         request.GET['promised_date'], '%Y-%m-%d').date()
+    #     principal = float(request.GET['principal'])
+    #     advance_interest_rate = Pawn.advanceInterestRate(
+    #         promised_date, date_granted)
+    #     advance_interest = principal * (advance_interest_rate / 100)
+    # except Exception as e:
+    #     print(e)
+    #     success = False
+    #     error = str(e)
     return JsonResponse({
         'success': success,
         'error': error,
