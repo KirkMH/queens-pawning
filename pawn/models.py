@@ -97,8 +97,8 @@ class Pawn(models.Model):
         ('Others', 'Others, specify in description')
     ]
     TRANSACTION_TYPE = [
-        ('NEW', _('New')),
-        ('EXISTING', _('Existing'))
+        ('ACC', _('Accrued Interest')),
+        ('ADV', _('Advance Interest'))
     ]
 
     # NEW = Advance Interest Rate; EXISTING = Interest Rate
@@ -106,7 +106,7 @@ class Pawn(models.Model):
         _('Transaction Type'),
         max_length=10,
         choices=TRANSACTION_TYPE,
-        default='NEW',
+        default='ACC',
     )
     pawn_ticket_number = models.CharField(
         _('Pawn Ticket Number'),
@@ -266,7 +266,7 @@ class Pawn(models.Model):
         self.update_renew_redeem_date()
         rrd = to_date(self.renew_redeem_date)
 
-        if self.transaction_type == 'NEW':
+        if self.transaction_type == 'ACC':
             return (rrd - to_date(self.promised_renewal_date)).days if self.promised_renewal_date else 0
         else:
             return (rrd - to_date(self.date_granted)).days
@@ -295,14 +295,14 @@ class Pawn(models.Model):
         # if self.transaction_type == 'EXISTING':
         interest = self.principal * \
             Decimal(str((self.getInterestRate() / 100)))
-        if self.transaction_type == 'NEW':  # and interest >= self.advance_interest:
+        if self.transaction_type == 'ACC':  # and interest >= self.advance_interest:
             interest = 0
         return interest
 
     def getAdditionalInterest(self):
         ''' the additional interest is calculated when the pawn is renewed past the promised renewal date '''
         additional_interest = 0
-        if self.transaction_type == 'NEW':
+        if self.transaction_type == 'ACC':
             interest = self.principal * \
                 Decimal(
                     str((Pawn.advanceInterestRate(self.promised_renewal_date, self.date_granted) / 100)))
@@ -392,7 +392,7 @@ class Pawn(models.Model):
         service_charge = otherFees.service_fee
         adv_int = 0
         interest = 0
-        if self.transaction_type == 'NEw':
+        if self.transaction_type == 'ACC':
             adv_int = self.getAdvanceInterest()
         else:
             interest = self.getInterest()
@@ -578,7 +578,7 @@ class Pawn(models.Model):
         receipt = None
         disbursement = None
         total_interest = 0
-        if self.transaction_type == 'NEW':
+        if self.transaction_type == 'ACC':
             total_interest = new_ticket.advance_interest  # avd interest must be deducted
         else:
             total_interest = self.getInterest()

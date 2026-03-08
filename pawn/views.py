@@ -87,12 +87,12 @@ class PawnCreateView(CreateView):
         if form.is_valid():
             employee = Employee.objects.get(user=request.user)
             pawn = form.save(commit=False)
-            if pawn.transaction_type == 'EXISTING':
+            if pawn.transaction_type == 'ACC':
                 self.promised_renewal_date = None
             pawn.branch = employee.branch
             pawn.save()
             pawn.update_renew_redeem_date()
-            # if pawn.transaction_type == 'NEW':
+            # if pawn.transaction_type == 'ACC':
             pawn.update_payment(
                 employee, pawn.service_charge, pawn.advance_interest)
             pawn.update_cash_position_new_ticket(

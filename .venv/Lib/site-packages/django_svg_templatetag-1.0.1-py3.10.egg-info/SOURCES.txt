@@ -1,0 +1,16 @@
+AUTHORS.rst
+CONTRIBUTING.rst
+HISTORY.rst
+LICENSE
+MANIFEST.in
+README.rst
+setup.cfg
+setup.py
+django_svg_templatetag.egg-info/PKG-INFO
+django_svg_templatetag.egg-info/SOURCES.txt
+django_svg_templatetag.egg-info/dependency_links.txt
+django_svg_templatetag.egg-info/not-zip-safe
+django_svg_templatetag.egg-info/top_level.txt
+svg_templatetag/__init__.py
+svg_templatetag/templatetags/__init__.py
+svg_templatetag/templatetags/svg.py

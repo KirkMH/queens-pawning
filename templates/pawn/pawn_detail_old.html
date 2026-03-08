@@ -33,7 +33,7 @@
                     <p class="card-text"><span class="text-muted">Appraised Value: </span>{{ pawn.appraised_value|peso }}</p>
                     <p class="card-text"><span class="text-muted">Branch: </span>{{ pawn.branch }}</p>
                     <p class="card-text"><span class="text-muted">Date Pawned: </span>{{ pawn.date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
-                    {% if pawn.transaction_type == 'NEW' %}
+                    {% if pawn.transaction_type == 'ACC' %}
                     <p class="card-text"><span class="text-muted">Promised Renewal Date: </span>{{ pawn.promised_renewal_date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
                     {% endif %}
                     <p class="card-text"><span class="text-muted">Status: </span>{{ pawn.status }}</p>
@@ -72,7 +72,7 @@
                             <div class="col-6">Days Elapsed:</div>
                             <div class="col-6 text-right">{{ pawn.getElapseDays }} day{{pawn.getElapseDays|pluralize}}</div>
                         </div>
-                        {% if pawn.transaction_type != 'NEW' %}
+                        {% if pawn.transaction_type != 'ACC' %}
                         <div class="row mb-4">
                             <div class="col-6">Interest Rate:</div>
                             <div class="col-6 text-right">{{ pawn.getInterestRate }}%</div>
@@ -82,7 +82,7 @@
                             <div class="col-6">Principal:</div>
                             <div class="col-6 text-right">{{ pawn.principal|peso }}</div>
                         </div>
-                        {% if pawn.transaction_type == 'NEW' %}
+                        {% if pawn.transaction_type == 'ACC' %}
                         <div class="row mb-2">
                             <div class="col-6">Additional Interest Due:</div>
                             <div class="col-6 text-right">{{ pawn.getAdditionalInterest|peso }}</div>
@@ -108,10 +108,10 @@
                             <div class="col-6 h5">Minimum Payment for Renewal:</div>
                             <div class="col-6 h5 text-right">
                                 {{ pawn.getMinimumPayment|peso }}
-                                {% if pawn.transaction_type == 'NEW' %}<sup style="color: red;" title="plus advance interest">++</sup>{% endif %}
+                                {% if pawn.transaction_type == 'ACC' %}<sup style="color: red;" title="plus advance interest">++</sup>{% endif %}
                             </div>
                         </div>
-                        {% if pawn.transaction_type == 'NEW' %}
+                        {% if pawn.transaction_type == 'ACC' %}
                         <div class="row mt-2 ml-5 mr-5 text-muted">
                             <div class="col-6">Additional Interest Due:</div>
                             <div class="col-6 text-right">{{ pawn.getAdditionalInterest|peso }}</div>
@@ -183,7 +183,7 @@
                                     <input type="number" step="0.01" class="form-control text-right" id="additionalPrincipal" name="additionalPrincipal" value="0.00" />
                                 </div>
                             </div>
-                            {% if pawn.transaction_type == 'NEW' %}
+                            {% if pawn.transaction_type == 'ACC' %}
                             <div class="form-group row partial-payment">
                                 <label for="amount" class="col-sm-4 col-form-label">Promised Renewal Date <span style="color: red;">*</span></label>
                                 <div class="col-sm-8">

@@ -49,7 +49,7 @@ const calculate = async () => {
       partial -
       additionalPrincipal;
 
-    if (transaction_type === "NEW") {
+    if (transaction_type === "ACC") {
       const newPrincipal = principal + additionalPrincipal - partial;
       const response = await fetch(
         advIntUri +
@@ -100,7 +100,7 @@ function validateForm() {
   let err = "";
   if (change < 0)
     err = "Tendered amount must be greater than or equal to the receivable.";
-  else if (renew && transaction_type === "NEW" && promisedDate === "")
+  else if (renew && transaction_type === "ACC" && promisedDate === "")
     err = "Please enter the promised renewal date.";
 
   if (err) {
