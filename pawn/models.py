@@ -238,7 +238,7 @@ class Pawn(models.Model):
     @property
     def getPTN(self):
         if self.pawn_ticket_number:
-            return f"{self.pawn_ticket_number} ({self.transaction_type[0]})"
+            return f"{self.pawn_ticket_number} ({self.transaction_type})"
         else:
             return f"{self.transaction_type[0]}-{self.id:06d}"
 
@@ -262,11 +262,15 @@ class Pawn(models.Model):
         expiration_days = TermDuration.get_instance().expiration
         return self.date_granted + timezone.timedelta(days=expiration_days)
 
+    @property
+    def transaction_type_label(self):
+        return self.get_transaction_type_display()
+
     def getElapseDays(self):
         self.update_renew_redeem_date()
         rrd = to_date(self.renew_redeem_date)
 
-        if self.transaction_type == 'ACC':
+        if self.transaction_type == 'ADV':
             return (rrd - to_date(self.promised_renewal_date)).days if self.promised_renewal_date else 0
         else:
             return (rrd - to_date(self.date_granted)).days
@@ -295,14 +299,14 @@ class Pawn(models.Model):
         # if self.transaction_type == 'EXISTING':
         interest = self.principal * \
             Decimal(str((self.getInterestRate() / 100)))
-        if self.transaction_type == 'ACC':  # and interest >= self.advance_interest:
+        if self.transaction_type == 'ADV':  # and interest >= self.advance_interest:
             interest = 0
         return interest
 
     def getAdditionalInterest(self):
         ''' the additional interest is calculated when the pawn is renewed past the promised renewal date '''
         additional_interest = 0
-        if self.transaction_type == 'ACC':
+        if self.transaction_type == 'ADV':
             interest = self.principal * \
                 Decimal(
                     str((Pawn.advanceInterestRate(self.promised_renewal_date, self.date_granted) / 100)))
@@ -392,7 +396,7 @@ class Pawn(models.Model):
         service_charge = otherFees.service_fee
         adv_int = 0
         interest = 0
-        if self.transaction_type == 'ACC':
+        if self.transaction_type == 'ADV':
             adv_int = self.getAdvanceInterest()
         else:
             interest = self.getInterest()
@@ -578,8 +582,8 @@ class Pawn(models.Model):
         receipt = None
         disbursement = None
         total_interest = 0
-        if self.transaction_type == 'ACC':
-            total_interest = new_ticket.advance_interest  # avd interest must be deducted
+        if self.transaction_type == 'ADV':
+            total_interest = new_ticket.advance_interest  # adv interest must be deducted
         else:
             total_interest = self.getInterest()
 
@@ -608,25 +612,37 @@ class Pawn(models.Model):
         return self.date_encoded == timezone.now().date()
 
     def renewed_from(self):
+        print(f'renewed_to: {self.renewed_to}')
+        if self.renewed_to is None:
+            return None
         mother = Pawn.objects.filter(
             renewed_to=self).first()
         print(f"Mother ticket: {mother}")
         return mother
 
     def is_pawn_edittable(self):
-        return self.renewed_from is None and self.payment_pawn is None and (
-            self.request.user.employee.branch is None or self.is_encoded_today()
+        user = getattr(self, 'current_user', None)
+        return self.renewed_from is None and self.status == 'ACTIVE' and (
+            user and user.employee.branch is None or self.is_encoded_today()
         )
 
     def is_voidable(self):
-        return self.status in ['REDEEMED', 'AUCTIONED']
+        user = getattr(self, 'current_user', None)
+        return (user and user.employee.branch is None) and self.status in ['REDEEMED', 'AUCTIONED']
+
+    def is_deleteable(self):
+        user = getattr(self, 'current_user', None)
+        if user:
+            print(f'user.employee.branch: {user.employee.branch}')
+        return (user and user.employee.branch is None) and self.status in ['ACTIVE']
 
     def update_renew_redeem_date(self, date=None):
-        if self.status == 'ACTIVE':
+        today = timezone.now().date()
+        if self.status == 'ACTIVE' and (date is not None or self.renew_redeem_date != today):
             if date is not None:
                 self.renew_redeem_date = date
-            elif self.renew_redeem_date is None:
-                self.renew_redeem_date = timezone.now()
+            else: #if self.renew_redeem_date is None:
+                self.renew_redeem_date = today
             self.save()
             print(f'updated renew_redeem_date: {self.renew_redeem_date}')
 

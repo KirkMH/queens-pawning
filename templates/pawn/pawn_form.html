@@ -80,12 +80,13 @@ New Pawn
             function process_transaction_type() {
                 const transactionType = $("#id_transaction_type").val();
                 console.log(`transactionType: ${transactionType}`);
-                if (transactionType === "ACC") {
+                if (transactionType === "ADV") {
                     $("#id_promised_renewal_date").parent().parent().show();
                     $("#id_promised_renewal_date").prop('required', true);
                     $("#id_advance_interest").parent().parent().show();
                 } else {
                     $("#id_promised_renewal_date").prop('required', false);
+                    $("#id_promised_renewal_date").parent().parent().hide();
                     $("#id_advance_interest").val(0);
                     $("#id_advance_interest").parent().parent().hide();
                 }
@@ -101,7 +102,7 @@ New Pawn
                 console.log(`transactionType: ${transactionType}`);
                 console.log(`principal: ${principal}`);
                 console.log(`promised_date: ${promised_date}`);
-                if (transactionType === "ACC" && promised_date) {
+                if (transactionType === "ADV" && promised_date) {
                     console.log("Fetching advance interest");
                     fetch("{% url 'calculate_advance_interest' %}?principal=" + principal + "&promised_date=" + promised_date + "&date_granted=" + date_granted)
                         .then(response => response.json())

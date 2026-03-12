@@ -91,8 +91,8 @@ class PawnCreateView(CreateView):
                 self.promised_renewal_date = None
             pawn.branch = employee.branch
             pawn.save()
-            pawn.update_renew_redeem_date()
-            # if pawn.transaction_type == 'ACC':
+            if pawn.transaction_type == 'ADV':
+                pawn.update_renew_redeem_date()
             pawn.update_payment(
                 employee, pawn.service_charge, pawn.advance_interest)
             pawn.update_cash_position_new_ticket(
@@ -136,10 +136,12 @@ class PawnDetailView(DetailView):
     context_object_name = 'pawn'
 
     def get_context_data(self, **kwargs):
-        self.get_object().update_renew_redeem_date()
-        print('renew_redeem_date: ', self.get_object().renew_redeem_date)
+        pawn = self.get_object()
+        pawn.update_renew_redeem_date()
+        pawn.current_user = self.request.user
+        print('renew_redeem_date: ', pawn.renew_redeem_date)
         context = super().get_context_data(**kwargs)
-        context['pawn'] = self.get_object()
+        context['pawn'] = pawn
         context['otherFees'] = OtherFees.get_instance()
         return context
 
@@ -152,12 +154,16 @@ def delete_pawn(request, pk):
     mother = pawn.renewed_from()
     print(f'mother: {type(mother)}')
     if mother:
-        # delete payment from mother ticket
-        payment = Payment.objects.filter(pawn=mother.pk).first()
-        payment.delete()
+        # delete payment from mother ticket; TODO: validate that the service fee is not deleted
+        payments = Payment.objects.filter(pawn=mother.pk)
+        for payment in payments:
+            payment.delete()
         # reset the status of the mother ticket
         mother.reset_status()
-
+    # delete payments
+    payments = Payment.objects.filter(pawn=pawn.pk)
+    for payment in payments:
+        payment.delete()
     # delete from receipts of cash position
     pawn.receipts.all().delete()
     # delete from disbursements of cash position
@@ -167,16 +173,17 @@ def delete_pawn(request, pk):
 
     messages.success(
         request, f"Pawn ticket for {pawn.client} was successfully deleted.")
-    return redirect('pawn_detail', pk=mother.pk)
+    return redirect('pawn_list')
 
 
 @login_required
 def void_pawn(request, pk):
     pawn = Pawn.objects.get(pk=pk)
 
-    # delete payment from mother ticket
-    payment = Payment.objects.filter(pawn=pawn.pk).first()
-    payment.delete()
+    # delete payment records; TODO: validate that the service fee is not deleted
+    payments = Payment.objects.filter(pawn=pawn.pk)
+    for payment in payments:
+        payment.delete()
 
     # reset the status of the ticket
     pawn.reset_status()

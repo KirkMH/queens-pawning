@@ -41,12 +41,12 @@
                                 <p class="card-text"><span class="text-muted">NET PROCEEDS: </span><span class="h5">{{ pawn.net_proceeds|peso }}</span></p>
                             </div>
                             <div class="col-lg-6 col-md-12">
-                                <p class="card-text"><span class="text-muted">Transaction Type: </span>{{ pawn.transaction_type }}</p>
+                                <p class="card-text"><span class="text-muted">Transaction Type: </span>{{ pawn.transaction_type_label }}</p>
                                 <p class="card-text"><span class="text-muted">Appraised Value: </span>{{ pawn.appraised_value|peso }}</p>
                                 <p class="card-text"><span class="text-muted">Branch: </span>{{ pawn.branch }}</p>
                                 <p class="card-text"><span class="text-muted">Date Pawned: </span>{{ pawn.date_granted|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
                                 <p class="card-text"><span class="text-muted">Encoded on: </span>{{ pawn.date_encoded|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
-                                {% if pawn.transaction_type == 'ACC' %}
+                                {% if pawn.transaction_type == 'ADV' %}
                                 <p class="card-text"><span class="text-muted">Promised Renewal Date: </span>{{ pawn.promised_renewal_date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
                                 {% endif %}
                                 <p class="card-text"><span class="text-muted">Status: </span>{{ pawn.getStanding }}{% if pawn.status == 'RENEWED' or pawn.status == 'REDEEMED' %} on {{ pawn.renew_redeem_date|date:"F d, Y (D)"|naturalday }}{% endif %}</p>
@@ -63,12 +63,12 @@
                                 {% if pawn.is_edittable %}
                                 <a href="{% url 'edit_pawn' pawn.pk %}" class="btn btn-warning card-link">Edit</a>
                                 {% endif %}
-                                {% if not pawn.payment_pawn and not user.employee.branch %}
+                                {% if pawn.is_deleteable %}
                                 <button id="delete_pawn" type="button" class="btn btn-danger card-link">Delete</button>
                                 <form id="delete-form" action="{% url 'delete_pawn' pawn.pk %}" method="POST" style="display: none;">{% csrf_token %}</form>
                                 &nbsp;&nbsp;&nbsp;
                                 {% endif %}
-                                {% if pawn.is_voidable and not user.employee.branch %}
+                                {% if pawn.is_voidable %}
                                 <button id="void_pawn" type="button" class="btn btn-danger card-link">Void {{ pawn.status|title|slice:"-2" }}</button>
                                 <form id="void-form" action="{% url 'void_pawn' pawn.pk %}" method="POST" style="display: none;">{% csrf_token %}</form>
                                 &nbsp;&nbsp;&nbsp;
@@ -91,15 +91,11 @@
                     {%if pawn.status == 'ACTIVE' %}
                         <div class="card-body">
                             <div class="row mb-2">
-                                <div class="col-6">Renew/Redeem Date:</div>
-                                <div class="col-6 text-right">{{ pawn.renew_redeem_date|date:"F d, Y (D)"|naturalday }}</div>
-                            </div>
-                            <div class="row mb-2">
                                 <div class="col-6">Days Elapsed:</div>
                                 <div class="col-6 text-right">{{ pawn.getElapseDays }} day{{pawn.getElapseDays|pluralize}}</div>
                             </div>
-                            {% if pawn.transaction_type != 'ACC' %}
-                            <div class="row mb-4">
+                            {% if pawn.transaction_type == 'ACC' %}
+                            <div class="row mb-2">
                                 <div class="col-6">Interest Rate:</div>
                                 <div class="col-6 text-right">{{ pawn.getInterestRate }}%</div>
                             </div>
@@ -108,7 +104,7 @@
                                 <div class="col-6">Principal:</div>
                                 <div class="col-6 text-right">{{ pawn.principal|peso }}</div>
                             </div>
-                            {% if pawn.transaction_type == 'ACC' %}
+                            {% if pawn.transaction_type == 'ADV' %}
                             <div class="row mb-2">
                                 <div class="col-6">Additional Interest Due:</div>
                                 <div class="col-6 text-right">{{ pawn.getAdditionalInterest|peso }}</div>
@@ -137,7 +133,7 @@
                                     {% if pawn.transaction_type == 'ACC' %}<sup style="color: red;" title="plus advance interest">++</sup>{% endif %}
                                 </div>
                             </div>
-                            {% if pawn.transaction_type == 'ACC' %}
+                            {% if pawn.transaction_type == 'ADV' %}
                             <div class="row mt-2 ml-5 mr-5 text-muted">
                                 <div class="col-6">Additional Interest Due:</div>
                                 <div class="col-6 text-right">{{ pawn.getAdditionalInterest|peso }}</div>
