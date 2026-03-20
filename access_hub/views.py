@@ -23,11 +23,13 @@ def dashboard(request):
         transactions = transactions.filter(branch=employee.branch)
         matured = matured.filter(branch=employee.branch)
         expired = expired.filter(branch=employee.branch)
+    last_10_transactions = transactions.order_by('-date_granted')[:10]
     context = {
         'greeting': 'Hello, there!',
         'newClientCountToday': clients.count(),
         'transactionsCountToday': transactions.count(),
         'maturedToday': matured.count(),
         'expiredToday': expired.count(),
+        'pawn_list': last_10_transactions,
     }
     return render(request, 'dashboard.html', context)

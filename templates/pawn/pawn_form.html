@@ -137,7 +137,15 @@ New Pawn
             // call computeNetProceeds() when principal is changed
             $("#id_principal").on("keyup", computeNetProceeds);
 
-            // if id is not null, then assign client to the dropdown list
+            // when form is submitted, validate that the principal is not more than the appraised value
+            $("form").on("submit", function() {
+                const principal = parseFloat($("#id_principal").val()) || 0;
+                const appraisedValue = parseFloat($("#id_appraised_value").val()) || 0;
+                if (principal > appraisedValue) {
+                    toastr.error("The total principal must not exceed the appraised value.");
+                    return false;
+                }
+            });
 
             $("#menu-transactions").addClass("active")
         })

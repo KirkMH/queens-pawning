@@ -213,6 +213,7 @@ class Pawn(models.Model):
         default=False
     )
     status_updated_on = models.DateTimeField(null=True, blank=True)
+    updated_on = models.DateTimeField(auto_now=True)
     branch = models.ForeignKey(
         Branch,
         related_name='pawn_branch',
@@ -240,7 +241,7 @@ class Pawn(models.Model):
         if self.pawn_ticket_number:
             return f"{self.pawn_ticket_number} ({self.transaction_type})"
         else:
-            return f"{self.transaction_type[0]}-{self.id:06d}"
+            return f"{self.transaction_type}-{self.id:06d}"
 
     @property
     def complete_description(self):
@@ -267,7 +268,7 @@ class Pawn(models.Model):
         return self.get_transaction_type_display()
 
     def getElapseDays(self):
-        self.update_renew_redeem_date()
+        # self.update_renew_redeem_date()
         rrd = to_date(self.renew_redeem_date)
 
         if self.transaction_type == 'ADV':
@@ -396,9 +397,9 @@ class Pawn(models.Model):
         service_charge = otherFees.service_fee
         adv_int = 0
         interest = 0
-        if self.transaction_type == 'ADV':
-            adv_int = self.getAdvanceInterest()
-        else:
+        if self.transaction_type == 'ACC':
+        #     adv_int = self.getAdvanceInterest()
+        # else:
             interest = self.getInterest()
         return interest + self.getPenalty() + service_charge + adv_int + self.getAdditionalInterest()
 
@@ -657,6 +658,7 @@ class Pawn(models.Model):
         self.status = 'ACTIVE'
         self.status_updated_on = timezone.now()
         self.save()
+        print(f'{self.getPTN} was reset')
 
 
 class Payment(models.Model):
@@ -719,6 +721,14 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.pawn} - {self.amount_paid} by {self.cashier} on {self.date}"
+
+    def reset(self):
+        self.paid_for_principal = 0
+        self.paid_interest = 0
+        self.penalty = 0
+        self.discount_granted = 0
+        self.amount_paid = self.service_fee + self.advance_interest
+        self.save()
 
     class Meta:
         ordering = ['-pawn__pk']

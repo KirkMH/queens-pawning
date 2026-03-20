@@ -17,6 +17,18 @@ class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
         exclude = ('status', 'branch')
+        
+class ClientUpdateForm(forms.ModelForm):
+    required_css_class = 'required'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['id_link'].required = True
+        self.fields['middle_name'].required = False
+
+    class Meta:
+        model = Client
+        exclude = ('status',)
 
 
 class AdminClientForm(forms.ModelForm):

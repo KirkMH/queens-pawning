@@ -69,15 +69,26 @@ class DailyCashPosition(models.Model):
         return self.get_net_subtotal() - self.get_total_disbursements()
 
     def fill_in_from_yesterday(self):
+        from pawn.models import Pawn  # lazy import to avoid circular dependency
+        # initial value is yesterday
+        earliest_date_granted = timezone.now().date()
+        # get the earliest date_granted of pawn where the updated_on is today
+        earliest_pawn = Pawn.objects.filter(
+            branch=self.branch,
+            updated_on__date=earliest_date_granted
+        ).order_by('date_granted')
+        if earliest_pawn:
+            # get the date before date_granted
+            earliest_date_granted = earliest_pawn.first().date_granted - timezone.timedelta(days=1)
+
         # get the last daily cash position before today
         positions = DailyCashPosition.objects.filter(
             branch=self.branch,
-            date__lt=self.date
+            date__gte=earliest_date_granted
         ).order_by('-date')
 
         last_position = None
-        if positions.exists():
-            last_position = positions.first()
+        for last_position in positions:
             self.balance_coh = last_position.get_net_total()
             self.balance_cib = last_position.get_cash_in_bank()
             self.cash_in_bank = last_position.get_cash_in_bank()

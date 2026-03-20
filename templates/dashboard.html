@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load form_tags %}
 
 {% block title %}Dashboard{% endblock title %}
 
@@ -114,7 +115,7 @@
               <div class="card-header border-0">
                 <h3 class="card-title">
                   <i class="fas fa-thumbtack mr-1"></i>
-                  Bulletin
+                  Last 10 transactions
                 </h3>
 
                 <div class="card-tools">
@@ -129,18 +130,30 @@
               <div class="card-body table-responsive">
                 <table class="table table-sm">
                   
-                  {% if not bulletin_list %}
-                  <tr><td>The bulletin is clear. I think that's good news!</td></tr>
-                  {% else %}
+                  <tr>
+                    <th>Pawn Ticket Number</th>
+                    <th>Client</th>
+                    <th>Description</th>
+                    <th>Principal</th>
+                    <th>Date Granted</th>
+                    {% if not user.employee.branch %}
+                    <th>Branch</th>
+                    {% endif %}
+                  </tr>
                   
-                  {% for bulletin in bulletin_list %}
-                  <tr><td>
-                    <div class="bulletin-title text-primary" data-details="{{ bulletin.message }}">{{ bulletin.title }}</div>
-                    <div class="bulletin-info text-muted">Posted at {{ bulletin.created_at }}</div>
-                  </td></tr>  
+                  {% for pawn in pawn_list %}
+                  <tr>
+                    <td><a href="{% url 'pawn_detail' pawn.id %}">{{ pawn.getPTN }}</a></td>
+                    <td><a href="{% url 'client_detail' pawn.client.id %}">{{ pawn.client.full_name }}</a></td>
+                    <td>{{ pawn.complete_description }}</td>
+                    <td>{{ pawn.principal|peso }}</td>
+                    <td>{{ pawn.date_granted }}</td>
+                    {% if not user.employee.branch %}
+                    <td>{{ pawn.branch.name }}</td>
+                    {% endif %}
+                  </tr>  
                   {% endfor %}
                            
-                  {% endif %}
                 </table>
               </div>
               <!-- /.card-footer -->

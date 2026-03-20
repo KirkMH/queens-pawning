@@ -5,6 +5,6 @@
 */*/*/__pycache__
 */*/*/__pycache__/*
 .vercel
-.env
+.venv
 db.sqlite3
 queens/settings.py

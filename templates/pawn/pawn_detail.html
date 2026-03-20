@@ -37,7 +37,9 @@
                             <div class="col-lg-6 col-md-12">
                                 <p class="card-text"><span class="text-muted h4">Principal: </span><span class="h4">{{ pawn.principal|peso }}</span></p>
                                 <p class="card-text"><span class="text-muted">LESS Service Charge: </span>{{ pawn.service_charge|peso }}</p>
+                                {% if pawn.transaction_type == 'ADV' %}
                                 <p class="card-text"><span class="text-muted">LESS Advance Interest: </span>{{ pawn.advance_interest|peso }}</p>
+                                {% endif %}
                                 <p class="card-text"><span class="text-muted">NET PROCEEDS: </span><span class="h5">{{ pawn.net_proceeds|peso }}</span></p>
                             </div>
                             <div class="col-lg-6 col-md-12">
@@ -130,7 +132,7 @@
                                 <div class="col-6 h5">Minimum Payment for Renewal:</div>
                                 <div class="col-6 h5 text-right">
                                     {{ pawn.getMinimumPayment|peso }}
-                                    {% if pawn.transaction_type == 'ACC' %}<sup style="color: red;" title="plus advance interest">++</sup>{% endif %}
+                                    {% if pawn.transaction_type == 'ADV' %}<sup style="color: red;" title="plus advance interest">++</sup>{% endif %}
                                 </div>
                             </div>
                             {% if pawn.transaction_type == 'ADV' %}

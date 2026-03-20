@@ -34,7 +34,6 @@ const calculate = async () => {
     console.log("The total principal must not exceed the appraised value.");
     toastr.error("The total principal must not exceed the appraised value.");
     $("#additionalPrincipal").val("0.00");
-    calculate();
     return;
   }
 
@@ -49,7 +48,8 @@ const calculate = async () => {
       partial -
       additionalPrincipal;
 
-    if (transaction_type === "ACC") {
+    if (transaction_type === "ADV") {
+      console.log("Advance Interest being applied");
       const newPrincipal = principal + additionalPrincipal - partial;
       const response = await fetch(
         advIntUri +
@@ -71,6 +71,14 @@ const calculate = async () => {
         toPay += advInt;
         showToPayAndChange(tendered, toPay);
       }
+    }
+    else {
+      // hide the promised date and advance interest fields
+      console.log("Accrued Interest: Hiding promised date and advance interest fields");
+      $("#promised_renewal_date").prop('required', false);
+      $("#promised_renewal_date").parent().parent().hide();
+      $("#advanceInterest").val(0);
+      $("#advanceInterest").parent().parent().hide();
     }
   }
   showToPayAndChange(tendered, toPay);
@@ -100,7 +108,7 @@ function validateForm() {
   let err = "";
   if (change < 0)
     err = "Tendered amount must be greater than or equal to the receivable.";
-  else if (renew && transaction_type === "ACC" && promisedDate === "")
+  else if (renew && transaction_type === "ADV" && promisedDate === "")
     err = "Please enter the promised renewal date.";
 
   if (err) {

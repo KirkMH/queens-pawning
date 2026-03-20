@@ -35,7 +35,7 @@ class ClientDTListView(ServerSideDatatableView):
         print(f"branch: {branch}")
         if branch:
             qs = qs.filter(branch=branch)
-        return qs
+        return qs.order_by('last_name', 'first_name', 'middle_name')
 
 
 @method_decorator(login_required, name='dispatch')
@@ -61,7 +61,7 @@ class ClientCreateView(CreateView):
 class ClientUpdateView(SuccessMessageMixin, UpdateView):
     model = Client
     context_object_name = 'client'
-    form_class = ClientForm
+    form_class = ClientUpdateForm
     template_name = "files/client_form.html"
     pk_url_kwarg = 'pk'
     success_url = reverse_lazy('client_list')

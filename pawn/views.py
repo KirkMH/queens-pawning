@@ -22,7 +22,7 @@ from .forms import *
 
 @login_required
 def pawn_list(request):
-    selected_filter = request.GET.get('filter') or 'All'
+    selected_filter = request.GET.get('filter') or 'Active'
     # capitalize first letter
     selected_filter = selected_filter[0].upper() + selected_filter[1:]
     context = {'selected_filter': selected_filter}
@@ -54,7 +54,7 @@ class PawnDTListView(ServerSideDatatableView):
         print(f"branch: {branch}")
         if branch:
             clients = Client.objects.filter(branch=branch)
-            return qs.filter(client__in=clients)
+            return qs.filter(client__in=clients.order_by('status', '-date_granted'))
         else:
             return qs
 
@@ -152,12 +152,12 @@ def delete_pawn(request, pk):
 
     # update the mother ticket, if exists
     mother = pawn.renewed_from()
-    print(f'mother: {type(mother)}')
+    print(f'mother: {mother.getPTN()}')
     if mother:
-        # delete payment from mother ticket; TODO: validate that the service fee is not deleted
-        payments = Payment.objects.filter(pawn=mother.pk)
-        for payment in payments:
-            payment.delete()
+        # delete payment from mother ticket; validate that the service fee is not deleted
+        payment = Payment.objects.filter(pawn=mother.pk).first()
+        if payment:
+            payment.reset()
         # reset the status of the mother ticket
         mother.reset_status()
     # delete payments
@@ -180,10 +180,10 @@ def delete_pawn(request, pk):
 def void_pawn(request, pk):
     pawn = Pawn.objects.get(pk=pk)
 
-    # delete payment records; TODO: validate that the service fee is not deleted
-    payments = Payment.objects.filter(pawn=pawn.pk)
-    for payment in payments:
-        payment.delete()
+    # delete payment records; validate that the service fee is not deleted
+    payment = Payment.objects.filter(pawn=pawn.pk).first()
+    if payment:
+        payment.reset()
 
     # reset the status of the ticket
     pawn.reset_status()
