@@ -54,9 +54,9 @@ class PawnDTListView(ServerSideDatatableView):
         print(f"branch: {branch}")
         if branch:
             clients = Client.objects.filter(branch=branch)
-            return qs.filter(client__in=clients.order_by('status', '-date_granted'))
+            return qs.filter(client__in=clients).order_by('status', '-date_granted')
         else:
-            return qs
+            return qs.order_by('status', '-date_granted')
 
 
 @method_decorator(login_required, name='dispatch')

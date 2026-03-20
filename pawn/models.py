@@ -269,7 +269,7 @@ class Pawn(models.Model):
 
     def getElapseDays(self):
         # self.update_renew_redeem_date()
-        rrd = to_date(self.renew_redeem_date)
+        rrd = to_date(self.renew_redeem_date) if self.renew_redeem_date else timezone.now().date()
 
         if self.transaction_type == 'ADV':
             return (rrd - to_date(self.promised_renewal_date)).days if self.promised_renewal_date else 0
