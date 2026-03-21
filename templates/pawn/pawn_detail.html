@@ -34,26 +34,29 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <div class="col-lg-6 col-md-12">
-                                <p class="card-text"><span class="text-muted h4">Principal: </span><span class="h4">{{ pawn.principal|peso }}</span></p>
-                                <p class="card-text"><span class="text-muted">LESS Service Charge: </span>{{ pawn.service_charge|peso }}</p>
+                            <div class="col-lg-5 col-md-12">
+                                <p class="card-text"><span class="text-muted h4">Principal: </span><span class="h4 float-right">{{ pawn.principal|peso }}</span></p>
+                                <p class="card-text"><span class="text-muted">LESS Service Charge: </span><span class="float-right">{{ pawn.service_charge|peso }}</span></p>
                                 {% if pawn.transaction_type == 'ADV' %}
-                                <p class="card-text"><span class="text-muted">LESS Advance Interest: </span>{{ pawn.advance_interest|peso }}</p>
+                                <p class="card-text"><span class="text-muted">LESS Advance Interest: </span><span class="float-right">{{ pawn.advance_interest|peso }}</span></p>
                                 {% endif %}
-                                <p class="card-text"><span class="text-muted">NET PROCEEDS: </span><span class="h5">{{ pawn.net_proceeds|peso }}</span></p>
+                                <p class="card-text"><span class="text-muted">NET PROCEEDS: </span><span class="h5 float-right">{{ pawn.net_proceeds|peso }}</span></p>
+                            </div>
+                            <div class="col-lg-1 col-md-12">
+                                
                             </div>
                             <div class="col-lg-6 col-md-12">
-                                <p class="card-text"><span class="text-muted">Transaction Type: </span>{{ pawn.transaction_type_label }}</p>
-                                <p class="card-text"><span class="text-muted">Appraised Value: </span>{{ pawn.appraised_value|peso }}</p>
-                                <p class="card-text"><span class="text-muted">Branch: </span>{{ pawn.branch }}</p>
-                                <p class="card-text"><span class="text-muted">Date Pawned: </span>{{ pawn.date_granted|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
-                                <p class="card-text"><span class="text-muted">Encoded on: </span>{{ pawn.date_encoded|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
+                                <p class="card-text"><span class="text-muted">Transaction Type: </span><span class="float-right">{{ pawn.transaction_type_label|upper }}</span></p>
+                                <p class="card-text"><span class="text-muted">Appraised Value: </span><span class="float-right">{{ pawn.appraised_value|peso }}</span></p>
+                                <p class="card-text"><span class="text-muted">Branch: </span><span class="float-right">{{ pawn.branch|upper }}</span></p>
+                                <p class="card-text"><span class="text-muted">Date Pawned: </span><span class="float-right">{{ pawn.date_granted|date:"F d, Y (D)"|naturalday|default:'-' }}</span></p>
+                                <p class="card-text"><span class="text-muted">Encoded on: </span><span class="float-right">{{ pawn.date_encoded|date:"F d, Y (D)"|naturalday|default:'-' }}</span></p>
                                 {% if pawn.transaction_type == 'ADV' %}
-                                <p class="card-text"><span class="text-muted">Promised Renewal Date: </span>{{ pawn.promised_renewal_date|date:"F d, Y (D)"|naturalday|default:'-' }}</p>
+                                <p class="card-text"><span class="text-muted">Promised Renewal Date: </span><span class="float-right">{{ pawn.promised_renewal_date|date:"F d, Y (D)"|naturalday|default:'-' }}</span></p>
                                 {% endif %}
-                                <p class="card-text"><span class="text-muted">Status: </span>{{ pawn.getStanding }}{% if pawn.status == 'RENEWED' or pawn.status == 'REDEEMED' %} on {{ pawn.renew_redeem_date|date:"F d, Y (D)"|naturalday }}{% endif %}</p>
+                                <p class="card-text"><span class="text-muted">Status: </span><span class="float-right">{{ pawn.getStanding }}{% if pawn.status == 'RENEWED' or pawn.status == 'REDEEMED' %} on {{ pawn.renew_redeem_date|date:"F d, Y (D)"|naturalday }}{% endif %}</span></p>
                                 {% if pawn.status == 'RENEWED' and pawn.renewed_to %}
-                                <p class="card-text"><a href="{% url 'pawn_detail' pawn.renewed_to.pk  %}">Pawn Ticket # {{ pawn.renewed_to.getPTN }}</a></p>
+                                <p class="card-text"><span class="text-muted">Renewed to: </span><span class="float-right"><a href="{% url 'pawn_detail' pawn.renewed_to.pk  %}">Pawn Ticket # {{ pawn.renewed_to.getPTN }}</a></span></p>
                                 {% endif %}
                             </div>
                         </div>
@@ -93,7 +96,7 @@
                     {%if pawn.status == 'ACTIVE' %}
                         <div class="card-body">
                             <div class="row mb-2">
-                                <div class="col-6">Days Elapsed:</div>
+                                <div class="col-6">Days Elapsed{% if pawn.transaction_type == 'ADV' %} from Promised Renewal Date{%endif%}:</div>
                                 <div class="col-6 text-right">{{ pawn.getElapseDays }} day{{pawn.getElapseDays|pluralize}}</div>
                             </div>
                             {% if pawn.transaction_type == 'ACC' %}

@@ -267,9 +267,10 @@ class Pawn(models.Model):
     def transaction_type_label(self):
         return self.get_transaction_type_display()
 
-    def getElapseDays(self):
+    def getElapseDays(self, rrd=None):
         # self.update_renew_redeem_date()
-        rrd = to_date(self.renew_redeem_date) if self.renew_redeem_date else timezone.now().date()
+        if rrd is None:
+            rrd = to_date(self.renew_redeem_date) if self.renew_redeem_date else timezone.now().date()
 
         if self.transaction_type == 'ADV':
             return (rrd - to_date(self.promised_renewal_date)).days if self.promised_renewal_date else 0
@@ -304,13 +305,13 @@ class Pawn(models.Model):
             interest = 0
         return interest
 
-    def getAdditionalInterest(self):
+    def getAdditionalInterest(self, date=None):
         ''' the additional interest is calculated when the pawn is renewed past the promised renewal date '''
         additional_interest = 0
         if self.transaction_type == 'ADV':
             interest = self.principal * \
                 Decimal(
-                    str((Pawn.advanceInterestRate(self.promised_renewal_date, self.date_granted) / 100)))
+                    str((Pawn.advanceInterestRate(date if date else self.promised_renewal_date, self.date_granted) / 100)))
             print(f"Interest: {interest}")
             print(f"Current Advance Interest: {self.advance_interest}")
             if interest > self.advance_interest:
@@ -332,9 +333,8 @@ class Pawn(models.Model):
         print(f"Elapsed: {elapsed}")
         return elapsed > TermDuration.get_instance().expiration
 
-    def hasPenalty(self):
-        elapsed = (to_date(self.renew_redeem_date) -
-                   to_date(self.date_granted)).days
+    def hasPenalty(self, date=None):
+        elapsed = ((date if date else to_date(self.renew_redeem_date)) - to_date(self.date_granted)).days
         return elapsed > TermDuration.get_instance().maturity
 
     def getStanding(self):
@@ -351,12 +351,12 @@ class Pawn(models.Model):
     def getPrincipalPlusAuctionInterest(self):
         return self.principal + self.getAuctionInterest()
 
-    def getPenalty(self):
-        if self.hasPenalty():
-            daysPenalty = self.getElapseDays()
+    def getPenalty(self, date=None):
+        if self.hasPenalty(date):
+            daysPenalty = self.getElapseDays(date)
             if self.transaction_type == 'EXISTING':
                 daysPenalty = Decimal(
-                    str(self.getElapseDays() - TermDuration.get_instance().maturity))
+                    str(daysPenalty - TermDuration.get_instance().maturity))
             print(f"Days Penalty: {daysPenalty}")
             other_fees = OtherFees.get_instance()
             deferred_fields = other_fees.get_deferred_fields()
@@ -370,6 +370,7 @@ class Pawn(models.Model):
             print(f"Penalty: {penalty}")
 
             return penalty
+        print("No penalty")
         return 0
 
     def getInterestPlusPenalty(self):

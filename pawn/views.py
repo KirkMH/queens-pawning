@@ -201,6 +201,7 @@ def void_pawn(request, pk):
 def update_renew_redeem_date(request, pk):
     error = None
     status = 'success'
+    data = {}
     print("updating...")
     if request.method == 'POST':
         print(request.POST)
@@ -218,16 +219,18 @@ def update_renew_redeem_date(request, pk):
                     error = 'Date should not be less than the grant date.'
                 else:
                     pawn.update_renew_redeem_date(renew_redeem_date)
-                print(f'Interest: {pawn.getInterest()}')
-                print(f'Advance Interest: {pawn.getAdvanceInterest()}')
-                print(f'Penalty: {pawn.getPenalty()}')
-                print(f'Interest + Penalty: {pawn.getInterestPlusPenalty()}')
+                data['interest'] = pawn.getInterest()
+                data['additional_interest'] = pawn.getAdditionalInterest(renew_redeem_date)
+                data['advance_interest'] = pawn.getAdvanceInterest()
+                data['penalty'] = pawn.getPenalty(renew_redeem_date)
+                data['interest_plus_penalty'] = data['interest'] + data['additional_interest'] + data['penalty']
+                print(f'return data: {data}')
         except Exception as e:
             print(e)
             error = str(e)
             status = 'error'
 
-    return JsonResponse({'status': status, 'error': error})
+    return JsonResponse({'status': status, 'data': data, 'error': error})
 
 
 @login_required
