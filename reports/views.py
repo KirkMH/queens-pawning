@@ -402,8 +402,8 @@ def generate_auction_report(employee: Employee):
     report = []
     for r in filtered:
         print(
-            f'PTN: {r.getPTN}, {r.date_granted}, {r.expiration_date}, {r.on_hold}, {r.status}, {r.branch}')
-        if r.status == 'ACTIVE' and r.hasExpired() and not r.on_hold and (branch and r.branch == branch):
+            f'PTN: {r.ptn}, {r.date_granted}, {r.expiration_date}, {r.on_hold}, {r.status}, {r.branch}')
+        if r.status == 'ACTIVE' and r.has_expired() and not r.on_hold and (branch and r.branch == branch):
             report.append(r)
             print('...added')
     print(f'Report: {report}')
@@ -422,13 +422,12 @@ def auction_report(request):
     report, branch = generate_auction_report(employee)
     print(report)
     principal_total = sum([pawn.principal for pawn in report])
-    interest_total = sum([pawn.getAuctionInterest() for pawn in report])
+    interest_total = sum([pawn.get_auction_interest() for pawn in report])
     grand_total = principal_total + interest_total
 
     context = {
         'report': report,
         'branch': branch,
-        'type': type,
         'principal_total': principal_total,
         'interest_total': interest_total,
         'grand_total': grand_total
@@ -569,7 +568,7 @@ def income_statement(request):
 
         # sum interests (together with advance interest) and service charge
         for payment in payment_list:
-            print(f"PTN: {payment.pawn.getPTN}")
+            print(f"PTN: {payment.pawn.ptn}")
             print(f"Interest: {payment.paid_interest}")
             print(f"Advance Interest: {payment.advance_interest}")
             print(f"Service Fee: {payment.service_fee}")

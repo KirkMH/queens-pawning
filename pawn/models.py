@@ -234,10 +234,10 @@ class Pawn(models.Model):
     expired = Expired()
 
     def __str__(self):
-        return f"{self.getPTN}: {self.client} - {self.complete_description}"
+        return f"{self.ptn}: {self.client} - {self.complete_description}"
 
     @property
-    def getPTN(self):
+    def ptn(self):
         if self.pawn_ticket_number:
             return f"{self.pawn_ticket_number} ({self.transaction_type})"
         else:
@@ -267,7 +267,7 @@ class Pawn(models.Model):
     def transaction_type_label(self):
         return self.get_transaction_type_display()
 
-    def getElapseDays(self, rrd=None):
+    def get_elapsed_days(self, rrd=None):
         # self.update_renew_redeem_date()
         if rrd is None:
             rrd = to_date(self.renew_redeem_date) if self.renew_redeem_date else timezone.now().date()
@@ -277,13 +277,13 @@ class Pawn(models.Model):
         else:
             return (rrd - to_date(self.date_granted)).days
 
-    def getInterestRate(self):
-        elapsed = self.getElapseDays()
+    def get_interest_rate(self):
+        elapsed = self.get_elapsed_days()
         rate = InterestRate.rates.get_rate(elapsed)
         return rate if rate else 0
 
     @staticmethod
-    def advanceInterestRate(promise_date, date_granted=None):
+    def advance_interest_rate(promise_date, date_granted=None):
         elapsed = 0
         date_granted = timezone.now().date() if date_granted is None else date_granted
         if promise_date:
@@ -293,76 +293,71 @@ class Pawn(models.Model):
             f"Promise Date: {promise_date}, Elapsed: {elapsed}, Rate: {rate}")
         return rate if rate else 0
 
-    def getAdvanceInterestRate(self):
-        return Pawn.advanceInterestRate(self.promised_renewal_date, self.date_granted)
+    def get_advance_interest_rate(self):
+        return Pawn.advance_interest_rate(self.promised_renewal_date, self.date_granted)
 
-    def getInterest(self):
+    def get_interest(self):
         # interest = 0
         # if self.transaction_type == 'EXISTING':
         interest = self.principal * \
-            Decimal(str((self.getInterestRate() / 100)))
+            Decimal(str((self.get_interest_rate() / 100)))
         if self.transaction_type == 'ADV':  # and interest >= self.advance_interest:
             interest = 0
         return interest
 
-    def getAdditionalInterest(self, date=None):
+    def get_additional_interest(self, as_of_date=None):
         ''' the additional interest is calculated when the pawn is renewed past the promised renewal date '''
         additional_interest = 0
         if self.transaction_type == 'ADV':
             interest = self.principal * \
                 Decimal(
-                    str((Pawn.advanceInterestRate(date if date else self.promised_renewal_date, self.date_granted) / 100)))
+                    str((Pawn.advance_interest_rate(as_of_date if as_of_date else self.promised_renewal_date, self.date_granted) / 100)))
             print(f"Interest: {interest}")
             print(f"Current Advance Interest: {self.advance_interest}")
             if interest > self.advance_interest:
                 additional_interest = interest - self.advance_interest
         return additional_interest
 
-    def getAdvanceInterest(self):
-        return self.principal * Decimal(str((self.getAdvanceInterestRate() / 100)))
+    def get_advance_interest(self):
+        return self.principal * Decimal(str((self.get_advance_interest_rate() / 100)))
 
-    def hasMatured(self):
+    def has_matured(self):
         elapsed = (timezone.now().date() - self.date_granted).days
         return elapsed >= TermDuration.get_instance().maturity
 
     def get_maturity_date(self):
         return self.date_granted + timezone.timedelta(days=TermDuration.get_instance().maturity)
 
-    def hasExpired(self):
+    def has_expired(self):
         elapsed = (timezone.now().date() - self.date_granted).days
         print(f"Elapsed: {elapsed}")
         return elapsed > TermDuration.get_instance().expiration
 
-    def hasPenalty(self, date=None):
-        elapsed = ((date if date else to_date(self.renew_redeem_date)) - to_date(self.date_granted)).days
-        return elapsed > TermDuration.get_instance().maturity
+    def has_penalty(self, date=None):
+        return self.get_elapsed_days(date) > TermDuration.get_instance().maturity
 
-    def getStanding(self):
+    def get_standing(self):
         if self.status == 'ACTIVE':
-            if self.hasExpired():
+            if self.has_expired():
                 return 'EXPIRED'
-            if self.hasMatured():
+            if self.has_matured():
                 return 'MATURED'
         return self.status
 
-    def getAuctionInterest(self):
+    def get_auction_interest(self):
         return self.principal * Decimal(4 * 0.04)
 
-    def getPrincipalPlusAuctionInterest(self):
-        return self.principal + self.getAuctionInterest()
+    def get_principal_plus_auction_interest(self):
+        return self.principal + self.get_auction_interest()
 
-    def getPenalty(self, date=None):
-        if self.hasPenalty(date):
-            daysPenalty = self.getElapseDays(date)
+    def get_penalty(self, date=None):
+        if self.has_penalty(date):
+            daysPenalty = self.get_elapsed_days(date)
             if self.transaction_type == 'EXISTING':
                 daysPenalty = Decimal(
                     str(daysPenalty - TermDuration.get_instance().maturity))
             print(f"Days Penalty: {daysPenalty}")
-            other_fees = OtherFees.get_instance()
-            deferred_fields = other_fees.get_deferred_fields()
-            if 'penalty_rate' in deferred_fields:
-                other_fees.refresh_from_db(fields=['penalty_rate'])
-            penalty_rate = other_fees.penalty_rate
+            penalty_rate = OtherFees.get_instance().penalty_rate
             penalty = abs(self.principal * Decimal(penalty_rate / 100)
                           * Decimal(daysPenalty / 30))
 
@@ -373,108 +368,127 @@ class Pawn(models.Model):
         print("No penalty")
         return 0
 
-    def getInterestPlusPenalty(self):
-        interest = self.getInterest()
-        penalty = self.getPenalty()
-        addInt = self.getAdditionalInterest()
-        print(
-            f"Interest: {interest}, Penalty: {penalty}, Additional Interest: {addInt}")
-        return interest + penalty + addInt
+    def get_min_total_due(self):
+        return self.get_interest() + self.get_penalty() + self.get_additional_interest()
+        
+    getInterestPlusPenalty = get_min_total_due
 
-    def getPrincipalPlusInterest(self):
-        return self.principal + self.getInterest()
+    def get_principal_plus_interest(self):
+        return self.principal + self.get_interest()
 
-    def getTotalDue(self):
-        return self.getPrincipalPlusInterest() + self.getPenalty() + self.getAdditionalInterest()
+    def get_total_due(self):
+        return self.get_principal_plus_interest() + self.get_penalty() + self.get_additional_interest()
 
-    def getMinTotalDue(self):
-        return self.getInterest() + self.getPenalty() + self.getAdditionalInterest()
+    def get_min_total_due(self):
+        return self.get_interest() + self.get_penalty() + self.get_additional_interest()
 
-    def getRenewalServiceFee(self):
+    def get_renewal_service_fee(self):
         return OtherFees.get_instance().service_fee
 
-    def getMinimumPayment(self):
+    def get_minimum_payment(self):
         otherFees = OtherFees.get_instance()
         service_charge = otherFees.service_fee
         adv_int = 0
         interest = 0
         if self.transaction_type == 'ACC':
-        #     adv_int = self.getAdvanceInterest()
+        #     adv_int = self.get_advance_interest()
         # else:
-            interest = self.getInterest()
-        return interest + self.getPenalty() + service_charge + adv_int + self.getAdditionalInterest()
+            interest = self.get_interest()
+        return interest + self.get_penalty() + service_charge + adv_int + self.get_additional_interest()
 
     def pay(self, post, cashier):
-        new_ptn = post.get('new_ptn')
         amount_paid = Decimal(post.get('amtToPay'))
-        otherFees = OtherFees.get_instance()
-        paid_for_principal = Decimal(post.get('partial', '0'))
-        interest = self.getInterest()
-        penalty = self.getPenalty()
-        additional_principal = Decimal(post.get('additionalPrincipal', '0'))
-        promised_date = None
-        adv_interest_rate = 0
-        adv_interest = 0
-        if post.get('promised_renewal_date'):
-            promised_date = timezone.datetime.strptime(
-                post.get('promised_renewal_date'), '%Y-%m-%d').date()
-            adv_interest_rate = Pawn.advanceInterestRate(
-                promised_date, self.date_granted)
-            adv_interest = (self.principal - paid_for_principal +
-                            additional_principal) * Decimal(adv_interest_rate / 100)
-        service_fee = 0
-        discounted = 0
-        dr = DiscountRequests.objects.filter(pawn=self)
-
-        if dr:
-            discounted = dr.first().getApprovedDiscount()
-
         if amount_paid >= self.principal:
-            self.status = 'REDEEMED'
-
+            self._redeem(post, cashier, amount_paid)
         else:
-            service_fee = otherFees.service_fee
-            new_principal = self.principal - paid_for_principal + additional_principal
-            # create a new pawn ticket for the renewed pawn
-            new_pawn = Pawn()
-            new_pawn.transaction_type = self.transaction_type
-            new_pawn.date_granted = self.renew_redeem_date
-            new_pawn.client = self.client
-            new_pawn.pawn_ticket_number = new_ptn
-            new_pawn.quantity = self.quantity
-            new_pawn.carat = self.carat
-            new_pawn.color = self.color
-            new_pawn.item_description = self.item_description
-            new_pawn.description = self.description
-            new_pawn.grams = self.grams
-            new_pawn.principal = new_principal
-            new_pawn.appraised_value = self.appraised_value
-            new_pawn.additional_principal = additional_principal
-            new_pawn.promised_renewal_date = promised_date
-            new_pawn.service_charge = service_fee
-            new_pawn.advance_interest = adv_interest
-            new_pawn.net_proceeds = new_principal - service_fee - adv_interest
-            new_pawn.branch = self.branch
-            new_pawn.status = 'ACTIVE'
-            new_pawn.save()
+            self._renew(post, cashier, amount_paid)
 
-            self.status = 'RENEWED'
-            self.renewed_to = new_pawn
+    def _get_discount(self):
+        dr = DiscountRequests.objects.filter(pawn=self).first()
+        return dr.getApprovedDiscount() if dr else 0
 
+    def _redeem(self, post, cashier, amount_paid):
+        interest_plus_penalty = Decimal(post.get('interestPlusPenaltyVal', '0'))
+
+        self.status = 'REDEEMED'
         self.status_updated_on = timezone.now()
         self.save()
 
         self.update_payment(
-            cashier, service_fee, adv_interest, amount_paid, interest, penalty, paid_for_principal, discounted)
+            cashier,
+            service_fee=0,
+            advance_interest=0,
+            amount_paid=amount_paid,
+            paid_interest=interest_plus_penalty,
+            penalty=self.get_penalty(),
+            paid_for_principal=Decimal(post.get('partial', '0')),
+            discount_granted=self._get_discount()
+        )
+        self.update_receipts(cashier, 'Redeemed', amount_paid, new_entry=True)
 
-        # update daily cash position
-        if self.status == 'RENEWED':
-            self.update_cash_position_renew_ticket(
-                cashier, 'Renewed pawn ticket', new_pawn, new_entry=False
-            )
-        elif self.status == 'REDEEMED':
-            self.update_receipts(
-                cashier, 'Redeemed', amount_paid, new_entry=True)
+    def _renew(self, post, cashier, amount_paid):
+        paid_for_principal = Decimal(post.get('partial', '0'))
+        additional_principal = Decimal(post.get('additionalPrincipal', '0'))
+        interest_plus_penalty = Decimal(post.get('interestPlusPenaltyVal', '0'))
+        adv_interest = Decimal(post.get('advanceInterestVal', '0'))
+        promised_date = timezone.datetime.strptime(
+            post.get('promised_renewal_date'), '%Y-%m-%d').date()
+                            
+        service_fee = OtherFees.get_instance().service_fee
+        new_principal = self.principal - paid_for_principal + additional_principal
+        
+        new_pawn = self._build_renewed_pawn(
+            new_ptn=post.get('new_ptn'),
+            new_principal=new_principal,
+            additional_principal=additional_principal,
+            promised_date=promised_date,
+            service_fee=service_fee,
+            adv_interest=adv_interest
+        )
+        new_pawn.save()
+        
+        self.status = 'RENEWED'
+        self.renewed_to = new_pawn
+        self.status_updated_on = timezone.now()
+        self.save()
+        
+        self.update_payment(
+            cashier,
+            service_fee=service_fee,
+            advance_interest=adv_interest,
+            amount_paid=amount_paid,
+            paid_interest=interest_plus_penalty,
+            penalty=self.get_penalty(),
+            paid_for_principal=paid_for_principal,
+            discount_granted=self._get_discount()
+        )
+        
+        self.update_cash_position_renew_ticket(
+            cashier, 'Renewed pawn ticket', new_pawn, new_entry=False
+        )
+
+    def _build_renewed_pawn(self, new_ptn, new_principal, additional_principal, promised_date, service_fee, adv_interest):
+        new_pawn = Pawn()
+        new_pawn.transaction_type = self.transaction_type
+        new_pawn.date_granted = self.renew_redeem_date
+        new_pawn.client = self.client
+        new_pawn.pawn_ticket_number = new_ptn
+        new_pawn.quantity = self.quantity
+        new_pawn.carat = self.carat
+        new_pawn.color = self.color
+        new_pawn.item_description = self.item_description
+        new_pawn.description = self.description
+        new_pawn.grams = self.grams
+        new_pawn.principal = new_principal
+        new_pawn.appraised_value = self.appraised_value
+        new_pawn.additional_principal = additional_principal
+        new_pawn.promised_renewal_date = promised_date
+        new_pawn.service_charge = service_fee
+        new_pawn.advance_interest = adv_interest
+        new_pawn.net_proceeds = new_principal - service_fee - adv_interest
+        new_pawn.branch = self.branch
+        new_pawn.status = 'ACTIVE'
+        return new_pawn
 
     def update_payment(self, cashier, service_fee, advance_interest, amount_paid=0, paid_interest=0, penalty=0, paid_for_principal=0, discount_granted=0):
         created = False
@@ -502,83 +516,48 @@ class Pawn(models.Model):
             renewal = self.date_granted
         return renewal
 
-    def update_receipts(self, cashier, description, amount, new_entry=True, ticket=None):
-        ticket = self if ticket is None else ticket
-        receipt = None
+    def _upsert_cash_entry(self, model_class, cashier, description, amount, new_entry, ticket, payee_field):
+        ticket = ticket or self
         date = ticket.date_granted
-        if description == "Redeemed" and self.renew_redeem_date is not None:
+        if description == "Redeemed" and self.renew_redeem_date:
             date = self.renew_redeem_date
-        print(f'new entry? {new_entry}')
-        print(f'date: {date}')
-        print(f'ticket: {ticket}')
-        cash_position, created = DailyCashPosition.objects.get_or_create(
+            
+        cash_position, _ = DailyCashPosition.objects.get_or_create(
             branch=ticket.branch,
             date=date
         )
-        print(f'cash position created? {created}')
-        print(f'cash position: {cash_position}')
-        receipts = AddReceipts.objects.filter(
-            # daily_cash_position=cash_position,
-            pawn=ticket
-        )
-        if receipts.exists():
-            receipts.delete()
-        receipt, created = AddReceipts.objects.get_or_create(
+        
+        model_class.objects.filter(pawn=ticket).delete()
+        entry, _ = model_class.objects.get_or_create(
             daily_cash_position=cash_position,
             pawn=ticket
         )
-        print(f'receipt created? {created}')
-        print(f'receipt: {receipt}')
+        
         if new_entry:
             cash_position.prepared_by = cashier
             cash_position.save()
 
-        receipt.reference_number = ticket.getPTN
-        receipt.received_from = ticket.client.full_name
-        receipt.particulars = description
-        receipt.amount = amount
-        receipt.automated = True
-        receipt.save()
+        entry.reference_number = ticket.ptn
+        setattr(entry, payee_field, ticket.client.full_name)
+        entry.particulars = description
+        entry.amount = amount
+        entry.automated = True
+        entry.save()
+        return entry
+
+    def update_receipts(self, cashier, description, amount, new_entry=True, ticket=None):
+        receipt = self._upsert_cash_entry(
+            AddReceipts, cashier, description, amount, new_entry, ticket, 'received_from'
+        )
         print(f'Receipt amount set to: {receipt.amount}')
         return receipt
 
     def update_disbursements(self, cashier, description, amount, new_entry=True, ticket=None):
-        ticket = self if ticket is None else ticket
-        disbursement = None
-        date = ticket.date_granted
-        cash_position, created = DailyCashPosition.objects.get_or_create(
-            branch=self.branch,
-            date=date
+        disbursement = self._upsert_cash_entry(
+            LessDisbursements, cashier, description, amount, new_entry, ticket, 'payee'
         )
-        print(f'cash position created? {created}')
-        print(f'cash position: {cash_position}')
-        disbursements = LessDisbursements.objects.filter(
-            # daily_cash_position=cash_position,
-            pawn=ticket
-        )
-        if disbursements.exists():
-            disbursements.delete()
-        disbursement, created = LessDisbursements.objects.get_or_create(
-            daily_cash_position=cash_position,
-            pawn=ticket
-        )
-        print(f'disbursement created? {created}')
-        print(f'disbursement: {disbursement}')
-        if new_entry:
-            cash_position.prepared_by = cashier
-            cash_position.save()
-
-        disbursement.reference_number = ticket.getPTN
-        disbursement.payee = ticket.client.full_name
-        disbursement.particulars = description
-        disbursement.amount = amount
-        disbursement.automated = True
-        disbursement.save()
         print(f'Disbursement amount set to: {disbursement.amount}')
         return disbursement
-
-    def update_cash_position_new_ticket(self, cashier, description, new_entry=True):
-        return self.update_cash_position_renew_ticket(cashier, description, self, new_entry)
 
     def update_cash_position_renew_ticket(self, cashier, description, new_ticket, new_entry=True):
         receipt = None
@@ -587,7 +566,7 @@ class Pawn(models.Model):
         if self.transaction_type == 'ADV':
             total_interest = new_ticket.advance_interest  # adv interest must be deducted
         else:
-            total_interest = self.getInterest()
+            total_interest = self.get_interest()
 
         # # check if this is a renewed ticket
         # mother_ticket = Pawn.objects.filter(
@@ -597,7 +576,7 @@ class Pawn(models.Model):
 
         # RECEIPT: new -- interest only; renew -- old principal + interest + penalty
         if self.renewed_to:
-            r_amt = self.principal + total_interest + self.getPenalty()
+            r_amt = self.principal + total_interest + self.get_penalty()
         else:
             r_amt = total_interest
         receipt = self.update_receipts(
@@ -613,6 +592,7 @@ class Pawn(models.Model):
     def is_encoded_today(self):
         return self.date_encoded == timezone.now().date()
 
+    @property
     def renewed_from(self):
         print(f'renewed_to: {self.renewed_to}')
         if self.renewed_to is None:
@@ -622,7 +602,7 @@ class Pawn(models.Model):
         print(f"Mother ticket: {mother}")
         return mother
 
-    def is_pawn_edittable(self):
+    def is_pawn_editable(self):
         user = getattr(self, 'current_user', None)
         return self.renewed_from is None and self.status == 'ACTIVE' and (
             user and user.employee.branch is None or self.is_encoded_today()
@@ -659,8 +639,30 @@ class Pawn(models.Model):
         self.status = 'ACTIVE'
         self.status_updated_on = timezone.now()
         self.save()
-        print(f'{self.getPTN} was reset')
+        print(f'{self.ptn} was reset')
 
+
+
+    getPTN = property(ptn)
+    getElapseDays = get_elapsed_days
+    getInterestRate = get_interest_rate
+    advanceInterestRate = advance_interest_rate
+    getAdvanceInterestRate = get_advance_interest_rate
+    getInterest = get_interest
+    getAdditionalInterest = get_additional_interest
+    getAdvanceInterest = get_advance_interest
+    hasMatured = has_matured
+    hasExpired = has_expired
+    hasPenalty = has_penalty
+    getStanding = get_standing
+    getAuctionInterest = get_auction_interest
+    getPrincipalPlusAuctionInterest = get_principal_plus_auction_interest
+    getPenalty = get_penalty
+    getPrincipalPlusInterest = get_principal_plus_interest
+    getTotalDue = get_total_due
+    getMinTotalDue = get_min_total_due
+    getRenewalServiceFee = get_renewal_service_fee
+    getMinimumPayment = get_minimum_payment
 
 class Payment(models.Model):
     date = models.DateTimeField(auto_now_add=True)

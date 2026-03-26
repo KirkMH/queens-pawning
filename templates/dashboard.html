@@ -143,7 +143,7 @@
                   
                   {% for pawn in pawn_list %}
                   <tr>
-                    <td><a href="{% url 'pawn_detail' pawn.id %}">{{ pawn.getPTN }}</a></td>
+                    <td><a href="{% url 'pawn_detail' pawn.id %}">{{ pawn.ptn }}</a></td>
                     <td><a href="{% url 'client_detail' pawn.client.id %}">{{ pawn.client.full_name }}</a></td>
                     <td>{{ pawn.complete_description }}</td>
                     <td>{{ pawn.principal|peso }}</td>
