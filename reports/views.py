@@ -153,58 +153,82 @@ def set_onhold(request, pk, status):
 
 @login_required
 def daily_cash_position(request):
-    employee = Employee.objects.get(user=request.user)
+    from django.db import transaction, IntegrityError
+
+    employee = get_object_or_404(Employee, user=request.user)
     branch_employee = employee.branch
 
-    date = request.GET.get('date')
-    branch = request.GET.get('branch')
-    print(f"branch: {branch}")
-    is_today = True
-    if not date:
+    # parse date
+    date_str = request.GET.get('date')
+    if not date_str:
         date = timezone.now().date()
+        is_today = True
     else:
-        date = timezone.datetime.strptime(date, '%Y-%m-%d').date()
-        if date != timezone.now().date():
-            is_today = False
+        date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
+        is_today = (date == timezone.now().date())
 
-    if branch:
-        branch = int(branch)
-        if branch > -1:
-            branch = Branch.objects.get(pk=branch)
-        else:
-            branch = None
+    # resolve branch parameter; only allow selecting a branch if the employee has no branch (i.e. an admin)
+    branch_param = request.GET.get('branch')
+    if branch_param:
+        try:
+            branch_id = int(branch_param)
+            if branch_id > 0:
+                candidate = get_object_or_404(Branch, pk=branch_id)
+                # allow override only if employee has no branch
+                if branch_employee is None:
+                    branch = candidate
+                else:
+                    branch = branch_employee
+            else:
+                branch = None
+        except (ValueError, Branch.DoesNotExist):
+            branch = branch_employee
     else:
         branch = branch_employee
 
-    print(f"branch: {branch}")
-
-    daily_cash_position = None
+    cash_position = None
     receipts = None
     disbursements = None
     last = None
-    if branch:
-        daily_cash_position = DailyCashPosition.objects.filter(
-            branch=branch,
-            date=date
-        )
-        if daily_cash_position.count() == 0:
-            daily_cash_position = DailyCashPosition.objects.create(
-                branch=branch,
-                date=date
-            )
-            daily_cash_position.prepared_by = employee
-            daily_cash_position.save()
-        else:
-            first_position = daily_cash_position.order_by('-id')[0]
-            # delete the rest of the positions if they exist
-            daily_cash_position.exclude(id=first_position.id).delete()
-            daily_cash_position = first_position
 
-        receipts = daily_cash_position.receipts.all()
-        disbursements = daily_cash_position.disbursements.all()
-        last = daily_cash_position.fill_in_from_yesterday()
+    if branch and date:
+        # deterministic ordering and minimal queries
+        qs = DailyCashPosition.objects.filter(branch=branch, date=date).order_by('id')
+        instance = qs.first()
+
+        if not instance:
+            # attempt creation inside a transaction to reduce race window
+            try:
+                with transaction.atomic():
+                    instance, created = DailyCashPosition.objects.get_or_create(
+                        branch=branch,
+                        date=date,
+                        defaults={'prepared_by': employee}
+                    )
+            except IntegrityError:
+                # concurrent create occurred; reload the first instance
+                instance = DailyCashPosition.objects.filter(branch=branch, date=date).order_by('id').first()
+        else:
+            # ensure prepared_by is set
+            if not instance.prepared_by:
+                instance.prepared_by = employee
+                instance.save()
+
+        # remove any duplicates deterministically (keep the one with smallest id)
+        duplicates = DailyCashPosition.objects.filter(branch=branch, date=date).exclude(pk=instance.pk)
+        if duplicates.exists():
+            duplicates.delete()
+
+        cash_position = instance
+        receipts = cash_position.receipts.all()
+        disbursements = cash_position.disbursements.all()
+        try:
+            last = cash_position.fill_in_from_yesterday(date)
+        except Exception:
+            last = None
+
     context = {
-        'cash_position': daily_cash_position,
+        'cash_position': cash_position,
         'receipts': receipts,
         'disbursements': disbursements,
         'last': last,

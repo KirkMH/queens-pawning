@@ -7,7 +7,7 @@ from simple_history.models import HistoricalRecords
 
 from django.utils import timezone
 from datetime import datetime, date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from files.models import Client, Branch, InterestRate, AdvanceInterestRate, TermDuration, OtherFees
 from access_hub.models import Employee
@@ -426,14 +426,23 @@ class Pawn(models.Model):
         )
         self.update_receipts(cashier, 'Redeemed', amount_paid, new_entry=True)
 
+    def to_decimal(self, value):
+        raw = (value or '0').strip()
+        try:
+            dec = Decimal(raw)
+        except (InvalidOperation, TypeError):
+            dec = Decimal('0')
+        return dec
+
     def _renew(self, post, cashier, amount_paid):
-        paid_for_principal = Decimal(post.get('partial', '0'))
-        additional_principal = Decimal(post.get('additionalPrincipal', '0'))
-        interest_plus_penalty = Decimal(post.get('interestPlusPenaltyVal', '0'))
-        adv_interest = Decimal(post.get('advanceInterestVal', '0'))
+        paid_for_principal = self.to_decimal(post.get('partial', '0'))
+        additional_principal = self.to_decimal(post.get('additionalPrincipal', '0'))
+        interest_plus_penalty = self.to_decimal(post.get('interestPlusPenaltyVal', '0'))
+        adv_interest = self.to_decimal(post.get('advanceInterestVal', '0'))
+        promised = post.get('promised_renewal_date', None)
         promised_date = timezone.datetime.strptime(
-            post.get('promised_renewal_date'), '%Y-%m-%d').date()
-                            
+            promised, '%Y-%m-%d').date() if promised else None
+
         service_fee = OtherFees.get_instance().service_fee
         new_principal = self.principal - paid_for_principal + additional_principal
         
