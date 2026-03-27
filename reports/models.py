@@ -68,32 +68,80 @@ class DailyCashPosition(models.Model):
     def get_net_total(self):
         return self.get_net_subtotal() - self.get_total_disbursements()
 
-    def fill_in_from_yesterday(self):
+    def fill_in_from_yesterday(self, selected_date):
         from pawn.models import Pawn  # lazy import to avoid circular dependency
-        # initial value is yesterday
-        earliest_date_granted = timezone.now().date()
-        # get the earliest date_granted of pawn where the updated_on is today
+        from django.utils import timezone
+        from datetime import timedelta
+
+        today = timezone.now().date()
+
+        # 1. check earliest date_granted of pawns updated today for this branch
         earliest_pawn = Pawn.objects.filter(
             branch=self.branch,
-            updated_on__date=earliest_date_granted
-        ).order_by('date_granted')
+            updated_on__date=today
+        ).order_by('date_granted').first()
+
+        # 2. determine start date: day before earliest date_granted (if any), otherwise yesterday
         if earliest_pawn:
-            # get the date before date_granted
-            earliest_date_granted = earliest_pawn.first().date_granted - timezone.timedelta(days=1)
+            start_date = earliest_pawn.date_granted - timedelta(days=1)
+        else:
+            start_date = today - timedelta(days=1)
 
-        # get the last daily cash position before today
-        positions = DailyCashPosition.objects.filter(
+        # Normalize selected_date to a date object if a datetime was passed
+        if hasattr(selected_date, 'date'):
+            selected_date = selected_date.date()
+
+        # last_date is the day before the selected_date (the one we must return)
+        last_date = selected_date - timedelta(days=1)
+
+        # If the start_date is after last_date, find and return the last position before selected_date
+        if start_date > last_date:
+            return DailyCashPosition.objects.filter(
+                branch=self.branch,
+                date__lt=selected_date
+            ).order_by('-date').first()
+
+        # 3. Recalculate / recreate daily cash positions from start_date up to last_date (inclusive)
+        # Find previous known position before start_date to seed the calculation
+        prev_position = DailyCashPosition.objects.filter(
             branch=self.branch,
-            date__gte=earliest_date_granted
-        ).order_by('-date')
+            date__lt=start_date
+        ).order_by('-date').first()
 
-        last_position = None
-        for last_position in positions:
-            self.balance_coh = last_position.get_net_total()
-            self.balance_cib = last_position.get_cash_in_bank()
-            self.cash_in_bank = last_position.get_cash_in_bank()
-            self.save()
-        return last_position
+        if prev_position:
+            prev_net_total = prev_position.get_net_total()
+            prev_cash_in_bank = prev_position.get_cash_in_bank()
+        else:
+            prev_net_total = Decimal('0.00')
+            prev_cash_in_bank = Decimal('0.00')
+
+        current_date = start_date
+        while current_date <= last_date:
+            pos, created = DailyCashPosition.objects.get_or_create(
+                branch=self.branch,
+                date=current_date,
+                defaults={'prepared_by': self.prepared_by}
+            )
+
+            # Seed balances from previous day's totals
+            pos.balance_coh = prev_net_total
+            pos.balance_cib = prev_cash_in_bank
+            pos.cash_in_bank = prev_cash_in_bank
+
+            # Ensure prepared_by is set at least to the current preparer if available
+            if not pos.prepared_by and self.prepared_by:
+                pos.prepared_by = self.prepared_by
+
+            pos.save()
+
+            # After saving, recalc totals for use by the next day
+            prev_net_total = pos.get_net_total()
+            prev_cash_in_bank = pos.get_cash_in_bank()
+
+            current_date += timedelta(days=1)
+
+        # 4. return the daily cash position of the day before selected_date
+        return DailyCashPosition.objects.filter(branch=self.branch, date=last_date).first()
 
 
 class AddReceipts(models.Model):

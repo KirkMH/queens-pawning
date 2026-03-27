@@ -115,7 +115,7 @@
               <div class="card-header border-0">
                 <h3 class="card-title">
                   <i class="fas fa-thumbtack mr-1"></i>
-                  Last 10 transactions
+                  Today's 10 Latest Transactions
                 </h3>
 
                 <div class="card-tools">
@@ -143,7 +143,7 @@
                   
                   {% for pawn in pawn_list %}
                   <tr>
-                    <td><a href="{% url 'pawn_detail' pawn.id %}">{{ pawn.getPTN }}</a></td>
+                    <td><a href="{% url 'pawn_detail' pawn.id %}">{{ pawn.ptn }}</a></td>
                     <td><a href="{% url 'client_detail' pawn.client.id %}">{{ pawn.client.full_name }}</a></td>
                     <td>{{ pawn.complete_description }}</td>
                     <td>{{ pawn.principal|peso }}</td>
@@ -151,7 +151,11 @@
                     {% if not user.employee.branch %}
                     <td>{{ pawn.branch.name }}</td>
                     {% endif %}
-                  </tr>  
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="6">No transactions today yet.</td>
+                  </tr>
                   {% endfor %}
                            
                 </table>

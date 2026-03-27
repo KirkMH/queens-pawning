@@ -47,7 +47,7 @@ class PawnAdmin(admin.ModelAdmin):
                     'principal', 'net_proceeds', 'status', 'branch')  # display columns
 
     def PTN(self, pawn):
-        return pawn.getPTN
+        return pawn.ptn
 
     def complete_description(self, pawn):
         return pawn.complete_description
@@ -62,7 +62,7 @@ class PaymentAdmin(admin.ModelAdmin):
                     'amount_paid', 'paid_for_principal', 'discount_granted')  # display columns
 
     def PTN(self, payment):
-        return payment.pawn.getPTN
+        return payment.pawn.ptn
 
     def client(self, payment):
         return payment.pawn.client
@@ -85,7 +85,7 @@ class LessDisbursementsAdmin(admin.ModelAdmin):
         return less_disbursements.pawn.client if less_disbursements.pawn else None
 
     def PTN(self, less_disbursements):
-        return less_disbursements.pawn.getPTN if less_disbursements.pawn else f" Ref: {less_disbursements.reference_number}" if less_disbursements.reference_number else "(None)"
+        return less_disbursements.pawn.ptn if less_disbursements.pawn else f" Ref: {less_disbursements.reference_number}" if less_disbursements.reference_number else "(None)"
 
     def complete_description(self, less_disbursements):
         return less_disbursements.pawn.complete_description if less_disbursements.pawn else None
@@ -105,7 +105,7 @@ class AddReceiptsAdmin(admin.ModelAdmin):
         return add_receipts.pawn.client if add_receipts.pawn else None
 
     def PTN(self, add_receipts):
-        return add_receipts.pawn.getPTN if add_receipts.pawn else f" Ref: {add_receipts.reference_number}" if add_receipts.reference_number else "(None)"
+        return add_receipts.pawn.ptn if add_receipts.pawn else f" Ref: {add_receipts.reference_number}" if add_receipts.reference_number else "(None)"
 
     def complete_description(self, add_receipts):
         return add_receipts.pawn.complete_description if add_receipts.pawn else None

@@ -54,9 +54,9 @@ class PawnDTListView(ServerSideDatatableView):
         print(f"branch: {branch}")
         if branch:
             clients = Client.objects.filter(branch=branch)
-            return qs.filter(client__in=clients.order_by('status', '-date_granted'))
+            return qs.filter(client__in=clients).order_by('status', '-date_granted')
         else:
-            return qs
+            return qs.order_by('status', '-date_granted')
 
 
 @method_decorator(login_required, name='dispatch')
@@ -87,16 +87,16 @@ class PawnCreateView(CreateView):
         if form.is_valid():
             employee = Employee.objects.get(user=request.user)
             pawn = form.save(commit=False)
-            if pawn.transaction_type == 'ACC':
-                self.promised_renewal_date = None
             pawn.branch = employee.branch
             pawn.save()
             if pawn.transaction_type == 'ADV':
                 pawn.update_renew_redeem_date()
+            if pawn.transaction_type == 'ACC':
+                self.promised_renewal_date = None
             pawn.update_payment(
                 employee, pawn.service_charge, pawn.advance_interest)
-            pawn.update_cash_position_new_ticket(
-                employee, 'New pawn ticket')
+            pawn.update_cash_position_renew_ticket(
+                employee, 'New pawn ticket', pawn)
             messages.success(
                 request, f"New pawn ticket for {pawn.client} was created successfully.")
             return redirect('pawn_detail', pk=pawn.pk)
@@ -124,8 +124,8 @@ class PawnUpdateView(SuccessMessageMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         pawn = self.get_object()
         employee = Employee.objects.get(user=request.user)
-        pawn.update_cash_position_new_ticket(
-            employee, 'Updated pawn ticket', False)
+        pawn.update_cash_position_renew_ticket(
+            employee, 'Updated pawn ticket', pawn, False)
         return super().post(request, *args, **kwargs)
 
 
@@ -140,9 +140,20 @@ class PawnDetailView(DetailView):
         pawn.update_renew_redeem_date()
         pawn.current_user = self.request.user
         print('renew_redeem_date: ', pawn.renew_redeem_date)
+        today = timezone.now().date()
         context = super().get_context_data(**kwargs)
         context['pawn'] = pawn
         context['otherFees'] = OtherFees.get_instance()
+        context['elapsed_days'] = pawn.get_elapsed_days()
+        context['interest_rate'] = pawn.get_interest_rate()
+        context['additional_interest'] = pawn.get_additional_interest(today)
+        context['interest'] = pawn.get_interest()
+        penalty = pawn.get_penalty(today) or 0
+        context['penalty'] = penalty
+        context['has_penalty'] = penalty > 0
+        context['renewal_service_fee'] = pawn.get_renewal_service_fee()
+        context['min_payment'] = pawn.get_minimum_payment()
+        context['total_due'] = pawn.get_total_due()
         return context
 
 
@@ -151,8 +162,8 @@ def delete_pawn(request, pk):
     pawn = Pawn.objects.get(pk=pk)
 
     # update the mother ticket, if exists
-    mother = pawn.renewed_from()
-    print(f'mother: {mother.getPTN()}')
+    mother = pawn.renewed_from
+    print(f'mother: {mother.ptn()}')
     if mother:
         # delete payment from mother ticket; validate that the service fee is not deleted
         payment = Payment.objects.filter(pawn=mother.pk).first()
@@ -201,6 +212,7 @@ def void_pawn(request, pk):
 def update_renew_redeem_date(request, pk):
     error = None
     status = 'success'
+    data = {}
     print("updating...")
     if request.method == 'POST':
         print(request.POST)
@@ -218,16 +230,18 @@ def update_renew_redeem_date(request, pk):
                     error = 'Date should not be less than the grant date.'
                 else:
                     pawn.update_renew_redeem_date(renew_redeem_date)
-                print(f'Interest: {pawn.getInterest()}')
-                print(f'Advance Interest: {pawn.getAdvanceInterest()}')
-                print(f'Penalty: {pawn.getPenalty()}')
-                print(f'Interest + Penalty: {pawn.getInterestPlusPenalty()}')
+                data['interest'] = pawn.get_interest()
+                data['additional_interest'] = pawn.get_additional_interest(renew_redeem_date)
+                data['advance_interest'] = pawn.get_advance_interest()
+                data['penalty'] = pawn.get_penalty(renew_redeem_date)
+                data['interest_plus_penalty'] = data['interest'] + data['additional_interest'] + data['penalty']
+                print(f'return data: {data}')
         except Exception as e:
             print(e)
             error = str(e)
             status = 'error'
 
-    return JsonResponse({'status': status, 'error': error})
+    return JsonResponse({'status': status, 'data': data, 'error': error})
 
 
 @login_required
@@ -257,7 +271,8 @@ class PawnedItemsDTListView(ServerSideDatatableView):
     queryset = Pawn.inventory.all()
     columns = ['pk', 'date_granted', 'description', 'principal',
                'client__title', 'client__last_name', 'client__first_name', 'client__middle_name',
-               'quantity', 'carat', 'color', 'item_description', 'grams', 'branch__name']
+               'quantity', 'carat', 'color', 'item_description', 'grams', 'branch__name',
+               'transaction_type', 'pawn_ticket_number']
 
     def get_queryset(self):
         branch = Employee.objects.get(user=self.request.user).branch
@@ -425,7 +440,7 @@ def calculate_advance_interest(request):
         promised_date = datetime.strptime(
             request.GET['promised_date'], '%Y-%m-%d').date()
         principal = float(request.GET['principal'])
-        advance_interest_rate = Pawn.advanceInterestRate(
+        advance_interest_rate = Pawn.advance_interest_rate(
             promised_date, date_granted)
         advance_interest = principal * (advance_interest_rate / 100)
     except Exception as e:
