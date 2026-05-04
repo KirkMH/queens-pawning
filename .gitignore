@@ -9,3 +9,5 @@
 .venv/*
 db.sqlite3
 queens/settings.py
+.venv/Lib/site-packages/asgiref/__pycache__/__init__.cpython-310.pyc
+.venv/Lib/site-packages/asgiref/__pycache__/__init__.cpython-310.pyc
