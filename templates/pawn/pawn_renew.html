@@ -21,10 +21,12 @@
         <input type="hidden" name="appraised_value" id="appraised_value" value="{{ pawn.appraised_value }}" />
         <input type="hidden" name="transaction_type" id="transaction_type" value="{{ pawn.transaction_type }}" />
         <input type="hidden" name="advIntUri" id="advIntUri" value="{% url 'calculate_advance_interest' %}" />
+        <input type="hidden" name="interestPlusPenaltyVal" id="interestPlusPenaltyVal" value="" />
+        <input type="hidden" name="advanceInterestVal" id="advanceInterestVal" value="" />
         
         <div class="card card-success m-4">
             <div class="card-header">
-                <h3>RENEW Pawn Ticket # {{ pawn.getPTN }}</h3>
+                <h3>RENEW Pawn Ticket # {{ pawn.ptn }}</h3>
             </div>
             <div class="card-body">
                 <h4>{{ pawn.complete_description }}</h4>
@@ -52,7 +54,7 @@
                     <div class="form-group row">
                         <label for="interestPlusPenalty" class="col-sm-4 col-form-label">Interests + Penalties</label>
                         <div class="col-sm-8">
-                            <input type="number" step="0.01" class="form-control text-right" id="interestPlusPenalty" name="interestPlusPenalty" value="{{ pawn.getInterestPlusPenalty|floatformat:2 }}" disabled />
+                            <input type="number" step="0.01" class="form-control text-right" id="interestPlusPenalty" name="interestPlusPenalty" value="{{ pawn.get_min_total_due|floatformat:2 }}" disabled />
                         </div>
                     </div>
                     <div class="form-group row">
@@ -89,7 +91,7 @@
                             <label for="serviceFee" class="col-form-label">Service Charge</label>
                         </div>
                         <div class="col-sm-8">
-                            <input type="number" class="form-control text-right" id="serviceFee" name="serviceFee" value="{{ pawn.getRenewalServiceFee|floatformat:2 }}" step="0.01" disabled />
+                            <input type="number" class="form-control text-right" id="serviceFee" name="serviceFee" value="{{ pawn.get_renewal_service_fee|floatformat:2 }}" step="0.01" disabled />
                         </div>
                     </div>
                     <div class="form-group row partial-payment">
@@ -103,7 +105,7 @@
                     <div class="form-group row">
                         <label for="receivable" class="col-sm-4 col-form-label">Minimum Payment</label>
                         <div class="col-sm-8">
-                            <input type="number" class="form-control text-right" id="receivable" name="receivable" value="{{ pawn.getMinTotalDue|floatformat:2 }}" step="0.01" disabled />
+                            <input type="number" class="form-control text-right" id="receivable" name="receivable" value="{{ pawn.get_min_total_due|floatformat:2 }}" step="0.01" disabled />
                         </div>
                     </div>
                     <div class="form-group row">
@@ -131,40 +133,46 @@
 
 
 {% block js %}
-    <script src="{% static 'js/pawn.js' %}?v=1"></script>
+    <script src="{% static 'js/pawn.js' %}?v=2"></script>
     <script>
         $(document).ready(function() {
             const origDate = "{{ pawn.renew_redeem_date|date:'Y-m-d' }}";
-            $("#renew").on('change', function(e) {
-                // log the value
-                console.log($(this).val());
+            function update_renew_redeem_date(to_date) {
                 $.ajax({
                     url: "{% url 'update_renew_redeem_date' pawn.pk %}",
                     type: 'POST',
                     data: {
-                        'pk': $(this).val(),
+                        'pk': parseInt("{{ pawn.pk }}"),
                         'csrfmiddlewaretoken': '{{ csrf_token }}',
-                        'renew_redeem_date': $(this).val()
+                        'renew_redeem_date': to_date
                     },
                     success: function(data) {
                         if (data.status == "success") {
                             console.log(data);
-                            location.reload();   
+                            additional = parseFloat(data.data.interest_plus_penalty).toFixed(2);
+                            $("#interestPlusPenalty").val(additional);
+                            $("#interestPlusPenaltyVal").val(additional);
                         }
                         else {
                             toastr.error(data.error);
                             console.log(`original: ${origDate}`);
                             $("#renew").val(origDate);
                         }
+                        calculate();
                     },
                     error: function(xhr, status, error) {
                         console.log(xhr.responseText);
+                        calculate();
                     }
-                })
+                });
+            }
+            $("#renew").on('change', function(e) {
+                // log the value
+                console.log($(this).val());
+                update_renew_redeem_date($(this).val());
             });
+            update_renew_redeem_date(origDate);
             $("#menu-transactions").addClass("active")
-
-            calculate();
         })
     </script>
 {% endblock js %}

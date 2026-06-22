@@ -74,7 +74,7 @@
                         <tbody>
                             {% for pawn in pawns %}
                             <tr>
-                                <td class="text-center">{{ pawn.pk|stringformat:"06d" }}</td>
+                                <td class="text-center">{{ pawn.ptn }}</td>
                                 <td>{{ pawn.client }}</td>
                                 <td>{{ pawn.complete_description }}</td>
                                 <td>{{ pawn.date|date:"F d Y" }}</td>

@@ -60,9 +60,14 @@
                     },
                     {
                         name: 'ptn',
-                        data: 0,
+                        data: null,
                         render: function (data) {
-                            return String(data).padStart(6, '0');
+                            const type = data[14];
+                            console.log(type)
+                            let ptn = `${type}-${String(data[0]).padStart(6, '0')}`;
+                            if (data[15])
+                                ptn = `${String(data[15])} (${type})`;
+                            return ptn
                         },
                         className: 'text-center'
                     },

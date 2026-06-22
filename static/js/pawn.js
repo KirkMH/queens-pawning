@@ -62,12 +62,14 @@ const calculate = async () => {
       );
       if (!response.ok) {
         $("#advanceInterest").val("0.00");
+        $("#advanceInterestVal").val("0.00");
         console.log(`error: ${error}`);
       } else {
         const data = await response.json();
         console.log(`result: ${JSON.stringify(data)}`);
         const advInt = parseFloat(data["advance_interest"]);
         $("#advanceInterest").val(advInt.toFixed(2));
+        $("#advanceInterestVal").val(advInt.toFixed(2));
         toPay += advInt;
         showToPayAndChange(tendered, toPay);
       }
