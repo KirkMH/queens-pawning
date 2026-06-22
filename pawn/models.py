@@ -101,7 +101,6 @@ class Pawn(models.Model):
         ('ADV', _('Advance Interest'))
     ]
 
-    # NEW = Advance Interest Rate; EXISTING = Interest Rate
     transaction_type = models.CharField(
         _('Transaction Type'),
         max_length=10,
@@ -297,8 +296,6 @@ class Pawn(models.Model):
         return Pawn.advance_interest_rate(self.promised_renewal_date, self.date_granted)
 
     def get_interest(self):
-        # interest = 0
-        # if self.transaction_type == 'EXISTING':
         interest = self.principal * \
             Decimal(str((self.get_interest_rate() / 100)))
         if self.transaction_type == 'ADV':  # and interest >= self.advance_interest:
@@ -352,14 +349,10 @@ class Pawn(models.Model):
 
     def get_penalty(self, date=None):
         if self.has_penalty(date):
-            daysPenalty = self.get_elapsed_days(date)
-            if self.transaction_type == 'EXISTING':
-                daysPenalty = Decimal(
-                    str(daysPenalty - TermDuration.get_instance().maturity))
+            daysPenalty = Decimal(str(self.get_elapsed_days(date) - TermDuration.get_instance().maturity))
             print(f"Days Penalty: {daysPenalty}")
             penalty_rate = OtherFees.get_instance().penalty_rate
-            penalty = abs(self.principal * Decimal(penalty_rate / 100)
-                          * Decimal(daysPenalty / 30))
+            penalty = abs(self.principal * Decimal(penalty_rate / 100) * Decimal(daysPenalty / 30))
 
             print(f"Penalty Rate: {penalty_rate}")
             print(f"Penalty: {penalty}")
@@ -576,6 +569,25 @@ class Pawn(models.Model):
             total_interest = new_ticket.advance_interest  # adv interest must be deducted
         else:
             total_interest = self.get_interest()
+        
+        # UPDATE:
+        #  New Ticket: Disbursement only, principal - service charge
+        #  Renewed Ticket:  
+        #     Receipts: Principal + Interest + Penalty
+        #     Disbursements: new principal - service charge
+        #  Redeem Ticket: Receipt only, principal + interest + penalty
+        if self.status == 'RENEWED':
+            d_amt = new_ticket.principal - new_ticket.service_charge
+            r_amt = self.principal + total_interest + self.get_penalty()
+        elif self.status == 'REDEEMED':
+            d_amt = 0
+            r_amt = self.principal + total_interest + self.get_penalty()
+        else:  # new ticket
+            d_amt = new_ticket.principal - new_ticket.service_charge
+            r_amt = 0
+
+        print(f'Disbursements: {d_amt}')
+        print(f'Receipts: {r_amt}')
 
         # # check if this is a renewed ticket
         # mother_ticket = Pawn.objects.filter(
@@ -584,15 +596,18 @@ class Pawn(models.Model):
         #     total_interest += mother_ticket.getInterest()
 
         # RECEIPT: new -- interest only; renew -- old principal + interest + penalty
-        if self.renewed_to:
-            r_amt = self.principal + total_interest + self.get_penalty()
-        else:
-            r_amt = total_interest
-        receipt = self.update_receipts(
-            cashier, description, r_amt, new_entry, new_ticket)
-        d_amt = new_ticket.principal - new_ticket.service_charge
-        disbursement = self.update_disbursements(
-            cashier, description, d_amt, new_entry, new_ticket)
+        # if self.renewed_to:
+        #     r_amt = self.principal + total_interest + self.get_penalty()
+        # else:
+        #     r_amt = total_interest
+        if r_amt > 0:
+            receipt = self.update_receipts(
+                cashier, description, r_amt, new_entry, new_ticket)
+            print(f'Receipt amount set to: {receipt.amount}')
+        if d_amt > 0:
+            disbursement = self.update_disbursements(
+                cashier, description, d_amt, new_entry, new_ticket)
+            print(f'Disbursement amount set to: {disbursement.amount}')
         return (receipt, disbursement)
 
     def is_pawned_today(self):

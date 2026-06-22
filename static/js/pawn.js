@@ -243,3 +243,20 @@ $("#btnRenew").on("change", function () {
 });
 
 //toggleForm();
+
+$(".numberText").on("change", function() {
+    let val = $(this).val();
+    if (val === "") {
+        $(this).val("0.00");
+    }
+    else {
+        val = parseFloat(val).toFixed(2);
+        if (isNaN(val)) {
+            $(this).val("0.00");
+        }
+        else {
+            $(this).val(val);
+        }
+    }
+    calculate();
+});
