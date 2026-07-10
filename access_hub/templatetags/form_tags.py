@@ -11,13 +11,14 @@ def field_type(bound_field):
 
 @register.filter
 def input_class(bound_field):
+    widget_class = bound_field.field.widget.attrs.get('class', '')
     css_class = ''
     if bound_field.form.is_bound:
         if bound_field.errors:
             css_class = 'is-invalid'
         elif field_type(bound_field) != 'PasswordInput':
             css_class = 'is-valid'
-    return 'form-control {}'.format(css_class)
+    return 'form-control {} {}'.format(widget_class, css_class).strip()
 
 
 @register.filter

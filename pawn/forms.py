@@ -20,6 +20,15 @@ class PawnForm(forms.ModelForm):
         model = Pawn
         exclude = ('status', 'on_hold', 'status_updated_on',
                    'branch', 'renewed_to', 'additional_principal', 'renew_redeem_date')
+        widgets = {
+            'quantity': forms.TextInput(attrs={'class': 'numberText text-right'}),
+            'grams': forms.TextInput(attrs={'class': 'numberText text-right'}),
+            'appraised_value': forms.TextInput(attrs={'class': 'numberText text-right'}),
+            'principal': forms.TextInput(attrs={'class': 'numberText text-right'}),
+            'service_charge': forms.TextInput(attrs={'class': 'numberText text-right'}),
+            'advance_interest': forms.TextInput(attrs={'class': 'numberText text-right'}),
+            'net_proceeds': forms.TextInput(attrs={'class': 'numberText text-right'}),
+        }
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
