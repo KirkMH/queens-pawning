@@ -163,7 +163,6 @@ def delete_pawn(request, pk):
 
     # update the mother ticket, if exists
     mother = pawn.renewed_from
-    print(f'mother: {mother.ptn()}')
     if mother:
         # delete payment from mother ticket; validate that the service fee is not deleted
         payment = Payment.objects.filter(pawn=mother.pk).first()
@@ -259,6 +258,31 @@ def pawn_payment(request, pk):
             messages.error(request, "Please fill-in all required fields.")
 
     return render(request, 'pawn/pawn_detail.html', {'pawn': pawn})
+
+
+@login_required
+def pawn_print(request, pk):
+    pawn = Pawn.objects.get(pk=pk)
+    cashier = (f"{request.user.first_name} {request.user.last_name}").upper()
+    print(f"cashier: {cashier}")
+    # split the description into 50 character chunks, with the results into variables
+    # pad with spaces
+    description = pawn.complete_description.upper()
+    description_chunks = []
+    for i in range(0, len(description), 50):
+        description_chunks.append(description[i:i+50])
+    while len(description_chunks) < 3:
+        description_chunks.append('')   
+
+    context = {
+        'pawn': pawn,
+        'cashier': cashier,
+        'description1': description_chunks[0],
+        'description2': description_chunks[1],
+        'description3': description_chunks[2],
+    }
+
+    return render(request, 'pawn/pawn_print.html', context)
 
 
 @login_required

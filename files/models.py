@@ -108,7 +108,7 @@ class Client(models.Model):
 
     @property
     def id_info(self):
-        return f'{self.id_presented}-{self.id_number}'
+        return f'{self.id_link.type}-{self.id_number}'
 
     class Meta:
         ordering = ['last_name', 'first_name', 'middle_name']

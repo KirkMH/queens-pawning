@@ -1,5 +1,6 @@
 from django import template
 from django.contrib.humanize.templatetags.humanize import intcomma
+from num2words import num2words
 
 register = template.Library()
 
@@ -49,3 +50,11 @@ def currency(amount):
         return "%s%s" % (intcomma(int(amount)), ("%0.2f" % amount)[-3:])
     else:
         return "0.00"
+
+
+@register.filter
+def to_words(value):
+    try:
+        return num2words(int(value))
+    except (ValueError, TypeError):
+        return value

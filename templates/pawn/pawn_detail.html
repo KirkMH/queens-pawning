@@ -64,7 +64,7 @@
                     <div class="card-footer">
                         <div class="row">
                             <div class="col-lg-12">
-                                <a href="#" class="btn btn-primary card-link">Print</a>
+                                <a target="_blank" href="{% url 'pawn_print' pawn.pk %}" class="btn btn-primary card-link">Print</a>
                                 {% if pawn.is_edittable %}
                                 <a href="{% url 'edit_pawn' pawn.pk %}" class="btn btn-warning card-link">Edit</a>
                                 {% endif %}
