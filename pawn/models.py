@@ -573,15 +573,15 @@ class Pawn(models.Model):
         # UPDATE:
         #  New Ticket: Disbursement only, principal - service charge
         #  Renewed Ticket:  
-        #     Receipts: Principal + Interest + Penalty
+        #     Receipts: Principal + Interest + Penalty - Discount
         #     Disbursements: new principal - service charge
-        #  Redeem Ticket: Receipt only, principal + interest + penalty
+        #  Redeem Ticket: Receipt only, principal + interest + penalty - Discount
         if self.status == 'RENEWED':
             d_amt = new_ticket.principal - new_ticket.service_charge
-            r_amt = self.principal + total_interest + self.get_penalty()
+            r_amt = self.principal + total_interest + self.get_penalty() - self._get_discount()
         elif self.status == 'REDEEMED':
             d_amt = 0
-            r_amt = self.principal + total_interest + self.get_penalty()
+            r_amt = self.principal + total_interest + self.get_penalty() - self._get_discount()
         else:  # new ticket
             d_amt = new_ticket.principal - new_ticket.service_charge
             r_amt = 0
