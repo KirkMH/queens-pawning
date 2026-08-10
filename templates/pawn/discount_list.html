@@ -27,9 +27,9 @@
                     <th class="text-center">Date</th>
                     <th class="text-center">PTN</th>
                     <th class="text-center">Principal</th>
-                    <th class="text-center">Interest Due</th>
+                    <th class="text-center">Amount Due</th>
                     <th class="text-center">Requested Discount</th>
-                    <th class="text-center">Requested by</th>
+                    <th class="text-center">Cashier</th>
                     <th class="text-center">Status</th>
                 </tr>
             </thead>
@@ -107,10 +107,20 @@
                     },
                     {
                         name: "ptn", 
-                        data: 2,
-                        className: 'text-center',
+                        data: null,
                         render: function (data) {
-                            return data.toString().padStart(6, "0");
+                            const pawnId = data[2];
+                            const pawnTicketNumber = data[9];
+                            const transactionType = data[10];
+                            let ptn = `${transactionType}-${String(pawnId).padStart(6, '0')}`;
+                            if (pawnTicketNumber) {
+                                ptn = `${String(pawnTicketNumber)} (${transactionType})`;
+                            }
+                            const clientFirstName = data[12];
+                            const clientLastName = data[11];
+                            const clientMiddleName = data[13];
+                            const clientName = `${clientLastName}, ${clientFirstName} ${clientMiddleName.charAt(0)}`;
+                            return `${ptn}<br><span class="small">${clientName}</span>`;
                         }
                     },
                     {
@@ -138,10 +148,10 @@
                         },
                     },
                     {
-                        name: "requestor", 
+                        name: "cashier", 
                         data: null,
                         render: function (data) {
-                            return `${data[5]}, ${data[6]}`.toUpperCase();
+                            return `${data[6]} ${data[5]}`.trim().toUpperCase();
                         }
                     },
                     {

@@ -354,9 +354,14 @@ def request_discount(request, pk):
         pawn = Pawn.objects.get(pk=pk)
         amount = request.GET['amount']
         interest_due = request.GET['interest_due']
-        discount = DiscountRequests.objects.create(
-            pawn=pawn, interest_due=interest_due, amount=amount,
-            requested_by=Employee.objects.get(user=request.user))
+        discount, created = DiscountRequests.objects.update_or_create(
+            pawn=pawn,
+            defaults={
+                'interest_due': interest_due,
+                'amount': amount,
+                'requested_by': Employee.objects.get(user=request.user),
+                'status': 'PENDING'
+            })
         print(discount)
     except Exception as e:
         print(e)
@@ -374,8 +379,9 @@ def cancel_request_discount(request, pk):
     success = True
     error = None
     try:
-        discount = DiscountRequests.objects.get(pawn=Pawn.objects.get(pk=pk))
-        discount.cancel()
+        discount = DiscountRequests.objects.filter(pawn=Pawn.objects.get(pk=pk)).first()
+        if discount:
+            discount.cancel()
     except Exception as e:
         print(e)
         success = False
@@ -439,7 +445,8 @@ class DiscountRequestsDTListView(ServerSideDatatableView):
     queryset = DiscountRequests.objects.all()
     columns = ['pk', 'date', 'pawn__pk', 'amount', 'status',
                'requested_by__user__last_name', 'requested_by__user__first_name',
-               'pawn__principal', 'interest_due']
+               'pawn__principal', 'interest_due', 'pawn__pawn_ticket_number', 'pawn__transaction_type',
+               'pawn__client__last_name', 'pawn__client__first_name', 'pawn__client__middle_name']
 
     def get_queryset(self):
         if Employee.objects.filter(user=self.request.user).count() > 0 and Employee.objects.get(user=self.request.user).branch:

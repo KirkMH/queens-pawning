@@ -119,6 +119,17 @@ function validateForm() {
   return !err;
 }
 
+function cancelDiscountRequest(pawn_id) {
+  $.ajax({
+    url: `/pawn/discounts/${pawn_id}/cancel`,
+    type: "GET",
+    success: function (data) { 
+      console.log("Discount request cancelled.");
+    },
+    error: function (xhr, status, error) { }
+  });
+}
+
 const errorProcessor = (error, dialog) => {
   dialog.find(".bootbox-body").html(`<p class="text-danger">${error}</p>`);
   dialog.find(".modal-footer").remove();
@@ -167,6 +178,7 @@ $("#request-discount").on("click", function () {
             label: "Cancel",
             className: "btn-danger",
             callback: function () {
+              cancelDiscountRequest(pawn_id);
               dialog.modal("hide");
             },
           },
@@ -198,9 +210,9 @@ $("#request-discount").on("click", function () {
                       dialog.modal("hide");
                       if (status === "REJECTED") {
                         toastr.error("Discount request rejected.");
-                      } else {
+                      } else if (status == "APPROVED") {
                         toastr.success("Discount request approved.");
-                        $("#discount").val(result);
+                        $("#discount").val(parseFloat(result).toFixed(2));
                         calculate();
                       }
                     }
