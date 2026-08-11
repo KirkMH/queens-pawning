@@ -225,7 +225,7 @@ def daily_cash_position(request):
         try:
             last = cash_position.fill_in_from_yesterday(date)
         except Exception:
-            last = None
+            last = DailyCashPosition.objects.filter(branch=branch).order_by('-date').first()
 
     context = {
         'cash_position': cash_position,
