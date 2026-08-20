@@ -116,7 +116,7 @@
                         else {
                             toastr.error(data.error);
                             console.log(`original: ${origDate}`);
-                            $("#renew").val(origDate);
+                            $("#redeem").val(origDate);
                         }
                         calculate();
                     },
@@ -126,7 +126,7 @@
                     }
                 });
             }
-            $("#renew").on('change', function(e) {
+            $("#redeem").on('change', function(e) {
                 // log the value
                 console.log($(this).val());
                 update_renew_redeem_date($(this).val());

@@ -69,29 +69,46 @@ New Pawn
 <script src="{% static 'js/pawn.js' %}?v=3"></script>
 <script>
     $(document).ready(function () {
-        const id = " {{ client.id }}" || null; const serviceCharge = parseFloat($("#id_service_charge").val()) || 0;
-        console.log(`serviceCharge: ${serviceCharge}`); $("#id_service_charge").prop('readonly', true);
-        $("#id_advance_interest").prop('readonly', true); $("#id_net_proceeds").prop('readonly', true);
-        $('#id_promised_renewal_date').attr('type', 'date'); $('#id_date_granted').attr('type', 'date');
-        $("select").addClass("form-select"); function process_transaction_type() {
-            const
-                transactionType = $("#id_transaction_type").val(); console.log(`transactionType: ${transactionType}`); if
-                (transactionType === "ADV") {
+        const id = " {{ client.id }}" || null;
+        const serviceCharge = parseFloat($("#id_service_charge").val()) || 0;
+
+        $("#id_service_charge").prop('readonly', true);
+        $("#id_advance_interest").prop('readonly', true);
+        $("#id_net_proceeds").prop('readonly', true);
+        $('#id_promised_renewal_date').attr('type', 'date');
+        $('#id_date_granted').attr('type', 'date');
+        $("select").addClass("form-select");
+        
+        function process_transaction_type() {
+            const transactionType = $("#id_transaction_type").val(); 
+            console.log(`transactionType: ${transactionType}`);
+            if (transactionType === "ADV") {
                 $("#id_promised_renewal_date").parent().parent().show();
-                $("#id_promised_renewal_date").prop('required', true); $("#id_advance_interest").parent().parent().show();
+                $("#id_promised_renewal_date").prop('required', true);
+                $("#id_advance_interest").parent().parent().show();
             } else {
-                $("#id_promised_renewal_date").prop('required', false); $("#id_promised_renewal_date").parent().parent().hide();
-                $("#id_advance_interest").val(0); $("#id_advance_interest").parent().parent().hide();
+                $("#id_promised_renewal_date").prop('required', false);
+                $("#id_promised_renewal_date").parent().parent().hide();
+                $("#id_advance_interest").val(0);
+                $("#id_advance_interest").parent().parent().hide();
             }
-        } function
-            computeAdvanceInterest() {
-            console.log("Computing advance interest"); const
-                transactionType = $("#id_transaction_type").val(); const principal = parseFloat($("#id_principal").val()) || 0; const
-                    promised_date = $("#id_promised_renewal_date").val(); const date_granted = $("#id_date_granted").val(); let advInt = 0;
-            console.log(`transactionType: ${transactionType}`); console.log(`principal: ${principal}`);
-            console.log(`promised_date: ${promised_date}`); if (transactionType === "ADV" && promised_date) {
-                console.log("Fetching advance interest"); fetch("{% url 'calculate_advance_interest' %}?principal=" + principal + "
-                    & promised_date=" + promised_date + " & date_granted=" + date_granted)
+        } 
+        function computeAdvanceInterest() {
+            console.log("Computing advance interest");
+            const transactionType = $("#id_transaction_type").val(); 
+            const principal = parseFloat($("#id_principal").val()) || 0;
+            const promised_date = $("#id_promised_renewal_date").val();
+            const date_granted = $("#id_date_granted").val();
+            let advInt = 0;
+
+            console.log(`transactionType: ${transactionType}`);
+            console.log(`principal: ${principal}`);
+            console.log(`promised_date: ${promised_date}`);
+
+            if (transactionType === "ADV" && promised_date) {
+                console.log("Fetching advance interest");
+                fetch("{% url 'calculate_advance_interest' %}?principal=" + principal +
+                    " & promised_date=" + promised_date + " & date_granted=" + date_granted)
                         .then(response => response.json())
                         .then(data => {
                             console.log(`result: ${JSON.stringify(data)}`)
@@ -101,24 +118,33 @@ New Pawn
                 $("#id_advance_interest").val(advInt.toFixed(2));
             } $("#id_advance_interest").val(advInt.toFixed(2));
         }
-        $("#id_transaction_type").on("change", process_transaction_type); $("#id_transaction_type").on("change",
-            computeAdvanceInterest); $("#id_promised_renewal_date").on("change", computeAdvanceInterest);
-        $("#id_principal").on("keyup", computeAdvanceInterest); process_transaction_type(); // set the service charge and
-    advance interest console.log(`serviceCharge: ${serviceCharge.toFixed(2)}`); //
-        $("#id_service_charge").val(serviceCharge.toFixed(2)); function computeNetProceeds() {
-            const
-                principal = parseFloat($("#id_principal").val()) || 0; const advInt = $("#id_advance_interest").val() || 0; const
-                    netProceeds = principal - serviceCharge - advInt; console.log(`principal: ${principal}, advInt: ${advInt},
-    serviceCharge: ${serviceCharge}, netProceeds: ${netProceeds}`); $("#id_net_proceeds").val(netProceeds.toFixed(2));
+
+        $("#id_transaction_type").on("change", process_transaction_type); 
+        $("#id_transaction_type").on("change", computeAdvanceInterest); 
+        $("#id_promised_renewal_date").on("change", computeAdvanceInterest);
+        $("#id_principal").on("keyup", computeAdvanceInterest); 
+        process_transaction_type(); // set the service charge and advance interest
+        console.log(`serviceCharge: ${serviceCharge.toFixed(2)}`);
+        $("#id_service_charge").val(serviceCharge.toFixed(2)); 
+        
+        function computeNetProceeds() {
+            const principal = parseFloat($("#id_principal").val()) || 0;
+            const advInt = $("#id_advance_interest").val() || 0; 
+            const netProceeds = principal - serviceCharge - advInt; 
+            console.log(`principal: ${principal}, advInt: ${advInt},serviceCharge: ${serviceCharge}, netProceeds: ${netProceeds}`); 
+            $("#id_net_proceeds").val(netProceeds.toFixed(2));
         }
-    // call computeNetProceeds() when principal is changed $("#id_principal").on("keyup", computeNetProceeds); // when
-    form is submitted, validate that the principal is not more than the appraised value $("form").on("submit", function
-            () {
-            const principal = parseFloat($("#id_principal").val()) || 0; const
-                appraisedValue = parseFloat($("#id_appraised_value").val()) || 0; if (principal > appraisedValue) {
-                    toastr.error("The total principal must not exceed the appraised value.");
-                    return false;
-                }
+        
+        $("#id_principal").on("keyup", computeNetProceeds); 
+        
+        $("form").on("submit", function () {
+            const principal = parseFloat($("#id_principal").val()) || 0;
+            const appraisedValue = parseFloat($("#id_appraised_value").val()) || 0;
+
+            if (principal > appraisedValue) {
+                toastr.error("The total principal must not exceed the appraised value.");
+                return false;
+            }
         });
 
         $("#menu-transactions").addClass("active")
