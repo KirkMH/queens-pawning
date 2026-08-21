@@ -521,8 +521,11 @@ class Pawn(models.Model):
     def _upsert_cash_entry(self, model_class, cashier, description, amount, new_entry, ticket, payee_field):
         ticket = ticket or self
         date = ticket.date_granted
+        mother_ticket = None
         if description == "Redeemed" and self.renew_redeem_date:
             date = self.renew_redeem_date
+        elif "renewed" in description.lower() or "renew" in description.lower():
+            mother_ticket = ticket.renewed_from or (self if self != ticket else None)
             
         cash_position, _ = DailyCashPosition.objects.get_or_create(
             branch=ticket.branch,
@@ -539,13 +542,19 @@ class Pawn(models.Model):
             cash_position.prepared_by = cashier
             cash_position.save()
 
-        entry.reference_number = ticket.ptn
+        entry.reference_number = mother_ticket.ptn if mother_ticket else ticket.ptn
         setattr(entry, payee_field, ticket.client.full_name)
         entry.particulars = description
         entry.amount = amount
         entry.automated = True
         entry.save()
         return entry
+
+    def delete_from_cash_position(self):
+        cash_position = DailyCashPosition.objects.filter(branch=self.branch, date=self.date_granted).first()
+        if cash_position:
+            AddReceipts.objects.filter(pawn=self, daily_cash_position=cash_position).delete()
+            LessDisbursements.objects.filter(pawn=self, daily_cash_position=cash_position).delete()
 
     def update_receipts(self, cashier, description, amount, new_entry=True, ticket=None):
         receipt = self._upsert_cash_entry(
@@ -618,9 +627,6 @@ class Pawn(models.Model):
 
     @property
     def renewed_from(self):
-        print(f'renewed_to: {self.renewed_to}')
-        if self.renewed_to is None:
-            return None
         mother = Pawn.objects.filter(
             renewed_to=self).first()
         print(f"Mother ticket: {mother}")
