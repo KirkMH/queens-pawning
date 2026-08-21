@@ -258,6 +258,11 @@ class Pawn(models.Model):
         return description
 
     @property
+    def maturity_date(self):
+        maturity_days = TermDuration.get_instance().maturity
+        return self.date_granted + timezone.timedelta(days=maturity_days)
+
+    @property
     def expiration_date(self):
         expiration_days = TermDuration.get_instance().expiration
         return self.date_granted + timezone.timedelta(days=expiration_days)

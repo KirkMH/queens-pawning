@@ -169,7 +169,7 @@
         #idPresented {
             top: 141mm;
             left: 30mm;
-            width: 30mm;
+            width: 60mm;
             height: 6mm;
         }
 
@@ -327,15 +327,15 @@
         renderPawnTicketData({
             dateLoanGranted: '{{ pawn.date_granted|date:"m/d/Y" }}',
             maturityDate: '{{ pawn.maturity_date|date:"m/d/Y" }}',
-            expiryDate: '{{ pawn.expiry_date|date:"m/d/Y" }}',
+            expiryDate: '{{ pawn.expiration_date|date:"m/d/Y" }}',
             borrowerName: '{{ pawn.client.full_name|upper }}',
             borrowerAddress: '{{ pawn.client.address|upper }}',
             loanPesosWords: '{{ pawn.principal|to_words|upper }}',
             loanPesosNum: '{{ pawn.principal|currency }}',
-            interestRate: '3',
-            interestWords: 'THREE',
-            loanTermDays: '30',
-            penaltyInterest: 'NONE',
+            interestRate: '3', // fixed for now
+            interestWords: 'THREE', // fixed for now
+            loanTermDays: '30', // fixed for now
+            penaltyInterest: 'NONE', // fixed for now
             pawnDescLine1: '{{ description1 }}',
             pawnDescLine2: '{{ description2 }}',
             pawnDescLine3: '{{ description3 }}',
@@ -346,10 +346,10 @@
             interestAmount: '{{ pawn.get_interest|currency }}',
             serviceCharge: '{{ pawn.service_charge|currency }}',
             netProceeds: '{{ pawn.net_proceeds|currency }}',
-            effectiveInterestRate: ' ',
-            checkPerMonth: '.',
-            checkPerAnnum: '.',
-            checkOthers: '.',
+            effectiveInterestRate: '3%', // fixed for now
+            checkPerMonth: '✓', // fixed for now
+            checkPerAnnum: '', // fixed for now
+            checkOthers: '', // fixed for now
             cashierName: '{{ cashier }}'
         });
     </script>
