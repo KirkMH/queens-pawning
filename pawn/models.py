@@ -524,6 +524,7 @@ class Pawn(models.Model):
         mother_ticket = None
         if description == "Redeemed" and self.renew_redeem_date:
             date = self.renew_redeem_date
+            mother_ticket = self.renewed_from
         elif "renewed" in description.lower() or "renew" in description.lower():
             mother_ticket = ticket.renewed_from or (self if self != ticket else None)
             
@@ -551,10 +552,8 @@ class Pawn(models.Model):
         return entry
 
     def delete_from_cash_position(self):
-        cash_position = DailyCashPosition.objects.filter(branch=self.branch, date=self.date_granted).first()
-        if cash_position:
-            AddReceipts.objects.filter(pawn=self, daily_cash_position=cash_position).delete()
-            LessDisbursements.objects.filter(pawn=self, daily_cash_position=cash_position).delete()
+        AddReceipts.objects.filter(pawn=self).delete()
+        LessDisbursements.objects.filter(pawn=self).delete()
 
     def update_receipts(self, cashier, description, amount, new_entry=True, ticket=None):
         receipt = self._upsert_cash_entry(

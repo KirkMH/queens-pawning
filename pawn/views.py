@@ -121,12 +121,17 @@ class PawnUpdateView(SuccessMessageMixin, UpdateView):
         context['otherFees'] = OtherFees.get_instance()
         return context
 
-    def post(self, request, *args, **kwargs):
-        pawn = self.get_object()
-        employee = Employee.objects.get(user=request.user)
+    def form_valid(self, form):
+        self.object.delete_from_cash_position()
+        response = super().form_valid(form)
+        pawn = self.object
+        employee = Employee.objects.get(user=self.request.user)
+        pawn.update_renew_redeem_date()
+        pawn.update_payment(
+            employee, pawn.service_charge, pawn.advance_interest)
         pawn.update_cash_position_renew_ticket(
             employee, 'Updated pawn ticket', pawn, False)
-        return super().post(request, *args, **kwargs)
+        return response
 
 
 @method_decorator(login_required, name='dispatch')
