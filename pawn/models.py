@@ -529,7 +529,6 @@ class Pawn(models.Model):
         mother_ticket = None
         if description == "Redeemed" and self.renew_redeem_date:
             date = self.renew_redeem_date
-            mother_ticket = self.renewed_from
         elif "renewed" in description.lower() or "renew" in description.lower():
             mother_ticket = ticket.renewed_from or (self if self != ticket else None)
             
@@ -548,7 +547,16 @@ class Pawn(models.Model):
             cash_position.prepared_by = cashier
             cash_position.save()
 
-        entry.reference_number = mother_ticket.ptn if mother_ticket else ticket.ptn
+        # Receipts on renewal reflect old ticket; disbursements reflect new ticket
+        if issubclass(model_class, AddReceipts) and mother_ticket:
+            entry.reference_number = mother_ticket.ptn
+            description = f"Renewed to PTN {ticket.ptn}"
+        elif mother_ticket:
+            entry.reference_number = ticket.ptn
+            description = f"Renewed from PTN {mother_ticket.ptn}"
+        else:
+            entry.reference_number = ticket.ptn
+
         setattr(entry, payee_field, ticket.client.full_name)
         entry.particulars = description
         entry.amount = amount
